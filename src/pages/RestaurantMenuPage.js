@@ -31,7 +31,7 @@ const [isModalClosing, setIsModalClosing] = useState(false);
     const fetchDetails = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:5000/api/admin/${id}/details`, {
+        const res = await fetch(`http://88.222.214.15:5000/api/admin/${id}/details`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -47,7 +47,7 @@ const [isModalClosing, setIsModalClosing] = useState(false);
     const fetchMenu = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:5000/api/admin/${id}/menu`, {
+        const res = await fetch(`http://88.222.214.15:5000/api/admin/${id}/menu`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -107,7 +107,7 @@ const [isModalClosing, setIsModalClosing] = useState(false);
     if (!tableNumber) return toast.error("Please enter a valid table number.");
 
     try {
-      const res = await fetch("http://localhost:5000/api/order", {
+      const res = await fetch("http://88.222.214.15:5000/api/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
