@@ -49,7 +49,7 @@ const handleImageUpload = (e) => {
   }
   const fetchRestaurantDetails = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/${restaurantId}/details`, {
+      const res = await fetch(`http://88.222.214.15:5000/api/admin/${restaurantId}/details`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -70,7 +70,7 @@ const handleImageUpload = (e) => {
   // Fetch Menu
   const fetchMenu = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/${restaurantId}/menu`, {
+      const response = await fetch(`http://88.222.214.15:5000/api/admin/${restaurantId}/menu`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -113,7 +113,7 @@ const handleImageUpload = (e) => {
   
   // Fetch Billing Data
   const fetchBillingData = async () => {
-    const res = await fetch(`http://localhost:5000/api/admin/${restaurantId}/billing`, {
+    const res = await fetch(`http://88.222.214.15:5000/api/admin/${restaurantId}/billing`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
@@ -332,7 +332,7 @@ const filteredOrders = groupedOrders.filter((order) => {
   };
   
   const fetchOrders = async () => {
-    const res = await fetch(`http://localhost:5000/api/admin/${restaurantId}/orders`, {
+    const res = await fetch(`http://88.222.214.15:5000/api/admin/${restaurantId}/orders`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
@@ -400,7 +400,7 @@ const totalSalesFromHistory = filteredOrders.reduce(
     }
   
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/${restaurantId}/menu`, {
+      const res = await fetch(`http://88.222.214.15:5000/api/admin/${restaurantId}/menu`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -435,7 +435,7 @@ const totalSalesFromHistory = filteredOrders.reduce(
   const handleDelete = async (itemId) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/admin/${restaurantId}/menu/${itemId}`,
+        `http://88.222.214.15:5000/api/admin/${restaurantId}/menu/${itemId}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -474,7 +474,7 @@ const totalSalesFromHistory = filteredOrders.reduce(
   
       const token = localStorage.getItem("token");
   
-      const response = await fetch(`http://localhost:5000/api/clearTable/${tableNumber}`, {
+      const response = await fetch(`http://88.222.214.15:5000/api/clearTable/${tableNumber}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -504,7 +504,7 @@ const totalSalesFromHistory = filteredOrders.reduce(
   const fetchOrderHistory = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:5000/api/admin/${restaurantId}/order-history`, {
+      const res = await fetch(`http://88.222.214.15:5000/api/admin/${restaurantId}/order-history`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -872,22 +872,17 @@ const handleStatusChange = (orderId, newStatus) => {
 {activeTab === "history" && (
   <div className="mt-12">
     <div className="mt-12">
-  {/* Section Heading */}
-  <h2 className="text-2xl font-semibold mb-6 text-orange-600 flex items-center gap-2">
+  {/* Section Heading */}<div className="mb-6 flex justify-between items-center">
+  <h2 className="text-2xl font-semibold text-orange-600 flex items-center gap-2">
     📜 Order History
   </h2>
 
   {/* 💰 Total Sales Summary Card */}
-  <div className="mb-6 flex justify-end">
-  <h2 className="text-2xl font-semibold mb-6 text-orange-600 flex items-center gap-2">
-    📜 Order History
-    <span className="text-base text-gray-600 font-normal gao-4">
-      | Total Sales: ₹{(totalSalesFromHistory || 0).toFixed(2)}
-    </span>
-  </h2>
+  <h5 className="text-2xl font-semibold text-green-600 flex items-center">
+    Total Sales: ₹{(totalSalesFromHistory || 0).toFixed(2)}
+  </h5>
+</div>
 
-
-  </div>
 </div>
 
 
