@@ -1,5 +1,4 @@
-import { createContext, useState, useEffect, useContext, useRef } from "react";
-import axios from "axios";
+import { useState, useEffect, useRef } from "react";
 function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("orders");
   const [menu, setMenu] = useState([]);
@@ -13,7 +12,80 @@ function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
   const [loadingHistory, setLoadingHistory] = useState(true);
-  const RestaurantContext = createContext();
+  // State for offers
+const [offers, setOffers] = useState([]);      // fetched offers
+const [newOffer, setNewOffer] = useState({     // for upload form
+  image: "",            // base64
+  imagePreview: "",     // preview URL
+});
+
+
+const handleOfferImageUpload = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  // Optional: check dimensions before uploading
+  const img = new Image();
+  img.onload = () => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setNewOffer({
+        image: reader.result,
+        imagePreview: reader.result,
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+  img.src = URL.createObjectURL(file);
+};
+
+useEffect(() => {
+  if (activeTab === "offers") {
+    fetchOffers();
+  }
+}, [activeTab]);
+
+const fetchOffers = async () => {
+  try {
+    const res = await fetch(
+      `http://Localhost:5000/api/admin/${restaurantId}/offers`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const data = await res.json();
+    if (res.ok) setOffers(data);
+  } catch (err) {
+    console.error("Error fetching offers:", err);
+  }
+};
+
+const handleAddOffer = async () => {
+  if (!newOffer.image) {
+    alert("Please select an image first.");
+    return;
+  }
+  try {
+    const res = await fetch(
+      `http://localhost:5000/api/admin/${restaurantId}/offers`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ image: newOffer.image }),
+      }
+    );
+    const result = await res.json();
+    if (res.ok) {
+      setOffers((prev) => [result, ...prev]);
+      setNewOffer({ image: "", imagePreview: "" });
+      alert("✅ Offer added!");
+    } else throw new Error(result.message);
+  } catch (err) {
+    console.error(err);
+    alert("❌ Failed to add offer.");
+  }
+};
+
 
   const [newDish, setNewDish] = useState({
     name: "",
@@ -25,7 +97,30 @@ function AdminDashboard() {
   });
   const audioRef = useRef(null);
 
+  const handleDeleteOffer = async (offerId) => {
+    if (!window.confirm("Are you sure you want to delete this offer?")) return;
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/admin/${restaurantId}/offers/${offerId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Failed to delete");
+      }
+      // remove from UI
+      setOffers((prev) => prev.filter((o) => o._id !== offerId));
+    } catch (e) {
+      console.error(e);
+      alert(e.message);
+    }
+  };
   
+  
+
 const handleImageUpload = (e) => {
   const file = e.target.files[0];
   if (file) {
@@ -44,7 +139,6 @@ const handleImageUpload = (e) => {
   const token = localStorage.getItem("token");
   if (audioRef.current) {
     audioRef.current.play().catch((err) => {
-      console.warn("🔇 Unable to play audio automatically:", err);
     });
   }
   const fetchRestaurantDetails = async () => {
@@ -227,12 +321,13 @@ const filteredOrders = groupedOrders.filter((order) => {
         <title>Bill - Table ${data.tableNumber}</title>
         <style>
           @page {
-        size: 2in auto;
+        size: 192px;
         margin: 0;
+        padding-left: -10px;
       }
       body {
         font-family: arial;
-        font-size: 9px;
+        font-size: 11px;
         text-align: center;
         margin: 0;
         padding: 0;
@@ -256,7 +351,7 @@ const filteredOrders = groupedOrders.filter((order) => {
       table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 9px;
+        font-size: 10px;
         table-layout: fixed;
       }
       th, td {
@@ -325,7 +420,7 @@ const filteredOrders = groupedOrders.filter((order) => {
     `;
          
     // Open a new window and insert the bill HTML
-    const printWindow = window.open("", "_blank", "width=250,height=auto");
+    const printWindow = window.open("", "_blank", "width=250px,height=auto");
     printWindow.document.write(billHTML);
     printWindow.document.close();
     printWindow.print();
@@ -599,6 +694,7 @@ const handleStatusChange = (orderId, newStatus) => {
       { key: "menu", label: "Menu" },
       { key: "addDish", label: "Add Dish" },
       { key: "history", label: "Order History" },
+      { key: "offers",   label: "Offers" },   
     ].map((tab) => (
       <li
         key={tab.key}
@@ -614,6 +710,63 @@ const handleStatusChange = (orderId, newStatus) => {
     ))}
   </ul>
 </div>
+{/* Offers Tab */}
+{activeTab === "offers" && (
+  <div className="mt-12 px-4">
+    <h2 className="text-2xl font-semibold mb-6 text-orange-600">
+      🎁 Offer Section
+    </h2>
+
+    {/* Upload form */}
+    <div className="bg-white p-6 rounded-lg shadow-md max-w-lg mx-auto mb-8">
+      <h3 className="mb-4 font-medium">Add New Offer</h3>
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleOfferImageUpload}
+        className="block mb-2"
+      />
+      {newOffer.imagePreview && (
+        <img
+          src={newOffer.imagePreview}
+          alt="Offer Preview"
+          className="w-full object-cover mb-4"
+          style={{ maxHeight: 270 }}
+        />
+      )}
+      <button
+        onClick={handleAddOffer}
+        className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+      >
+        Upload Offer
+      </button>
+    </div>
+
+    {/* Existing offers */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {offers.map((o) => (
+        <div key={o._id} className="relative border p-2 rounded">
+          <img
+            src={o.image}
+            alt="Offer"
+            className="w-full object-cover rounded"
+            style={{ height: 270, width: 600 }}
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Uploaded on: {new Date(o.createdAt).toLocaleString()}
+          </p>
+          <button
+            onClick={() => handleDeleteOffer(o._id)}
+            className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded"
+          >
+            Delete
+          </button>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
 {/* 🔔 New Order Popup */}
 {newOrderPopup && (
   <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">

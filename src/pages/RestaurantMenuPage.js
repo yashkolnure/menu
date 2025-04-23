@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -18,8 +18,30 @@ function RestaurantMenuPage() {
   const [showModal, setShowModal] = useState(false);
   const [showCart, setShowCart] = useState(false);
   const [restaurantDetails, setRestaurantDetails] = useState(null);
-  const [isCartClosing, setIsCartClosing] = useState(false);
-const [isModalClosing, setIsModalClosing] = useState(false);
+  const [setIsCartClosing] = useState(false);
+const [activeOffer, setActiveOffer] = useState(0);
+  // Offers carousel state
+  
+const carouselRef = useRef(null);
+  const [offers, setOffers] = useState([]);
+
+  // Fetch offers
+  useEffect(() => {
+    const fetchOffers = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(
+          `http://192.168.187.120:5000/api/admin/${id}/offers`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const data = await res.json();
+        if (res.ok && Array.isArray(data)) setOffers(data);
+      } catch (err) {
+        console.error("Failed to load offers", err);
+      }
+    };
+    fetchOffers();
+  }, [id]);
 
   useEffect(() => {
     if (tableFromURL) {
@@ -31,7 +53,7 @@ const [isModalClosing, setIsModalClosing] = useState(false);
     const fetchDetails = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://88.222.214.15:5000/api/admin/${id}/details`, {
+        const res = await fetch(`http://192.168.187.120:5000/api/admin/${id}/details`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -157,8 +179,49 @@ const [isModalClosing, setIsModalClosing] = useState(false);
           />
         </div>
       </header>
+      {/* Offer Carousel (with scroll‑snap & dots) */}
+{offers.length > 0 && (
+  <div className="bg-gray-100">
+    <div
+      ref={carouselRef}
+      onScroll={() => {
+        const container = carouselRef.current;
+        const slideWidth = container.clientWidth * 0.8 + 16; // 80% + gap
+        const idx = Math.round(container.scrollLeft / slideWidth);
+        setActiveOffer(idx);
+      }}
+      className="mt-4 w-full max-w-xl mx-auto mb-3 overflow-x-auto scroll-smooth px-4 cursor-grab"
+      style={{ scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}
+    >
+      <div className="flex space-x-4">
+        {offers.map((o) => (
+          <div key={o._id} className="flex-shrink-0 w-4/5 snap-start first:pl-4 last:pr-4">
+            <img
+              loading="lazy"
+              src={o.image}
+              alt=""
+              className="w-full h-[150px] max-h-[150px] object-cover rounded-lg"
+            />
+          </div>
+        ))}
+      </div>
+    </div>
 
-      <div className="min-h-screen bg-gray-100 p-3">
+    {/* pagination dots */}
+    <div className="flex justify-center space-x-2 pb-6 bg-gray-100">
+      {offers.map((_, idx) => (
+        <span
+          key={idx}
+          className={`block w-2 h-2 rounded-full transition-all ${
+            idx === activeOffer ? "bg-orange-600" : "bg-gray-300"
+          }`}
+        />
+      ))}
+    </div>
+  </div>
+)}
+
+  <div className="min-h-screen bg-gray-100 p-3">
         <div className="overflow-x-auto mb-4">
           <div className="flex gap-2 w-max px-2">
             {categories.map((cat) => (

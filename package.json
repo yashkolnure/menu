@@ -12,7 +12,7 @@
     "axios": "^1.8.4",
     "css-loader": "^7.1.2",
     "drei": "^2.2.21",
-    "framer-motion": "^12.6.5",
+    "framer-motion": "^12.7.4",
     "jspdf": "^3.0.1",
     "lucide-react": "^0.488.0",
     "postcss-loader": "^8.1.1",
