@@ -31,7 +31,7 @@ const carouselRef = useRef(null);
       try {
         const token = localStorage.getItem("token");
         const res = await fetch(
-          `http://192.168.187.120:5000/api/admin/${id}/offers`,
+          `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${id}/offers`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const data = await res.json();
@@ -53,7 +53,7 @@ const carouselRef = useRef(null);
     const fetchDetails = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://192.168.187.120:5000/api/admin/${id}/details`, {
+        const res = await fetch(`https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${id}/details`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();

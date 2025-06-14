@@ -9,7 +9,7 @@ function RestaurantDetails() {
   useEffect(() => {
     if (!restaurantId || !token) return;
 
-    fetch(`http://localhost:5000/api/admin/${restaurantId}/details`, {
+    fetch(`https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/details`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
