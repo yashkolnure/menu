@@ -129,7 +129,7 @@ const carouselRef = useRef(null);
     if (!tableNumber) return toast.error("Please enter a valid table number.");
 
     try {
-      const res = await fetch("http://88.222.214.15:5000/api/order", {
+      const res = await fetch("https://menubackend-git-main-yashkolnures-projects.vercel.app/api/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
