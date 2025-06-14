@@ -69,7 +69,7 @@ const carouselRef = useRef(null);
     const fetchMenu = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://88.222.214.15:5000/api/admin/${id}/menu`, {
+        const res = await fetch(`https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${id}/menu`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
