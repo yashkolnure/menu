@@ -23,7 +23,7 @@ const RestaurantRegister = () => {
     setError("");
 
     try {
-      const response = await axios.post("http://88.222.214.15:5000/api/admin/restaurant/register", formData);
+      const response = await axios.post("https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/restaurant/register", formData);
       setMessage(response.data.message);
       setFormData({ name: "", email: "", password: "", logo: "", address: "" }); 
     } catch (err) {
