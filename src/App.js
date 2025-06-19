@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import RestaurantMenuPage from "./pages/RestaurantMenuPage";
+import MenuPageWithoutCart from "./pages/MenuPageWithoutCart";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import RestaurantRegister from "./pages/RestaurantRegister";
@@ -12,6 +13,7 @@ function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/menu/:id" element={<MenuPageWithoutCart />} />
         <Route path="/restaurant/:id" element={<RestaurantMenuPage />} />
         <Route path="/admin" element={<AdminLoginPage />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
