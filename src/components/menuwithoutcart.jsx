@@ -15,7 +15,7 @@ function MenuCard({ item, addToCart }) {
   }, [expanded]);
 
   return (
-    <div className="relative bg-white/80 backdrop-blur-lg border border-gray-200 rounded-2xl shadow-md p-3 m-2 w-full max-w-md flex items-center hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full">
+    <div className="relative bg-white/80 backdrop-blur-lg border border-gray-200 rounded-2xl shadow-md p-4 m-1 w-full max-w-md flex items-center hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full">
       {/* Image */}
         {Boolean(item.image?.trim()) && !imageError && (
           <img
