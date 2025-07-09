@@ -28,6 +28,7 @@ function RestaurantDetails() {
       <p className="text-lg"><strong>Name:</strong> {restaurant.name}</p>
       <p className="text-lg"><strong>Address:</strong> {restaurant.address}</p>
       <p className="text-lg"><strong>Contact:</strong> {restaurant.contact}</p>
+      <p className="text-lg"><strong>ID:</strong> {restaurant.id || restaurantId}</p>
     </div>
   );
 }

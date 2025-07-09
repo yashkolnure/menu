@@ -1,7 +1,11 @@
 import React, { useState } from "react";
 import axios from "axios";
 
+const PAGE_PASSWORD = "Yash$5828"; // Change this to your desired access password
+
 const RestaurantRegister = () => {
+  const [accessPassword, setAccessPassword] = useState("");
+  const [isAuthorized, setIsAuthorized] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -12,6 +16,15 @@ const RestaurantRegister = () => {
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
+  const handleAccessSubmit = (e) => {
+    e.preventDefault();
+    if (accessPassword === PAGE_PASSWORD) {
+      setIsAuthorized(true);
+    } else {
+      alert("Incorrect access password.");
+    }
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -30,6 +43,29 @@ const RestaurantRegister = () => {
       setError(err.response?.data?.message || "Something went wrong");
     }
   };
+
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="bg-white shadow-lg rounded-lg p-8 max-w-sm w-full">
+          <h2 className="text-xl font-bold text-center mb-4">Enter Access Password</h2>
+          <form onSubmit={handleAccessSubmit} className="space-y-4">
+            <input
+              type="password"
+              value={accessPassword}
+              onChange={(e) => setAccessPassword(e.target.value)}
+              placeholder="Access Password"
+              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+              required
+            />
+            <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition">
+              Enter
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
