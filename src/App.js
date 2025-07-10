@@ -7,8 +7,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import RestaurantRegister from "./pages/RestaurantRegister";
 import LandingPage from './pages/LandingPage';
 import RestaurantDetails from "./pages/RestaurantDetails";
-import BulkMenuUploader from "./pages/bulkupload";
 import BulkUploadmenu from "./pages/freefree";
+import AdminLoginPage1 from "./pages/loginbulk";
 
 
 function App() {
@@ -23,7 +23,7 @@ function App() {
         <Route path="/restaurant-details" element={<RestaurantDetails />} />
         <Route path="/" element={<LandingPage />} />
         <Route path="/freefree" element={<BulkUploadmenu />} />
-        <Route path="/upload-menu" element={<BulkMenuUploader />} />
+        <Route path="/login1" element={<AdminLoginPage1 />} />
         {/* More routes coming later like admin login/dashboard */}
       </Routes>
     </Router>
