@@ -9,6 +9,7 @@ import LandingPage from './pages/LandingPage';
 import RestaurantDetails from "./pages/RestaurantDetails";
 import BulkUploadmenu from "./pages/freefree";
 import AdminLoginPage1 from "./pages/loginbulk";
+import UserMenuCreator from "./pages/UserMenuCreator";
 
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/freefree" element={<BulkUploadmenu />} />
         <Route path="/login1" element={<AdminLoginPage1 />} />
+        <Route path="/free" element={<UserMenuCreator />} />
         {/* More routes coming later like admin login/dashboard */}
       </Routes>
     </Router>
