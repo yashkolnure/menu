@@ -152,6 +152,81 @@ function UserMenuCreator() {
         💡 Tip: Click on a dish name to expand and edit its details. You can add new categories and menu items easily below.
       </div>
 
+      {/* Global Add Dish Form */}
+<div className="mb-6 p-4 border rounded-md bg-green-50">
+  <h3 className="font-semibold mb-2 text-green-700">🍽️ Add New Dish</h3>
+
+  <button
+    className="w-full px-4 py-3 text-white bg-blue-600 hover:bg-blue-700 rounded text-lg font-semibold"
+    onClick={() => setExpandedItems(prev => ({ ...prev, addDish: !prev.addDish }))}
+  >
+    {expandedItems.addDish ? "🔽 Hide Dish Form" : "➕ Add New Dish"}
+  </button>
+
+  {expandedItems.addDish && (
+    <div className="mt-4 space-y-3">
+      <input
+        className="w-full border p-2 rounded"
+        placeholder="Dish Name"
+        value={customInputs.name || ""}
+        onChange={(e) => setCustomInputs(prev => ({ ...prev, name: e.target.value }))}
+      />
+      <input
+        className="w-full border p-2 rounded"
+        placeholder="Description"
+        value={customInputs.description || ""}
+        onChange={(e) => setCustomInputs(prev => ({ ...prev, description: e.target.value }))}
+      />
+      <input
+        className="w-full border p-2 rounded"
+        type="number"
+        placeholder="Price"
+        value={customInputs.price || ""}
+        onChange={(e) => setCustomInputs(prev => ({ ...prev, price: e.target.value }))}
+      />
+      <select
+        className="w-full border p-2 rounded"
+        value={customInputs.category || ""}
+        onChange={(e) => setCustomInputs(prev => ({ ...prev, category: e.target.value }))}
+      >
+        <option value="">Select Category</option>
+        {categories.map((cat, i) => (
+          <option key={i} value={cat}>{cat}</option>
+        ))}
+        <option value="custom">➕ Custom...</option>
+      </select>
+      {customInputs.category === "custom" && (
+        <input
+          className="mt-2 w-full border p-2 rounded"
+          placeholder="Enter custom category"
+          value={customInputs.customCategory || ""}
+          onChange={(e) => setCustomInputs(prev => ({ ...prev, customCategory: e.target.value }))}
+        />
+      )}
+      <button
+        className="w-full px-4 py-2 text-white bg-green-600 hover:bg-green-700 rounded"
+        onClick={() => {
+          const name = customInputs.name?.trim();
+          const price = parseFloat(customInputs.price);
+          const category = customInputs.category === "custom" ? customInputs.customCategory : customInputs.category;
+
+          if (!name || !category || isNaN(price)) {
+            alert("Please fill all fields correctly.");
+            return;
+          }
+
+          handleAddItem(category, true);
+          setCustomInputs({});
+          setExpandedItems(prev => ({ ...prev, addDish: false }));
+        }}
+      >
+        ✅ Save Dish
+      </button>
+    </div>
+  )}
+</div>
+
+
       {/* New Category Section */}
       <div className="mb-6 p-4 border rounded-md bg-yellow-50">
         <h3 className="font-semibold mb-2 text-yellow-700">➕ Add New Category</h3>
