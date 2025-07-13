@@ -246,27 +246,6 @@ function UserMenuCreator() {
         )}
       </div>
 
-      {/* New Category Section */}
-      <div className="mb-6 p-4 border rounded-md bg-yellow-50">
-        <h3 className="font-semibold mb-2 text-yellow-700">➕ Add New Category</h3>
-        <div className="flex flex-col sm:flex-row gap-2">
-          <input
-            type="text"
-            placeholder="Enter new category name"
-            className="border p-2 rounded w-full sm:w-2/3"
-            value={newCategoryName}
-            onChange={(e) => setNewCategoryName(e.target.value)}
-          />
-          <button
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            onClick={handleNewCategoryAdd}
-          >
-            Add & Edit
-          </button>
-        </div>
-        <p className="text-xs text-gray-500 mt-1">This will also open the new item for editing automatically.</p>
-      </div>
-
       {message && <p className="text-green-600 mb-3">{message}</p>}
       {error && <p className="text-red-600 mb-3">{error}</p>}
 
@@ -274,12 +253,7 @@ function UserMenuCreator() {
         <div key={category} className="mb-6">
           <div className="flex justify-between items-center mb-3">
             <h2 className="text-xl font-semibold">{category}</h2>
-            <button
-              onClick={() => handleAddItem(category, true)}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              + Add Item
-            </button>
+
           </div>
 
           <div className="space-y-4">
