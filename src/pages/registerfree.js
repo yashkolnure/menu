@@ -8,7 +8,7 @@ const RegisterFreePage = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    mobile: "",
+    contact: "", // ✅ using contact instead of mobile
     address: "",
     logo: "",
     password: "",
@@ -40,7 +40,7 @@ const RegisterFreePage = () => {
         imageData,
         {
           headers: {
-            "Authorization": "Basic " + btoa(`${WP_USERNAME}:${WP_APP_PASSWORD}`),
+            Authorization: "Basic " + btoa(`${WP_USERNAME}:${WP_APP_PASSWORD}`),
             "Content-Disposition": `attachment; filename="${file.name}"`,
           },
         }
@@ -68,16 +68,11 @@ const RegisterFreePage = () => {
 
     try {
       const res = await axios.post(
-        "https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/restaurant/register",
+        "https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/restaurants",
         formData
       );
 
-      const { token, restaurant } = res.data;
-
-      localStorage.setItem("token", token);
-      localStorage.setItem("restaurantId", restaurant._id);
-
-      setMessage("✅ Registered & Logged In!");
+      setMessage("✅ Registered successfully!");
       setTimeout(() => navigate("/free"), 1000);
     } catch (err) {
       setError(err.response?.data?.message || "❌ Registration failed.");
@@ -115,9 +110,9 @@ const RegisterFreePage = () => {
 
           <input
             type="text"
-            name="mobile"
+            name="contact" // ✅ contact field
             placeholder="Mobile Number"
-            value={formData.mobile}
+            value={formData.contact}
             onChange={handleChange}
             required
             className="w-full p-3 border border-gray-300 rounded"
