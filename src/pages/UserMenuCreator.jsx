@@ -9,7 +9,11 @@ function UserMenuCreator() {
   const [error, setError] = useState("");
   const [savingIndex, setSavingIndex] = useState(null);
   const [deletingIndex, setDeletingIndex] = useState(null);
-  const [addingCategory, setAddingCategory] = useState("");
+  const [expandedItems, setExpandedItems] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [faqOpen, setFaqOpen] = useState(null);
 
   const restaurantId = localStorage.getItem("restaurantId");
   const token = localStorage.getItem("token");
@@ -19,6 +23,7 @@ function UserMenuCreator() {
   useEffect(() => {
     if (!restaurantId || !token) {
       setError("Login required.");
+      setLoading(false);
       return;
     }
 
@@ -26,12 +31,13 @@ function UserMenuCreator() {
       try {
         const res = await axios.get(`${apiBase}/api/admin/${restaurantId}/menu`, { headers });
         setMenuItems(res.data);
-
         const uniqueCategories = [...new Set(res.data.map(item => item.category).filter(Boolean))];
         setCategories(uniqueCategories);
       } catch (err) {
         console.error(err);
         setError("Failed to load menu.");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -68,22 +74,29 @@ function UserMenuCreator() {
     }
   };
 
-  const handleAddItem = async (category) => {
-    try {
-      setAddingCategory(category);
-      setMenuItems([
-        ...menuItems,
-        {
-          name: "",
-          category,
-          description: "",
-          price: 0,
-          image: "data:image/webp;base64,...",
-          restaurantId,
-        },
-      ]);
-    } finally {
-      setAddingCategory("");
+  const handleAddItem = (category, expand = false) => {
+    const newItem = {
+      name: "",
+      category,
+      description: "",
+      price: 0,
+      image: "data:image/webp;base64,...",
+      restaurantId,
+    };
+    const tempId = `temp-${Date.now()}`;
+    const updatedItems = [...menuItems, newItem];
+    setMenuItems(updatedItems);
+    if (!categories.includes(category)) {
+      setCategories([...categories, category]);
+    }
+    if (expand) {
+      setTimeout(() => {
+        const newIndex = updatedItems.length - 1;
+        setExpandedItems(prev => ({
+          ...prev,
+          [tempId]: true,
+        }));
+      }, 100);
     }
   };
 
@@ -107,53 +120,99 @@ function UserMenuCreator() {
     }
   };
 
+  const toggleExpanded = (id) => {
+    setExpandedItems((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  const handleNewCategoryAdd = () => {
+    const name = newCategoryName.trim();
+    if (!name) return;
+    handleAddItem(name, true);
+    setNewCategoryName("");
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-xl text-gray-600">
+        ⏳ Loading menu, please wait...
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">📋 Edit Your Menu</h1>
+    <div className="max-w-3xl mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">📋 Edit Your Menu</h1>
+
+      <div className="mb-4 p-3 text-sm bg-blue-50 rounded text-blue-800 border border-blue-200">
+        💡 Tip: Click on a dish name to expand and edit its details. You can add new categories and menu items easily below.
+      </div>
+
+      {/* New Category Section */}
+      <div className="mb-6 p-4 border rounded-md bg-yellow-50">
+        <h3 className="font-semibold mb-2 text-yellow-700">➕ Add New Category</h3>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <input
+            type="text"
+            placeholder="Enter new category name"
+            className="border p-2 rounded w-full sm:w-2/3"
+            value={newCategoryName}
+            onChange={(e) => setNewCategoryName(e.target.value)}
+          />
+          <button
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            onClick={handleNewCategoryAdd}
+          >
+            Add & Edit
+          </button>
+        </div>
+        <p className="text-xs text-gray-500 mt-1">This will also open the new item for editing automatically.</p>
+      </div>
 
       {message && <p className="text-green-600 mb-3">{message}</p>}
       {error && <p className="text-red-600 mb-3">{error}</p>}
 
       {Object.entries(groupedItems).map(([category, items]) => (
-        <div key={category} className="mb-8 border p-4 rounded shadow bg-white">
+        <div key={category} className="mb-6">
           <div className="flex justify-between items-center mb-3">
             <h2 className="text-xl font-semibold">{category}</h2>
             <button
-              onClick={() => handleAddItem(category)}
-              className={`px-3 py-1 rounded text-white ${
-                addingCategory === category ? "bg-gray-400 cursor-wait" : "bg-blue-500 hover:bg-blue-600"
-              }`}
-              disabled={addingCategory === category}
+              onClick={() => handleAddItem(category, true)}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
-              {addingCategory === category ? "Adding..." : "+ Add Item"}
+              + Add Item
             </button>
           </div>
 
-          <table className="w-full border text-sm">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="p-2 border">Name</th>
-                <th className="p-2 border">Category</th>
-                <th className="p-2 border">Description</th>
-                <th className="p-2 border">Price</th>
-                <th className="p-2 border">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item, idx) => {
-                const globalIndex = menuItems.findIndex((m) => m === item);
-                return (
-                  <tr key={item._id || idx}>
-                    <td className="p-2 border">
+          <div className="space-y-4">
+            {items.map((item, idx) => {
+              const globalIndex = menuItems.findIndex((m) => m === item);
+              const itemId = item._id || `${item.name}-${globalIndex}`;
+              const isExpanded = expandedItems[itemId];
+
+              return (
+                <div key={itemId} className="border rounded-md shadow p-3 bg-white">
+                  <div
+                    className="flex justify-between items-center cursor-pointer"
+                    onClick={() => toggleExpanded(itemId)}
+                    title="Click to expand and edit"
+                  >
+                    <h3 className="text-lg font-semibold">{item.name || "Unnamed Dish"}</h3>
+                    <span className="text-sm text-blue-500">{isExpanded ? "Hide" : "Edit"}</span>
+                  </div>
+
+                  {isExpanded && (
+                    <div className="mt-4 space-y-3">
                       <input
-                        className="w-full border p-1 rounded"
+                        className="w-full border p-2 rounded"
                         value={item.name}
+                        placeholder="Dish Name"
                         onChange={(e) => handleInputChange(globalIndex, "name", e.target.value)}
                       />
-                    </td>
-                    <td className="p-2 border">
                       <select
-                        className="w-full border p-1 rounded"
+                        className="w-full border p-2 rounded"
                         value={categories.includes(item.category) ? item.category : "custom"}
                         onChange={(e) => handleCategoryChange(globalIndex, e.target.value)}
                       >
@@ -164,72 +223,149 @@ function UserMenuCreator() {
                       </select>
                       {customInputs[globalIndex] !== undefined && (
                         <input
-                          type="text"
-                          className="mt-1 w-full border p-1 rounded"
+                          className="mt-2 w-full border p-2 rounded"
                           placeholder="Enter custom category"
                           value={item.category}
                           onChange={(e) => handleCustomCategoryInput(globalIndex, e.target.value)}
                         />
                       )}
-                    </td>
-                    <td className="p-2 border">
                       <input
-                        className="w-full border p-1 rounded"
+                        className="w-full border p-2 rounded"
+                        placeholder="Description"
                         value={item.description}
                         onChange={(e) => handleInputChange(globalIndex, "description", e.target.value)}
                       />
-                    </td>
-                    <td className="p-2 border">
                       <input
-                        className="w-full border p-1 rounded"
+                        className="w-full border p-2 rounded"
                         type="number"
+                        placeholder="Price"
                         value={item.price}
                         onChange={(e) => handleInputChange(globalIndex, "price", e.target.value)}
                       />
-                    </td>
-                    <td className="p-2 border text-center space-x-2">
-                      <button
-                        onClick={async () => {
-                          try {
-                            setSavingIndex(globalIndex);
-                            const updatedItem = menuItems[globalIndex];
-                            if (updatedItem._id) {
-                              await axios.put(`${apiBase}/api/admin/${restaurantId}/menu/${updatedItem._id}`, updatedItem, { headers });
-                            } else {
-                              await axios.post(`${apiBase}/api/admin/${restaurantId}/menu`, updatedItem, { headers });
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={async () => {
+                            try {
+                              setSavingIndex(globalIndex);
+                              const updatedItem = menuItems[globalIndex];
+                              if (updatedItem._id) {
+                                await axios.put(`${apiBase}/api/admin/${restaurantId}/menu/${updatedItem._id}`, updatedItem, { headers });
+                              } else {
+                                await axios.post(`${apiBase}/api/admin/${restaurantId}/menu`, updatedItem, { headers });
+                              }
+                              setMessage("Item saved successfully");
+                            } catch (err) {
+                              console.error(err);
+                              setError("Error saving item");
+                            } finally {
+                              setSavingIndex(null);
                             }
-                            setMessage("Item saved successfully");
-                          } catch (err) {
-                            console.error(err);
-                            setError("Error saving item");
-                          } finally {
-                            setSavingIndex(null);
-                          }
-                        }}
-                        className={`px-3 py-1 rounded text-white ${
-                          savingIndex === globalIndex ? "bg-gray-400 cursor-wait" : "bg-green-600 hover:bg-green-700"
-                        }`}
-                        disabled={savingIndex === globalIndex}
-                      >
-                        {savingIndex === globalIndex ? "Saving..." : "Save"}
-                      </button>
-                      <button
-                        onClick={() => handleDelete(item._id, globalIndex)}
-                        className={`px-3 py-1 rounded text-white ${
-                          deletingIndex === globalIndex ? "bg-gray-400 cursor-wait" : "bg-red-500 hover:bg-red-600"
-                        }`}
-                        disabled={deletingIndex === globalIndex}
-                      >
-                        {deletingIndex === globalIndex ? "Deleting..." : "Delete"}
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                          }}
+                          className="px-3 py-1 rounded text-white bg-green-600 hover:bg-green-700"
+                        >
+                          {savingIndex === globalIndex ? "Saving..." : "Save"}
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item._id, globalIndex)}
+                          className="px-3 py-1 rounded text-white bg-red-500 hover:bg-red-600"
+                        >
+                          {deletingIndex === globalIndex ? "Deleting..." : "Delete"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       ))}
+
+      {/* FAQ Section */}
+      <div className="mt-10 p-4 border-t pt-6">
+        <h3 className="text-xl font-bold mb-4">❓ Frequently Asked Questions</h3>
+        <div className="space-y-3">
+          {[
+            {
+              question: "How do I add a new item?",
+              answer: "Click on the “+ Add Item” button next to any category.",
+            },
+            {
+              question: "How do I add a new category?",
+              answer: "Use the yellow box at the top to type a category name and click Add & Edit.",
+            },
+            {
+              question: "How do I save changes?",
+              answer: "Click the Save button after editing any item field.",
+            },
+            {
+              question: "How do I delete an item?",
+              answer: "Click the Delete button under an expanded item.",
+            },
+          ].map((faq, i) => (
+            <div key={i} className="border rounded-md">
+              <button
+                onClick={() => setFaqOpen(faqOpen === i ? null : i)}
+                className="w-full text-left p-3 bg-gray-100 hover:bg-gray-200 font-medium"
+              >
+                {faq.question}
+              </button>
+              {faqOpen === i && <div className="p-3 text-sm bg-white">{faq.answer}</div>}
+            </div>
+          ))}
+        </div>
+      </div>
+
+{/* Footer / Promo Section */}
+<div className="mt-12 border-t pt-6 text-center text-sm text-gray-600">
+  <p className="font-semibold text-gray-800">Powered by <span className="text-blue-600">Petoba</span> by Avenirya Solutions OPC Pvt Ltd</p>
+  
+  <div className="mt-6 p-4 max-w-xl mx-auto bg-yellow-50 border border-yellow-300 rounded-lg shadow-sm">
+    <h3 className="text-lg font-bold text-yellow-800 mb-2">📦 Too busy to upload your menu?</h3>
+    <p className="text-sm text-gray-800 mb-4">Let our team handle it for you. We’ll add your full menu in just <span className="font-semibold text-green-700">₹199</span>, including a WhatsApp sticky menu setup.</p>
+    
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        const name = e.target.restaurantName.value.trim();
+        if (name) {
+          window.open(`https://wa.me/917499835687?text=Hello%2C%20I%20want%20Petoba%20team%20to%20upload%20my%20menu%20for%20Rs199.%20Restaurant%20Name%3A%20${encodeURIComponent(name)}`, "_blank");
+        } else {
+          alert("Please enter your restaurant name.");
+        }
+      }}
+      className="flex flex-col sm:flex-row gap-2 items-center justify-center"
+    >
+      <input
+        type="text"
+        name="restaurantName"
+        placeholder="Your Restaurant Name"
+        className="border p-2 rounded w-full sm:w-auto"
+        required
+      />
+      <button
+        type="submit"
+        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+      >
+        📲 Contact on WhatsApp
+      </button>
+    </form>
+
+    <p className="text-xs text-gray-500 mt-2">We will reply within a few hours with next steps.</p>
+  </div>
+</div>
+<a
+  href="https://wa.me/917499835687?text=Hello%2C%20I%20want%20help%20with%20Petoba%20menu%20upload."
+  target="_blank"
+  rel="noopener noreferrer"
+  className="fixed bottom-5 right-5 z-50 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2"
+>
+  <img src="https://img.icons8.com/color/48/000000/whatsapp--v1.png" alt="WhatsApp" className="w-5 h-5" />
+  Chat with Us
+</a>
+
+
+
     </div>
   );
 }

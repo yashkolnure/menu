@@ -9,6 +9,7 @@ import LandingPage from './pages/LandingPage';
 import RestaurantDetails from "./pages/RestaurantDetails";
 import BulkUploadmenu from "./pages/freefree";
 import AdminLoginPage1 from "./pages/loginbulk";
+import Loginfree from "./pages/loginfree";
 import UserMenuCreator from "./pages/UserMenuCreator";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import NotFound from "./pages/NotFound"; // ✅ Adjust path if needed
@@ -28,6 +29,7 @@ function App() {
         <Route path="/freefree" element={<BulkUploadmenu />} />
         <Route path="/login1" element={<AdminLoginPage1 />} />
         <Route path="/free" element={<UserMenuCreator />} />
+        <Route path="/login" element={<Loginfree />} />
         <Route path="/yashkolnure" element={<SuperAdminDashboard />} />
         <Route path="*" element={<NotFound />} />
         {/* More routes coming later like admin login/dashboard */}
