@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import html2canvas from "html2canvas";
+import { QRCodeCanvas } from "qrcode.react";
 
 function UserMenuCreator() {
   const [menuItems, setMenuItems] = useState([]);
@@ -280,6 +282,92 @@ function UserMenuCreator() {
           </div>
         </div>
       ))}
+
+      {/* QR Code Template Section */}
+<div className="mt-12 border-t pt-10">
+  <h3 className="text-2xl font-bold mb-8 text-center text-gray-800">
+    📱 Restaurant QR Code Stickers
+  </h3>
+
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+    {[
+      {
+        id: "template1",
+        img: "https://website.avenirya.com/wp-content/uploads/2025/07/to-See-the-Full-Menu-2.png",
+      },
+      {
+        id: "template2",
+        img: "https://website.avenirya.com/wp-content/uploads/2025/07/Beige-Minimalist-Discount-QR-Code-Business-Square-Sticker-600-x-900-px.png",
+      },
+      {
+        id: "template3",
+        img: "https://website.avenirya.com/wp-content/uploads/2025/07/Orange-and-Yellow-Modern-Simple-Scan-for-Menu-Rectangle-Sticker.png",
+      },
+    ].map((template, index) => (
+      <div
+        key={template.id}
+        className="bg-white rounded-xl shadow-md p-4 flex flex-col items-center"
+      >
+        <div
+          id={template.id}
+          className="relative w-full max-w-xs rounded-md overflow-hidden border border-gray-200"
+        >
+          <img
+            src={template.img}
+            alt={`QR Template ${index + 1}`}
+            className="w-full h-auto object-contain"
+            crossOrigin="anonymous"
+          />
+          <div
+            className="absolute top-1/2 left-1/2"
+            style={{
+              transform: "translate(-50%, -50%)",
+              width: "45%",
+            }}
+          >
+            <QRCodeCanvas
+              value={`https://app.avenirya.com/menu/${restaurantId}`}
+              size={180}
+              bgColor="transparent"
+              fgColor="#000000"
+              level="H"
+              includeMargin={false}
+              style={{ width: "100%", height: "auto" }}
+            />
+          </div>
+        </div>
+
+        <button
+          onClick={() => {
+            const qrElement = document.getElementById(template.id);
+            html2canvas(qrElement, { useCORS: true, scale: 3 }).then((canvas) => {
+              const link = document.createElement("a");
+              link.download = `menu_qr_${restaurantId}_${template.id}.png`;
+              link.href = canvas.toDataURL("image/png");
+              link.click();
+            });
+          }}
+          className="mt-4 bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-full shadow transition-all duration-200"
+        >
+          ⬇️ Download QR
+        </button>
+      </div>
+    ))}
+  </div>
+
+  <p className="mt-10 text-center text-sm text-gray-500">
+    Link to your live menu:&nbsp;
+    <a
+      href={`https://app.avenirya.com/menu/${restaurantId}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-blue-600 underline"
+    >
+      https://app.avenirya.com/menu/{restaurantId}
+    </a>
+  </p>
+</div>
+
 
       {/* FAQ Section */}
       <div className="mt-10 p-4 border-t pt-6">
