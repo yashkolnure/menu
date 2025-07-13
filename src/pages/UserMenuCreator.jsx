@@ -72,26 +72,40 @@ function UserMenuCreator() {
       setError("Delete failed");
     } finally {
       setDeletingIndex(null);
+
     }
   };
 
-  const handleAddItem = (item, expand = false) => {
-    const tempId = `temp-${Date.now()}`;
-    const updatedItems = [...menuItems, item];
+  const handleAddItem = async (item, expand = false) => {
+  try {
+    setMessage("");
+    setError("");
+    // POST to backend
+    const res = await axios.post(
+      `${apiBase}/api/admin/${restaurantId}/menu`,
+      item,
+      { headers }
+    );
+    const savedItem = res.data;
+    const updatedItems = [...menuItems, savedItem];
     setMenuItems(updatedItems);
-    if (!categories.includes(item.category)) {
-      setCategories([...categories, item.category]);
+    if (!categories.includes(savedItem.category)) {
+      setCategories([...categories, savedItem.category]);
     }
     if (expand) {
       setTimeout(() => {
-        setExpandedItems(prev => ({
+        setExpandedItems((prev) => ({
           ...prev,
-          [tempId]: true,
+          [savedItem._id || `temp-${Date.now()}`]: true,
         }));
       }, 100);
     }
-  };
-
+    setMessage("Dish added successfully!");
+  } catch (err) {
+    setError("Failed to add dish.");
+    console.error(err);
+  }
+};
   const handleCategoryChange = (index, value) => {
     if (value === "custom") {
       setCustomInputs({ ...customInputs, [index]: "" });
