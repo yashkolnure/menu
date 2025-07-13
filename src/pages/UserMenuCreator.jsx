@@ -437,41 +437,7 @@ function UserMenuCreator() {
 </div>
 
 
-      {/* FAQ Section */}
-      <div className="mt-10 p-4 border-t pt-6">
-        <h3 className="text-xl font-bold mb-4">❓ Frequently Asked Questions</h3>
-        <div className="space-y-3">
-          {[
-            {
-              question: "How do I add a new item?",
-              answer: "Click on the “+ Add Item” button next to any category.",
-            },
-            {
-              question: "How do I add a new category?",
-              answer: "Use the yellow box at the top to type a category name and click Add & Edit.",
-            },
-            {
-              question: "How do I save changes?",
-              answer: "Click the Save button after editing any item field.",
-            },
-            {
-              question: "How do I delete an item?",
-              answer: "Click the Delete button under an expanded item.",
-            },
-          ].map((faq, i) => (
-            <div key={i} className="border rounded-md">
-              <button
-                onClick={() => setFaqOpen(faqOpen === i ? null : i)}
-                className="w-full text-left p-3 bg-gray-100 hover:bg-gray-200 font-medium"
-              >
-                {faq.question}
-              </button>
-              {faqOpen === i && <div className="p-3 text-sm bg-white">{faq.answer}</div>}
-            </div>
-          ))}
-        </div>
-      </div>
-
+     
 {/* Footer / Promo Section */}
 <div className="mt-12 border-t pt-6 text-center text-sm text-gray-600">
   <p className="font-semibold text-gray-800">Powered by <span className="text-blue-600">Petoba</span> by Avenirya Solutions OPC Pvt Ltd</p>
