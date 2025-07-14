@@ -19,6 +19,17 @@ const [newOffer, setNewOffer] = useState({     // for upload form
   imagePreview: "",     // preview URL
 });
 
+// Add this state at the top with other useState hooks
+const [categories, setCategories] = useState([]);
+
+// Update categories whenever menu changes
+useEffect(() => {
+  const uniqueCategories = Array.from(
+    new Set(menu.map((item) => item.category).filter(Boolean))
+  );
+  setCategories(uniqueCategories);
+}, [menu]);
+
 
 const handleOfferImageUpload = (e) => {
   const file = e.target.files[0];
@@ -486,47 +497,51 @@ const totalSalesFromHistory = filteredOrders.reduce(
   0
 );
 
-
-  // Handle Add Dish
-  const handleAddDish = async () => {
-    if (!newDish.name || !newDish.category || !newDish.price || !newDish.image) {
-      alert("Please fill in all fields before adding the dish.");
+const handleAddDish = async () => {
+  let category = newDish.category;
+  if (category === "__custom__") {
+    category = newDish.customCategory?.trim();
+    if (!category) {
+      alert("Please enter a custom category.");
       return;
     }
-  
-    try {
-      const res = await fetch(`https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ 
-          ...newDish, 
-          price: parseFloat(newDish.price) 
-        }),
-      });
-  
-      const data = await res.json();
-  
-      if (res.ok) {
-        // Refresh the menu list
-        fetchMenu();
-  
-        // Clear form fields
-        setNewDish({ name: "", category: "", description: "", price: "", image: "" });
-  
-        alert("✅ Dish added successfully!");
-      } else {
-        alert(data.message || "❌ Failed to add dish.");
-      }
-    } catch (err) {
-      console.error("Error adding dish:", err);
-      alert("❌ Error adding dish. Please try again.");
+  }
+
+  if (!newDish.name || !category || !newDish.price || !newDish.image) {
+    alert("Please fill in all fields before adding the dish.");
+    return;
+  }
+
+  try {
+    const res = await fetch(`https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ...newDish,
+        category,
+        price: parseFloat(newDish.price),
+      }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      fetchMenu();
+      setNewDish({ name: "", category: "", description: "", price: "", image: "", customCategory: "" });
+      alert("✅ Dish added successfully!");
+    } else {
+      alert(data.message || "❌ Failed to add dish.");
     }
-  };
-  
-  // Handle Delete Dish
+  } catch (err) {
+    console.error("Error adding dish:", err);
+    alert("❌ Error adding dish. Please try again.");
+  }
+};
+
+// Handle Delete Dish
   const handleDelete = async (itemId) => {
     try {
       const res = await fetch(
@@ -844,13 +859,34 @@ const handleStatusChange = (orderId, newStatus) => {
         onChange={(e) => setNewDish({ ...newDish, name: e.target.value })}
         className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
       />
-      <input
-        type="text"
-        placeholder="Category"
-        value={newDish.category}
-        onChange={(e) => setNewDish({ ...newDish, category: e.target.value })}
-        className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-      />
+     {/* Category Dropdown */}
+<select
+  value={newDish.category}
+  onChange={(e) => setNewDish({ ...newDish, category: e.target.value })}
+  className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+>
+  <option value="">Select Category</option>
+  {categories.map((cat, idx) => (
+    <option key={idx} value={cat}>{cat}</option>
+  ))}
+  <option value="__custom__">➕ Custom</option>
+</select>
+
+{/* Custom Category Input */}
+{newDish.category === "__custom__" && (
+  <input
+    type="text"
+    placeholder="Enter new category"
+    value={newDish.customCategory || ""}
+    onChange={(e) =>
+      setNewDish((prev) => ({
+        ...prev,
+        customCategory: e.target.value,
+      }))
+    }
+    className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 mt-2"
+  />
+)}
       <input
         type="text"
         placeholder="Description"
