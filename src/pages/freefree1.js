@@ -12,9 +12,11 @@ function BulkUploadmenu1() {
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const imagePasteRef = useRef(null);
+  
 
   useEffect(() => {
     if (!restaurantId || !token) return;
@@ -61,6 +63,15 @@ function BulkUploadmenu1() {
       if (ref) ref.removeEventListener("paste", handlePaste);
     };
   }, []);
+useEffect(() => {
+  if (groupedItems.length && !selectedCategory) {
+    setSelectedCategory(groupedItems[0].category);
+  }
+}, [existingItems]);
+
+
+
+
 
   const handleItemChange = (e) => {
     const { name, value } = e.target;
@@ -207,23 +218,47 @@ function BulkUploadmenu1() {
 
       {existingItems.length > 0 && (
         <div className="mb-10">
-          <h3 className="text-xl font-semibold mb-4">Existing Menu Items</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-            {existingItems.map((item, i) => (
-              <div key={i} className="p-4 border rounded bg-white shadow relative">
-                <h4 className="font-bold">{item.name}</h4>
-                <p className="text-sm">{item.description}</p>
-                <p className="text-green-700 font-semibold">₹{item.price}</p>
-                {item.image && <img src={item.image} alt="item" className="h-24 w-full object-cover mt-2" />}
-                <div className="flex gap-2 mt-2">
-                  <button onClick={() => handleEditItem(item)} className="text-xs px-2 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded">Edit</button>
-                  <button onClick={() => handleDelete(item._id)} className="text-xs px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded">Delete</button>
+            <h3 className="text-xl font-semibold mb-4">Existing Menu Items</h3>
+            {groupedItems
+            .sort((a, b) => a.category.localeCompare(b.category))
+            .map((group, index) => (
+                <div key={index} className="mb-6">
+                <h4 className="text-lg font-bold mb-2 text-blue-700 border-b pb-1">{group.category}</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                    {group.items.map((item, i) => (
+                    <div key={i} className="p-4 border rounded bg-white shadow relative">
+                        <h4 className="font-bold">{item.name}</h4>
+                        <p className="text-sm">{item.description}</p>
+                        <p className="text-green-700 font-semibold">₹{item.price}</p>
+                        {item.image && (
+                        <img
+                            src={item.image}
+                            alt={item.name}
+                            className="h-24 w-full object-cover mt-2 rounded"
+                        />
+                        )}
+                        <div className="flex gap-2 mt-2">
+                        <button
+                            onClick={() => handleEditItem(item)}
+                            className="text-xs px-2 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded"
+                        >
+                            Edit
+                        </button>
+                        <button
+                            onClick={() => handleDelete(item._id)}
+                            className="text-xs px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded"
+                        >
+                            Delete
+                        </button>
+                        </div>
+                    </div>
+                    ))}
                 </div>
-              </div>
+                </div>
             ))}
-          </div>
         </div>
-      )}
+        )}
+
     </div>
   );
 }
