@@ -8,6 +8,7 @@ import RestaurantRegister from "./pages/RestaurantRegister";
 import LandingPage from './pages/LandingPage';
 import RestaurantDetails from "./pages/RestaurantDetails";
 import BulkUploadmenu from "./pages/freefree";
+import BulkUploadmenu1 from "./pages/freefree1";
 import AdminLoginPage1 from "./pages/loginbulk";
 import Loginfree from "./pages/loginfree";
 import UserMenuCreator from "./pages/UserMenuCreator";
@@ -28,6 +29,7 @@ function App() {
         <Route path="/restaurant-details" element={<RestaurantDetails />} />
         <Route path="/" element={<LandingPage />} />
         <Route path="/freefree" element={<BulkUploadmenu />} />
+        <Route path="/freefree1" element={<BulkUploadmenu1 />} />
         <Route path="/login1" element={<AdminLoginPage1 />} />
         <Route path="/free" element={<UserMenuCreator />} />
         <Route path="/login" element={<Loginfree />} />
@@ -39,5 +41,6 @@ function App() {
     </Router>
   );
 }
+
 
 export default App;
