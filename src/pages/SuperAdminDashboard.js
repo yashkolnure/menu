@@ -191,10 +191,29 @@ const SuperAdminDashboard = () => {
                   <td className="p-3 border">{rest.email}</td>
                   <td className="p-3 border">{rest.address}</td>
                   <td className="p-3 border">{rest.contact || "-"}</td>
-                  <td className="p-3 border space-x-2 text-center">
-                    <button onClick={() => handleEdit(rest)} className="text-blue-600 hover:underline font-medium">Edit</button>
-                    <button onClick={() => handleDelete(rest._id)} className="text-red-600 hover:underline font-medium">Delete</button>
+                 <td className="p-3 border space-x-2 text-center">
+                    <button
+                      onClick={() => handleEdit(rest)}
+                      className="text-blue-600 hover:underline font-medium"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(rest._id)}
+                      className="text-red-600 hover:underline font-medium"
+                    >
+                      Delete
+                    </button>
+                    <a
+                      href={`/menu/${rest._id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-green-600 hover:underline font-medium"
+                    >
+                     Menu
+                    </a>
                   </td>
+
                 </tr>
               ))}
               {restaurants.length === 0 && (
