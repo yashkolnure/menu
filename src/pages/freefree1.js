@@ -13,10 +13,13 @@ function BulkUploadmenu1() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editedItems, setEditedItems] = useState([]);
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
+  const [savingItems, setSavingItems] = useState({});
   const imagePasteRef = useRef(null);
-  
+  const [customEditCategories, setCustomEditCategories] = useState({});
 
   useEffect(() => {
     if (!restaurantId || !token) return;
@@ -27,7 +30,10 @@ function BulkUploadmenu1() {
           headers: { Authorization: `Bearer ${token}` },
         });
         setRestaurant(res.data);
-      } catch (e) { console.error(e); setError("Failed to fetch restaurant."); }
+      } catch (e) {
+        console.error(e);
+        setError("Failed to fetch restaurant.");
+      }
     };
 
     const fetchMenu = async () => {
@@ -36,7 +42,10 @@ function BulkUploadmenu1() {
           headers: { Authorization: `Bearer ${token}` },
         });
         setExistingItems(res.data);
-      } catch (e) { console.error(e); setError("Failed to fetch menu."); }
+      } catch (e) {
+        console.error(e);
+        setError("Failed to fetch menu.");
+      }
     };
 
     fetchRestaurant();
@@ -63,15 +72,12 @@ function BulkUploadmenu1() {
       if (ref) ref.removeEventListener("paste", handlePaste);
     };
   }, []);
-useEffect(() => {
-  if (groupedItems.length && !selectedCategory) {
-    setSelectedCategory(groupedItems[0].category);
-  }
-}, [existingItems]);
 
-
-
-
+  useEffect(() => {
+    if (groupedItems.length && !selectedCategory) {
+      setSelectedCategory(groupedItems[0].category);
+    }
+  }, [existingItems]);
 
   const handleItemChange = (e) => {
     const { name, value } = e.target;
@@ -155,6 +161,55 @@ useEffect(() => {
     }
   };
 
+  const updateEditedItem = (index, field, value) => {
+    const updated = [...editedItems];
+    updated[index][field] = value;
+    setEditedItems(updated);
+  };
+
+  const handlePasteImage = (e, index) => {
+    const items = e.clipboardData.items;
+    for (const item of items) {
+      if (item.type.indexOf("image") !== -1) {
+        const file = item.getAsFile();
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          updateEditedItem(index, "image", event.target.result);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  };
+
+  const handleImageFileChange = (e, index) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      updateEditedItem(index, "image", reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const saveAllEditedItems = async () => {
+    try {
+      const requests = editedItems.map(item =>
+        axios.put(`https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu/${item._id}`, item, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+      );
+      await Promise.all(requests);
+      setMessage("All items updated successfully.");
+      setIsEditMode(false);
+      const res = await axios.get(`https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setExistingItems(res.data);
+    } catch (err) {
+      setError("Failed to save changes");
+    }
+  };
+
   const allCategories = [...new Set([...existingItems.map((i) => i.category), ...menuItems.map((i) => i.category)])];
   const groupedItems = allCategories.map(cat => ({
     category: cat,
@@ -174,19 +229,25 @@ useEffect(() => {
           <select
             value={itemForm.category || ""}
             onChange={(e) => {
-              const val = e.target.value;
-              setCustomCategory(val === "__custom__" ? val : "");
-              setItemForm({ ...itemForm, category: val === "__custom__" ? "" : val });
+                const val = e.target.value;
+                setCustomCategory(val === "__custom__" ? val : "");
+                setItemForm({ ...itemForm, category: val === "__custom__" ? "" : val });
             }}
             className="border p-2 rounded"
-          >
+            >
             <option value="">Select Category</option>
             {allCategories.map((cat, i) => <option key={i} value={cat}>{cat}</option>)}
             <option value="__custom__">➕ Add Custom Category</option>
-          </select>
-          {customCategory === "__custom__" && (
-            <input type="text" placeholder="Enter category" value={itemForm.category} onChange={(e) => setItemForm({ ...itemForm, category: e.target.value })} className="border p-2 rounded" />
-          )}
+            </select>
+            {customCategory === "__custom__" && (
+            <input
+                type="text"
+                placeholder="Enter category"
+                value={itemForm.category}
+                onChange={(e) => setItemForm({ ...itemForm, category: e.target.value })}
+                className="border p-2 rounded"
+            />
+            )}
           <input type="file" accept="image/*" onChange={handleImageChange} className="border p-2 rounded" />
         </div>
         {itemForm.image && <img src={itemForm.image} alt="Preview" className="mt-2 h-24" />}
@@ -196,6 +257,7 @@ useEffect(() => {
           <button onClick={addItemToList} className="mt-3 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Add Item</button>
         )}
       </div>
+
       {menuItems.length > 0 && (
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-3">Items To Upload</h3>
@@ -218,47 +280,166 @@ useEffect(() => {
 
       {existingItems.length > 0 && (
         <div className="mb-10">
-            <h3 className="text-xl font-semibold mb-4">Existing Menu Items</h3>
-            {groupedItems
-            .sort((a, b) => a.category.localeCompare(b.category))
-            .map((group, index) => (
-                <div key={index} className="mb-6">
+          {!isEditMode && (
+            <button
+              onClick={() => {
+                setIsEditMode(true);
+                setEditedItems([...existingItems]);
+              }}
+              className="mb-4 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
+            >
+              Edit Menu
+            </button>
+          )}
+
+          {isEditMode ? (
+            <>
+              <h3 className="text-xl font-semibold mb-4">Edit Menu Items</h3>
+              <div className="space-y-3 w-full">
+  {editedItems.map((item, index) => (
+    <div
+      key={item._id}
+      className="w-full flex items-center gap-3 p-3 border rounded shadow bg-white overflow-x-auto"
+      onPaste={(e) => handlePasteImage(e, index)}
+    >
+      {/* Image Preview */}
+      {item.image && (
+        <img
+          src={item.image}
+          alt="preview"
+          className="h-14 w-14 object-cover rounded border shrink-0"
+        />
+      )}
+
+      {/* Image Upload */}
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => handleImageFileChange(e, index)}
+        className="text-sm border rounded px-2 py-1 shrink-0"
+        style={{ maxWidth: "200px" }}
+      />
+
+      {/* Dish Name */}
+      <input
+        value={item.name}
+        onChange={(e) => updateEditedItem(index, "name", e.target.value)}
+        className="border p-2 rounded text-sm flex-1 min-w-[120px]"
+        placeholder="Name"
+      />
+
+      {/* Description */}
+      <input
+        value={item.description}
+        onChange={(e) => updateEditedItem(index, "description", e.target.value)}
+        className="border p-2 rounded text-sm flex-1 min-w-[150px]"
+        placeholder="Description"
+      />
+
+      {/* Price */}
+      <input
+        value={item.price}
+        onChange={(e) => /^[0-9]*$/.test(e.target.value) && updateEditedItem(index, "price", e.target.value)}
+        className="border p-2 rounded text-sm w-20 text-center"
+        placeholder="₹"
+      />
+
+      {/* Category */}
+     <div className="flex flex-col w-44">
+  <select
+    value={allCategories.includes(item.category) ? item.category : "__custom__"}
+    onChange={(e) => {
+      const val = e.target.value;
+      if (val === "__custom__") {
+        setCustomEditCategories(prev => ({ ...prev, [item._id]: true }));
+        updateEditedItem(index, "category", "");
+      } else {
+        setCustomEditCategories(prev => ({ ...prev, [item._id]: false }));
+        updateEditedItem(index, "category", val);
+      }
+    }}
+    className="border p-2 rounded text-sm"
+  >
+    <option value="">Select Category</option>
+    {allCategories.map((cat, i) => (
+      <option key={i} value={cat}>{cat}</option>
+    ))}
+    <option value="__custom__">➕ Custom</option>
+  </select>
+
+  {customEditCategories[item._id] && (
+    <input
+      type="text"
+      placeholder="Enter category"
+      value={item.category}
+      onChange={(e) => updateEditedItem(index, "category", e.target.value)}
+      className="mt-1 border p-1 rounded text-sm"
+    />
+  )}
+</div>
+
+      {/* Save Button */}
+     <button
+        onClick={async () => {
+            setSavingItems(prev => ({ ...prev, [item._id]: "saving" }));
+            try {
+            await axios.put(
+                `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu/${item._id}`,
+                item,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setSavingItems(prev => ({ ...prev, [item._id]: "saved" }));
+            setMessage(`Saved: ${item.name}`);
+            setTimeout(() => {
+                setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
+            }, 1200);
+            } catch {
+            setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
+            setError("Save failed");
+            }
+        }}
+        className="bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded text-sm shrink-0"
+        >
+        {savingItems[item._id] === "saving"
+            ? "Saving..."
+            : savingItems[item._id] === "saved"
+            ? "Saved"
+            : "Save"}
+        </button>
+    </div>
+  ))}
+</div>
+
+
+              <button onClick={saveAllEditedItems} className="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+                Save All Changes
+              </button>
+            </>
+          ) : (
+            groupedItems.sort((a, b) => a.category.localeCompare(b.category)).map((group, index) => (
+              <div key={index} className="mb-6">
                 <h4 className="text-lg font-bold mb-2 text-blue-700 border-b pb-1">{group.category}</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-                    {group.items.map((item, i) => (
+                  {group.items.map((item, i) => (
                     <div key={i} className="p-4 border rounded bg-white shadow relative">
-                        <h4 className="font-bold">{item.name}</h4>
-                        <p className="text-sm">{item.description}</p>
-                        <p className="text-green-700 font-semibold">₹{item.price}</p>
-                        {item.image && (
-                        <img
-                            src={item.image}
-                            alt={item.name}
-                            className="h-24 w-full object-cover mt-2 rounded"
-                        />
-                        )}
-                        <div className="flex gap-2 mt-2">
-                        <button
-                            onClick={() => handleEditItem(item)}
-                            className="text-xs px-2 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded"
-                        >
-                            Edit
-                        </button>
-                        <button
-                            onClick={() => handleDelete(item._id)}
-                            className="text-xs px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded"
-                        >
-                            Delete
-                        </button>
-                        </div>
+                      <h4 className="font-bold">{item.name}</h4>
+                      <p className="text-sm">{item.description}</p>
+                      <p className="text-green-700 font-semibold">₹{item.price}</p>
+                      {item.image && (
+                        <img src={item.image} alt={item.name} className="h-24 w-full object-cover mt-2 rounded" />
+                      )}
+                      <div className="flex gap-2 mt-2">
+                        <button onClick={() => handleEditItem(item)} className="text-xs px-2 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded">Edit</button>
+                        <button onClick={() => handleDelete(item._id)} className="text-xs px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded">Delete</button>
+                      </div>
                     </div>
-                    ))}
+                  ))}
                 </div>
-                </div>
-            ))}
+              </div>
+            ))
+          )}
         </div>
-        )}
-
+      )}
     </div>
   );
 }
