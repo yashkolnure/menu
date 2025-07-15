@@ -19,6 +19,7 @@ function RestaurantMenuPage() {
   const [showCart, setShowCart] = useState(false);
   const [restaurantDetails, setRestaurantDetails] = useState(null);
   const [activeOffer, setActiveOffer] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   const carouselRef = useRef(null);
   const [offers, setOffers] = useState([]);
@@ -45,38 +46,34 @@ function RestaurantMenuPage() {
   }, [tableFromURL]);
 
   useEffect(() => {
-    const fetchDetails = async () => {
+    const fetchAllData = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(
-          `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${id}/details`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        const data = await res.json();
-        setRestaurantDetails(data);
-      } catch {
-        toast.error("⚠️ Failed to fetch restaurant details");
-      }
-    };
-    fetchDetails();
-  }, [id]);
 
-  useEffect(() => {
-    const fetchMenu = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(
-          `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${id}/menu`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        const data = await res.json();
-        if (Array.isArray(data)) setMenuData(data);
+        const [menuRes, detailsRes] = await Promise.all([
+          fetch(`https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${id}/menu`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch(`https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${id}/details`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+
+        const menu = await menuRes.json();
+        const details = await detailsRes.json();
+
+        if (Array.isArray(menu)) setMenuData(menu);
         else toast.error("Failed to load menu data.");
+
+        setRestaurantDetails(details);
       } catch {
-        toast.error("Failed to load menu");
+        toast.error("⚠️ Failed to load restaurant/menu data");
+      } finally {
+        setLoading(false);
       }
     };
-    fetchMenu();
+
+    fetchAllData();
   }, [id]);
 
   useEffect(() => {
@@ -187,7 +184,9 @@ function RestaurantMenuPage() {
             {offers.map((_, idx) => (
               <span
                 key={idx}
-                className={`block w-2 h-2 rounded-full transition-all ${idx === activeOffer ? "bg-orange-600" : "bg-gray-300"}`}
+                className={`block w-2 h-2 rounded-full transition-all ${
+                  idx === activeOffer ? "bg-orange-600" : "bg-gray-300"
+                }`}
               />
             ))}
           </div>
@@ -201,7 +200,9 @@ function RestaurantMenuPage() {
               <button
                 key={cat}
                 onClick={() => setCategory(cat)}
-                className={`px-4 py-2 rounded-xl whitespace-nowrap ${category === cat ? "bg-orange-500 text-white" : "bg-white text-gray-700 border"}`}
+                className={`px-4 py-2 rounded-xl whitespace-nowrap ${
+                  category === cat ? "bg-orange-500 text-white" : "bg-white text-gray-700 border"
+                }`}
               >
                 {cat}
               </button>
@@ -210,7 +211,12 @@ function RestaurantMenuPage() {
         </div>
 
         <div className="flex flex-wrap justify-center">
-          {filteredMenu.length > 0 ? (
+          {loading ? (
+            <div className="flex justify-center items-center w-full py-10">
+              <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+              <p className="ml-3 text-gray-500 text-sm">Loading menu...</p>
+            </div>
+          ) : filteredMenu.length > 0 ? (
             filteredMenu.map(item => (
               <MenuCard key={item._id} item={item} addToCart={addToCart} />
             ))
@@ -225,8 +231,6 @@ function RestaurantMenuPage() {
           Ordering for <strong>Table {tableNumber}</strong>
         </p>
       )}
-
-
 
       <ToastContainer position="bottom-right" autoClose={2000} />
     </>
