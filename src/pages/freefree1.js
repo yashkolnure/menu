@@ -296,7 +296,10 @@ function BulkUploadmenu1() {
             <>
               <h3 className="text-xl font-semibold mb-4">Edit Menu Items</h3>
               <div className="space-y-3 w-full">
-  {editedItems.map((item, index) => (
+  {[...editedItems]
+  .sort((a, b) => a.category.localeCompare(b.category))
+  .map((item, index) => (
+
     <div
       key={item._id}
       className="w-full flex items-center gap-3 p-3 border rounded shadow bg-white overflow-x-auto"
