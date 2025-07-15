@@ -160,7 +160,12 @@ function BulkUploadmenu1() {
       console.error("Delete failed");
     }
   };
-
+const updateEditedItemById = (id, field, value) => {
+  const updated = editedItems.map((item) =>
+    item._id === id ? { ...item, [field]: value } : item
+  );
+  setEditedItems(updated);
+};
   const updateEditedItem = (index, field, value) => {
     const updated = [...editedItems];
     updated[index][field] = value;
@@ -295,120 +300,145 @@ function BulkUploadmenu1() {
           {isEditMode ? (
             <>
               <h3 className="text-xl font-semibold mb-4">Edit Menu Items</h3>
-              <div className="space-y-3 w-full">
-  {editedItems.map((item, index) => (
-    <div
-      key={item._id}
-      className="w-full flex items-center gap-3 p-3 border rounded shadow bg-white overflow-x-auto"
-      onPaste={(e) => handlePasteImage(e, index)}
-    >
-      {/* Image Preview */}
-      {item.image && (
-        <img
-          src={item.image}
-          alt="preview"
-          className="h-14 w-14 object-cover rounded border shrink-0"
-        />
-      )}
-
-      {/* Image Upload */}
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => handleImageFileChange(e, index)}
-        className="text-sm border rounded px-2 py-1 shrink-0"
-        style={{ maxWidth: "200px" }}
-      />
-
-      {/* Dish Name */}
-      <input
-        value={item.name}
-        onChange={(e) => updateEditedItem(index, "name", e.target.value)}
-        className="border p-2 rounded text-sm flex-1 min-w-[120px]"
-        placeholder="Name"
-      />
-
-      {/* Description */}
-      <input
-        value={item.description}
-        onChange={(e) => updateEditedItem(index, "description", e.target.value)}
-        className="border p-2 rounded text-sm flex-1 min-w-[150px]"
-        placeholder="Description"
-      />
-
-      {/* Price */}
-      <input
-        value={item.price}
-        onChange={(e) => /^[0-9]*$/.test(e.target.value) && updateEditedItem(index, "price", e.target.value)}
-        className="border p-2 rounded text-sm w-20 text-center"
-        placeholder="₹"
-      />
-
-      {/* Category */}
-     <div className="flex flex-col w-44">
-  <select
-    value={allCategories.includes(item.category) ? item.category : "__custom__"}
-    onChange={(e) => {
-      const val = e.target.value;
-      if (val === "__custom__") {
-        setCustomEditCategories(prev => ({ ...prev, [item._id]: true }));
-        updateEditedItem(index, "category", "");
-      } else {
-        setCustomEditCategories(prev => ({ ...prev, [item._id]: false }));
-        updateEditedItem(index, "category", val);
-      }
-    }}
-    className="border p-2 rounded text-sm"
-  >
-    <option value="">Select Category</option>
-    {allCategories.map((cat, i) => (
-      <option key={i} value={cat}>{cat}</option>
-    ))}
-    <option value="__custom__">➕ Custom</option>
-  </select>
-
-  {customEditCategories[item._id] && (
-    <input
-      type="text"
-      placeholder="Enter category"
-      value={item.category}
-      onChange={(e) => updateEditedItem(index, "category", e.target.value)}
-      className="mt-1 border p-1 rounded text-sm"
-    />
-  )}
-</div>
-
-      {/* Save Button */}
-     <button
-        onClick={async () => {
-            setSavingItems(prev => ({ ...prev, [item._id]: "saving" }));
-            try {
-            await axios.put(
-                `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu/${item._id}`,
-                item,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setSavingItems(prev => ({ ...prev, [item._id]: "saved" }));
-            setMessage(`Saved: ${item.name}`);
-            setTimeout(() => {
-                setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
-            }, 1200);
-            } catch {
-            setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
-            setError("Save failed");
+              {[...new Set(editedItems.map(item => item.category))].sort((a, b) => a.localeCompare(b)).map((cat) => (
+  <div key={cat} className="mb-6">
+    <h4 className="text-lg font-bold mb-2 text-blue-700 border-b pb-1">{cat || "Uncategorized"}</h4>
+    <div className="space-y-3 w-full">
+      {editedItems.filter(item => item.category === cat).map((item) => (
+        <div
+          key={item._id}
+          className="w-full flex items-center gap-3 p-3 border rounded shadow bg-white overflow-x-auto"
+          onPaste={(e) => {
+            const items = e.clipboardData.items;
+            for (const clipboardItem of items) {
+              if (clipboardItem.type.indexOf("image") !== -1) {
+                const file = clipboardItem.getAsFile();
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                  updateEditedItemById(item._id, "image", event.target.result);
+                };
+                reader.readAsDataURL(file);
+              }
             }
-        }}
-        className="bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded text-sm shrink-0"
+          }}
         >
-        {savingItems[item._id] === "saving"
-            ? "Saving..."
-            : savingItems[item._id] === "saved"
-            ? "Saved"
-            : "Save"}
-        </button>
+          {item.image && (
+            <img
+              src={item.image}
+              alt="preview"
+              className="h-14 w-14 object-cover rounded border shrink-0"
+            />
+          )}
+
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files[0];
+              if (!file) return;
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                updateEditedItemById(item._id, "image", reader.result);
+              };
+              reader.readAsDataURL(file);
+            }}
+            className="text-sm border rounded px-2 py-1 shrink-0"
+            style={{ maxWidth: "200px" }}
+          />
+
+          <input
+            value={item.name}
+            onChange={(e) => updateEditedItemById(item._id, "name", e.target.value)}
+            className="border p-2 rounded text-sm flex-1 min-w-[120px]"
+            placeholder="Name"
+          />
+
+          <input
+            value={item.description}
+            onChange={(e) => updateEditedItemById(item._id, "description", e.target.value)}
+            className="border p-2 rounded text-sm flex-1 min-w-[150px]"
+            placeholder="Description"
+          />
+
+          <input
+            value={item.price}
+            onChange={(e) => {
+              if (/^[0-9]*$/.test(e.target.value)) {
+                updateEditedItemById(item._id, "price", e.target.value);
+              }
+            }}
+            className="border p-2 rounded text-sm w-20 text-center"
+            placeholder="₹"
+          />
+
+          <div className="flex flex-col w-44">
+            <select
+              value={allCategories.includes(item.category) ? item.category : "__custom__"}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === "__custom__") {
+                  setCustomEditCategories((prev) => ({ ...prev, [item._id]: true }));
+                  updateEditedItemById(item._id, "category", "");
+                } else {
+                  setCustomEditCategories((prev) => ({ ...prev, [item._id]: false }));
+                  updateEditedItemById(item._id, "category", val);
+                }
+              }}
+              className="border p-2 rounded text-sm"
+            >
+              <option value="">Select Category</option>
+              {allCategories.map((catOption, i) => (
+                <option key={i} value={catOption}>{catOption}</option>
+              ))}
+              <option value="__custom__">➕ Custom</option>
+            </select>
+
+            {customEditCategories[item._id] && (
+              <input
+                type="text"
+                placeholder="Enter category"
+                value={item.category}
+                onChange={(e) => updateEditedItemById(item._id, "category", e.target.value)}
+                className="mt-1 border p-1 rounded text-sm"
+              />
+            )}
+          </div>
+
+          <button
+            onClick={async () => {
+              setSavingItems((prev) => ({ ...prev, [item._id]: "saving" }));
+              try {
+                await axios.put(
+                  `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu/${item._id}`,
+                  item,
+                  {
+                    headers: { Authorization: `Bearer ${token}` },
+                  }
+                );
+                setSavingItems((prev) => ({ ...prev, [item._id]: "saved" }));
+                setMessage(`Saved: ${item.name}`);
+                setTimeout(() => {
+                  setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
+                }, 1200);
+              } catch {
+                setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
+                setError("Save failed");
+              }
+            }}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded text-sm shrink-0"
+          >
+            {savingItems[item._id] === "saving"
+              ? "Saving..."
+              : savingItems[item._id] === "saved"
+              ? "Saved"
+              : "Save"}
+          </button>
+        </div>
+      ))}
     </div>
-  ))}
-</div>
+  </div>
+))}
+
 
 
               <button onClick={saveAllEditedItems} className="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
