@@ -53,25 +53,34 @@ function BulkUploadmenu1() {
   }, [restaurantId, token]);
 
   useEffect(() => {
-    const handlePaste = (e) => {
-      const items = e.clipboardData.items;
-      for (const item of items) {
-        if (item.type.indexOf("image") !== -1) {
-          const file = item.getAsFile();
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            setItemForm((prev) => ({ ...prev, image: event.target.result }));
-          };
-          reader.readAsDataURL(file);
+  const handlePaste = async (e) => {
+    const items = e.clipboardData.items;
+    for (const item of items) {
+      if (item.type.indexOf("image") !== -1) {
+        const file = item.getAsFile();
+        const formData = new FormData();
+        formData.append("image", file);
+
+        try {
+          const res = await axios.post("https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/upload-image", formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
+          const wordpressImageUrl = res.data.imageUrl;
+          setItemForm((prev) => ({ ...prev, image: wordpressImageUrl }));
+        } catch (err) {
+          console.error("Pasted image upload failed:", err);
         }
       }
-    };
-    const ref = imagePasteRef.current;
-    if (ref) ref.addEventListener("paste", handlePaste);
-    return () => {
-      if (ref) ref.removeEventListener("paste", handlePaste);
-    };
-  }, []);
+    }
+  };
+
+  const ref = imagePasteRef.current;
+  if (ref) ref.addEventListener("paste", handlePaste);
+  return () => {
+    if (ref) ref.removeEventListener("paste", handlePaste);
+  };
+}, []);
+
 
   useEffect(() => {
     if (groupedItems.length && !selectedCategory) {
@@ -85,15 +94,27 @@ function BulkUploadmenu1() {
     setItemForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setItemForm((prev) => ({ ...prev, image: reader.result }));
-    };
-    reader.readAsDataURL(file);
-  };
+  const handleImageChange = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append("image", file);
+
+  try {
+    const res = await axios.post("https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/upload-image", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    const wordpressImageUrl = res.data.imageUrl; // The full URL returned by Express
+    setItemForm((prev) => ({ ...prev, image: wordpressImageUrl }));
+  } catch (err) {
+    console.error("Image upload failed:", err);
+    setError("Image upload failed");
+  }
+};
 
   const addItemToList = () => {
     if (!itemForm.name || !itemForm.category || !itemForm.price || !itemForm.image || !itemForm.description) {

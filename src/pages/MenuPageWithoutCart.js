@@ -61,8 +61,25 @@ function RestaurantMenuPage() {
 
         const menu = await menuRes.json();
         const details = await detailsRes.json();
+        setMenuData([]);
 
-        if (Array.isArray(menu)) setMenuData(menu);
+        if (Array.isArray(menu)) {
+  let index = 0;
+  const chunkSize = 5;
+
+  const loadChunk = () => {
+    setMenuData(prev => [...prev, ...menu.slice(index, index + chunkSize)]);
+    index += chunkSize;
+    if (index < menu.length) {
+      setTimeout(loadChunk, 100); // adjust delay as needed
+    } else {
+      setLoading(false);
+    }
+  };
+
+  loadChunk(); // start chunked loading
+}
+
         else toast.error("Failed to load menu data.");
 
         setRestaurantDetails(details);
@@ -141,7 +158,15 @@ function RestaurantMenuPage() {
         />
         <div className="relative z-10 bg-black/40 w-full h-full flex flex-col items-center justify-center px-4 py-6 space-y-4">
           {restaurantDetails?.logo && (
-            <img src={restaurantDetails.logo} alt="Logo" className="h-20 sm:h-24 object-contain" />
+            <img
+              loading="lazy"
+              width="120"
+              height="96"
+              src={restaurantDetails.logo}
+              alt="Logo"
+              className="h-20 sm:h-24 object-contain"
+            />
+
           )}
           <input
             type="text"
@@ -211,18 +236,26 @@ function RestaurantMenuPage() {
         </div>
 
         <div className="flex flex-wrap justify-center">
-          {loading ? (
-            <div className="flex justify-center items-center w-full py-10">
-              <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
-              <p className="ml-3 text-gray-500 text-sm">Loading menu...</p>
-            </div>
-          ) : filteredMenu.length > 0 ? (
-            filteredMenu.map(item => (
-              <MenuCard key={item._id} item={item} addToCart={addToCart} />
-            ))
-          ) : (
-            <p className="text-gray-500 text-center mb-4">No items match your search.</p>
-          )}
+          {filteredMenu.length > 0 ? (
+  <>
+    {filteredMenu.map(item => (
+      <MenuCard key={item._id} item={item} addToCart={addToCart} />
+    ))}
+    {loading && (
+      <div className="w-full text-center py-4 text-orange-500 text-sm">
+        Loading more dishes...
+      </div>
+    )}
+  </>
+) : loading ? (
+  <div className="flex justify-center items-center w-full py-10">
+    <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+    <p className="ml-3 text-gray-500 text-sm">Loading menu...</p>
+  </div>
+) : (
+  <p className="text-gray-500 text-center mb-4">No items match your search.</p>
+)}
+
         </div>
       </div>
 
