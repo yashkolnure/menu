@@ -73,7 +73,7 @@ const RegisterFreePage = () => {
       );
 
       setMessage("✅ Registered successfully!");
-      setTimeout(() => navigate("/free"), 1000);
+      setTimeout(() => navigate("/login"), 1000);
     } catch (err) {
       setError(err.response?.data?.message || "❌ Registration failed.");
     }
