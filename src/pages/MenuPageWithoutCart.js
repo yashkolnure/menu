@@ -61,25 +61,8 @@ function RestaurantMenuPage() {
 
         const menu = await menuRes.json();
         const details = await detailsRes.json();
-        setMenuData([]);
 
-        if (Array.isArray(menu)) {
-  let index = 0;
-  const chunkSize = 5;
-
-  const loadChunk = () => {
-    setMenuData(prev => [...prev, ...menu.slice(index, index + chunkSize)]);
-    index += chunkSize;
-    if (index < menu.length) {
-      setTimeout(loadChunk, 100); // adjust delay as needed
-    } else {
-      setLoading(false);
-    }
-  };
-
-  loadChunk(); // start chunked loading
-}
-
+        if (Array.isArray(menu)) setMenuData(menu);
         else toast.error("Failed to load menu data.");
 
         setRestaurantDetails(details);
