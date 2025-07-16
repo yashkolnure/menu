@@ -95,6 +95,57 @@ function BulkUploadmenu1() {
     reader.readAsDataURL(file);
   };
 
+  async function uploadImageToWordPress(base64Image, filename) {
+    try {
+      // Remove the data URL prefix if present
+      const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, "");
+      
+      // Convert base64 to blob
+      const byteCharacters = atob(base64Data);
+      const byteArrays = [];
+      
+      for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+        const slice = byteCharacters.slice(offset, offset + 512);
+        const byteNumbers = new Array(slice.length);
+        
+        for (let i = 0; i < slice.length; i++) {
+          byteNumbers[i] = slice.charCodeAt(i);
+        }
+        
+        const byteArray = new Uint8Array(byteNumbers);
+        byteArrays.push(byteArray);
+      }
+      
+      const blob = new Blob(byteArrays, { type: 'image/jpeg' });
+      const formData = new FormData();
+      formData.append('file', blob, filename || `menu-item-${Date.now()}.jpg`);
+
+      // WordPress credentials
+      const username = "yashkolnure58@gmail.com";
+      const appPassword = "05mq iTLF UvJU dyaz 7KxQ 8pyc";
+      const authHeader = `Basic ${btoa(`${username}:${appPassword}`)}`;
+
+      const response = await fetch("https://website.avenirya.com/wp-json/wp/v2/media", {
+        method: "POST",
+        headers: {
+          "Authorization": authHeader
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to upload image to WordPress");
+      }
+
+      const data = await response.json();
+      return data.source_url;
+    } catch (error) {
+      console.error("WordPress upload error:", error);
+      throw error;
+    }
+  }
+
   const addItemToList = () => {
     if (!itemForm.name || !itemForm.category || !itemForm.price || !itemForm.image || !itemForm.description) {
       setError("All fields are required.");
@@ -108,15 +159,50 @@ function BulkUploadmenu1() {
 
   const handleUpload = async () => {
     if (!menuItems.length) return;
+    
     try {
       setUploading(true);
-      await axios.post(`https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/bulk`, menuItems, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      setMessage("");
+      setError("");
+      
+      // First upload all images to WordPress
+      const itemsWithImageUrls = await Promise.all(
+        menuItems.map(async (item) => {
+          if (item.image.startsWith('data:')) {
+            try {
+              const imageUrl = await uploadImageToWordPress(
+                item.image,
+                `${item.name.replace(/\s+/g, '-')}-${Date.now()}.jpg`
+              );
+              return { ...item, image: imageUrl };
+            } catch (error) {
+              console.error(`Failed to upload image for ${item.name}:`, error);
+              return { ...item, image: '' }; // Fallback to no image
+            }
+          }
+          return item; // If it's already a URL, keep it
+        })
+      );
+      
+      // Then send to your backend
+      await axios.post(
+        `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/bulk`,
+        itemsWithImageUrls,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
       setMessage("Upload successful");
       setMenuItems([]);
+      
+      // Refresh the existing items
+      const res = await axios.get(
+        `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setExistingItems(res.data);
+      
     } catch (err) {
-      setError("Upload failed: " + err.message);
+      setError("Upload failed: " + (err.response?.data?.message || err.message));
     } finally {
       setUploading(false);
     }
@@ -136,17 +222,39 @@ function BulkUploadmenu1() {
 
   const handleUpdate = async () => {
     try {
-      await axios.put(`https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu/${itemForm._id}`, itemForm, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      setMessage("");
+      setError("");
+      
+      let imageUrl = itemForm.image;
+      
+      // If it's a new base64 image, upload to WordPress first
+      if (itemForm.image.startsWith('data:')) {
+        imageUrl = await uploadImageToWordPress(
+          itemForm.image,
+          `${itemForm.name.replace(/\s+/g, '-')}-${Date.now()}.jpg`
+        );
+      }
+      
+      const updatedItem = { ...itemForm, image: imageUrl };
+      
+      await axios.put(
+        `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu/${itemForm._id}`,
+        updatedItem,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
       setItemForm({ name: "", category: "", description: "", price: "", image: "", _id: null });
       setMessage("Updated successfully");
-      const res = await axios.get(`https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      
+      // Refresh the menu
+      const res = await axios.get(
+        `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setExistingItems(res.data);
+      
     } catch (err) {
-      setError("Update failed");
+      setError("Update failed: " + (err.response?.data?.message || err.message));
     }
   };
 
@@ -193,20 +301,50 @@ function BulkUploadmenu1() {
 
   const saveAllEditedItems = async () => {
     try {
-      const requests = editedItems.map(item =>
-        axios.put(`https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu/${item._id}`, item, {
-          headers: { Authorization: `Bearer ${token}` },
+      setMessage("");
+      setError("");
+      
+      // First process all images
+      const itemsToSave = await Promise.all(
+        editedItems.map(async (item) => {
+          if (item.image.startsWith('data:')) {
+            try {
+              const imageUrl = await uploadImageToWordPress(
+                item.image,
+                `${item.name.replace(/\s+/g, '-')}-${Date.now()}.jpg`
+              );
+              return { ...item, image: imageUrl };
+            } catch (error) {
+              console.error(`Failed to upload image for ${item.name}:`, error);
+              return item; // Keep original (will fail to save if it was a new image)
+            }
+          }
+          return item; // If it's already a URL, keep it
         })
       );
+      
+      // Then save all items
+      const requests = itemsToSave.map(item =>
+        axios.put(
+          `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu/${item._id}`,
+          item,
+          { headers: { Authorization: `Bearer ${token}` } }
+        )
+      );
+      
       await Promise.all(requests);
       setMessage("All items updated successfully.");
       setIsEditMode(false);
-      const res = await axios.get(`https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      
+      // Refresh the menu
+      const res = await axios.get(
+        `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setExistingItems(res.data);
+      
     } catch (err) {
-      setError("Failed to save changes");
+      setError("Failed to save changes: " + (err.response?.data?.message || err.message));
     }
   };
 
@@ -250,13 +388,31 @@ function BulkUploadmenu1() {
             )}
           <input type="file" accept="image/*" onChange={handleImageChange} className="border p-2 rounded" />
         </div>
-        {itemForm.image && <img src={itemForm.image} alt="Preview" className="mt-2 h-24" />}
+        {itemForm.image && (
+          <div className="mt-2">
+            <img 
+              src={itemForm.image} 
+              alt="Preview" 
+              className="h-24 object-contain border rounded" 
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              {itemForm.image.startsWith('data:') ? "New image (will be uploaded to WordPress)" : "Existing image"}
+            </p>
+          </div>
+        )}
         {itemForm._id ? (
-          <button onClick={handleUpdate} className="mt-3 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded">Update Item</button>
+          <button onClick={handleUpdate} className="mt-3 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded">
+            Update Item
+          </button>
         ) : (
-          <button onClick={addItemToList} className="mt-3 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Add Item</button>
+          <button onClick={addItemToList} className="mt-3 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+            Add Item
+          </button>
         )}
       </div>
+
+      {message && <div className="p-3 mb-4 bg-green-100 text-green-700 rounded">{message}</div>}
+      {error && <div className="p-3 mb-4 bg-red-100 text-red-700 rounded">{error}</div>}
 
       {menuItems.length > 0 && (
         <div className="mb-6">
@@ -267,12 +423,22 @@ function BulkUploadmenu1() {
                 <h4 className="font-semibold">{item.name}</h4>
                 <p>{item.description}</p>
                 <p className="text-green-600">₹{item.price}</p>
-                {item.image && <img src={item.image} className="mt-2 h-24" alt="preview" />}
+                {item.image && (
+                  <img 
+                    src={item.image} 
+                    className="mt-2 h-24 object-contain border rounded" 
+                    alt="preview" 
+                  />
+                )}
                 <p className="text-sm text-gray-500">{item.category}</p>
               </div>
             ))}
           </div>
-          <button onClick={handleUpload} className="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+          <button 
+            onClick={handleUpload} 
+            disabled={uploading}
+            className="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded disabled:opacity-50"
+          >
             {uploading ? "Uploading..." : "Upload All"}
           </button>
         </div>
@@ -296,124 +462,152 @@ function BulkUploadmenu1() {
             <>
               <h3 className="text-xl font-semibold mb-4">Edit Menu Items</h3>
               <div className="space-y-3 w-full">
-  {editedItems.map((item, index) => (
-    <div
-      key={item._id}
-      className="w-full flex items-center gap-3 p-3 border rounded shadow bg-white overflow-x-auto"
-      onPaste={(e) => handlePasteImage(e, index)}
-    >
-      {/* Image Preview */}
-      {item.image && (
-        <img
-          src={item.image}
-          alt="preview"
-          className="h-14 w-14 object-cover rounded border shrink-0"
-        />
-      )}
+                {editedItems.map((item, index) => (
+                  <div
+                    key={item._id}
+                    className="w-full flex flex-wrap items-center gap-3 p-3 border rounded shadow bg-white"
+                    onPaste={(e) => handlePasteImage(e, index)}
+                  >
+                    {/* Image Preview */}
+                    {item.image && (
+                      <div className="flex flex-col">
+                        <img
+                          src={item.image}
+                          alt="preview"
+                          className="h-14 w-14 object-cover rounded border"
+                        />
+                        <span className="text-xs text-gray-500 mt-1">
+                          {item.image.startsWith('data:') ? "New image" : "Existing"}
+                        </span>
+                      </div>
+                    )}
 
-      {/* Image Upload */}
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => handleImageFileChange(e, index)}
-        className="text-sm border rounded px-2 py-1 shrink-0"
-        style={{ maxWidth: "200px" }}
-      />
+                    {/* Image Upload */}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageFileChange(e, index)}
+                      className="text-sm border rounded px-2 py-1"
+                    />
 
-      {/* Dish Name */}
-      <input
-        value={item.name}
-        onChange={(e) => updateEditedItem(index, "name", e.target.value)}
-        className="border p-2 rounded text-sm flex-1 min-w-[120px]"
-        placeholder="Name"
-      />
+                    {/* Dish Name */}
+                    <input
+                      value={item.name}
+                      onChange={(e) => updateEditedItem(index, "name", e.target.value)}
+                      className="border p-2 rounded text-sm flex-1 min-w-[120px]"
+                      placeholder="Name"
+                    />
 
-      {/* Description */}
-      <input
-        value={item.description}
-        onChange={(e) => updateEditedItem(index, "description", e.target.value)}
-        className="border p-2 rounded text-sm flex-1 min-w-[150px]"
-        placeholder="Description"
-      />
+                    {/* Description */}
+                    <input
+                      value={item.description}
+                      onChange={(e) => updateEditedItem(index, "description", e.target.value)}
+                      className="border p-2 rounded text-sm flex-1 min-w-[150px]"
+                      placeholder="Description"
+                    />
 
-      {/* Price */}
-      <input
-        value={item.price}
-        onChange={(e) => /^[0-9]*$/.test(e.target.value) && updateEditedItem(index, "price", e.target.value)}
-        className="border p-2 rounded text-sm w-20 text-center"
-        placeholder="₹"
-      />
+                    {/* Price */}
+                    <input
+                      value={item.price}
+                      onChange={(e) => /^[0-9]*$/.test(e.target.value) && updateEditedItem(index, "price", e.target.value)}
+                      className="border p-2 rounded text-sm w-20 text-center"
+                      placeholder="₹"
+                    />
 
-      {/* Category */}
-     <div className="flex flex-col w-44">
-  <select
-    value={allCategories.includes(item.category) ? item.category : "__custom__"}
-    onChange={(e) => {
-      const val = e.target.value;
-      if (val === "__custom__") {
-        setCustomEditCategories(prev => ({ ...prev, [item._id]: true }));
-        updateEditedItem(index, "category", "");
-      } else {
-        setCustomEditCategories(prev => ({ ...prev, [item._id]: false }));
-        updateEditedItem(index, "category", val);
-      }
-    }}
-    className="border p-2 rounded text-sm"
-  >
-    <option value="">Select Category</option>
-    {allCategories.map((cat, i) => (
-      <option key={i} value={cat}>{cat}</option>
-    ))}
-    <option value="__custom__">➕ Custom</option>
-  </select>
+                    {/* Category */}
+                    <div className="flex flex-col w-44">
+                      <select
+                        value={allCategories.includes(item.category) ? item.category : "__custom__"}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === "__custom__") {
+                            setCustomEditCategories(prev => ({ ...prev, [item._id]: true }));
+                            updateEditedItem(index, "category", "");
+                          } else {
+                            setCustomEditCategories(prev => ({ ...prev, [item._id]: false }));
+                            updateEditedItem(index, "category", val);
+                          }
+                        }}
+                        className="border p-2 rounded text-sm"
+                      >
+                        <option value="">Select Category</option>
+                        {allCategories.map((cat, i) => (
+                          <option key={i} value={cat}>{cat}</option>
+                        ))}
+                        <option value="__custom__">➕ Custom</option>
+                      </select>
 
-  {customEditCategories[item._id] && (
-    <input
-      type="text"
-      placeholder="Enter category"
-      value={item.category}
-      onChange={(e) => updateEditedItem(index, "category", e.target.value)}
-      className="mt-1 border p-1 rounded text-sm"
-    />
-  )}
-</div>
+                      {customEditCategories[item._id] && (
+                        <input
+                          type="text"
+                          placeholder="Enter category"
+                          value={item.category}
+                          onChange={(e) => updateEditedItem(index, "category", e.target.value)}
+                          className="mt-1 border p-1 rounded text-sm"
+                        />
+                      )}
+                    </div>
 
-      {/* Save Button */}
-     <button
-        onClick={async () => {
-            setSavingItems(prev => ({ ...prev, [item._id]: "saving" }));
-            try {
-            await axios.put(
-                `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu/${item._id}`,
-                item,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setSavingItems(prev => ({ ...prev, [item._id]: "saved" }));
-            setMessage(`Saved: ${item.name}`);
-            setTimeout(() => {
-                setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
-            }, 1200);
-            } catch {
-            setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
-            setError("Save failed");
-            }
-        }}
-        className="bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded text-sm shrink-0"
-        >
-        {savingItems[item._id] === "saving"
-            ? "Saving..."
-            : savingItems[item._id] === "saved"
-            ? "Saved"
-            : "Save"}
-        </button>
-    </div>
-  ))}
-</div>
+                    {/* Save Button */}
+                    <button
+                      onClick={async () => {
+                          setSavingItems(prev => ({ ...prev, [item._id]: "saving" }));
+                          try {
+                            let imageUrl = item.image;
+                            
+                            // If it's a new image, upload to WordPress first
+                            if (item.image.startsWith('data:')) {
+                              imageUrl = await uploadImageToWordPress(
+                                item.image,
+                                `${item.name.replace(/\s+/g, '-')}-${Date.now()}.jpg`
+                              );
+                            }
+                            
+                            const updatedItem = { ...item, image: imageUrl };
+                            
+                            await axios.put(
+                              `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu/${item._id}`,
+                              updatedItem,
+                              { headers: { Authorization: `Bearer ${token}` } }
+                            );
+                            
+                            setSavingItems(prev => ({ ...prev, [item._id]: "saved" }));
+                            setMessage(`Saved: ${item.name}`);
+                            setTimeout(() => {
+                                setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
+                            }, 1200);
+                          } catch {
+                            setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
+                            setError("Save failed");
+                          }
+                      }}
+                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded text-sm"
+                      disabled={savingItems[item._id] === "saving"}
+                    >
+                      {savingItems[item._id] === "saving"
+                          ? "Saving..."
+                          : savingItems[item._id] === "saved"
+                          ? "Saved"
+                          : "Save"}
+                    </button>
+                  </div>
+                ))}
+              </div>
 
-
-              <button onClick={saveAllEditedItems} className="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
-                Save All Changes
-              </button>
+              <div className="flex gap-4 mt-4">
+                <button 
+                  onClick={saveAllEditedItems} 
+                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+                >
+                  Save All Changes
+                </button>
+                <button 
+                  onClick={() => setIsEditMode(false)} 
+                  className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+                >
+                  Cancel
+                </button>
+              </div>
             </>
           ) : (
             groupedItems.sort((a, b) => a.category.localeCompare(b.category)).map((group, index) => (
@@ -426,11 +620,25 @@ function BulkUploadmenu1() {
                       <p className="text-sm">{item.description}</p>
                       <p className="text-green-700 font-semibold">₹{item.price}</p>
                       {item.image && (
-                        <img src={item.image} alt={item.name} className="h-24 w-full object-cover mt-2 rounded" />
+                        <img 
+                          src={item.image} 
+                          alt={item.name} 
+                          className="h-24 w-full object-contain mt-2 rounded border" 
+                        />
                       )}
                       <div className="flex gap-2 mt-2">
-                        <button onClick={() => handleEditItem(item)} className="text-xs px-2 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded">Edit</button>
-                        <button onClick={() => handleDelete(item._id)} className="text-xs px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded">Delete</button>
+                        <button 
+                          onClick={() => handleEditItem(item)} 
+                          className="text-xs px-2 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded"
+                        >
+                          Edit
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(item._id)} 
+                          className="text-xs px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded"
+                        >
+                          Delete
+                        </button>
                       </div>
                     </div>
                   ))}
