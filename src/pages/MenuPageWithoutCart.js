@@ -160,8 +160,8 @@ function RestaurantMenuPage() {
           {restaurantDetails?.logo && (
             <img
               loading="lazy"
-              width="120"
-              height="96"
+              width="150"
+              height="126"
               src={restaurantDetails.logo}
               alt="Logo"
               className="h-20 sm:h-24 object-contain"
