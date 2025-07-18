@@ -61,14 +61,45 @@ const useStyles = () => ({
     fontSize: "18px",
     color: "#ff4444",
   },
+  passwordScreen: {
+    display: "flex",
+    height: "100vh",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#111317",
+    color: "#fff",
+    flexDirection: "column",
+    fontFamily: "Poppins, sans-serif",
+  },
+  passwordInput: {
+    padding: "10px 15px",
+    fontSize: "16px",
+    marginBottom: "10px",
+    borderRadius: "6px",
+    border: "1px solid #ccc",
+  },
+  button: {
+    padding: "10px 20px",
+    fontSize: "16px",
+    backgroundColor: "#f9ac54",
+    color: "#111317",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+  },
+  errorText: {
+    color: "red",
+    marginTop: "10px",
+  },
 });
 
 const MENU_ITEMS = [
   { name: "Add / Edit Restaurant", url: "https://menu-coral-tau.vercel.app/dsbrdadmin1" },
   { name: "Restaurant Login", url: "https://menu-coral-tau.vercel.app/agentlogin" },
   { name: "Edit Menu", url: "https://menu-coral-tau.vercel.app/freefree1" },
-  { name: "Logout", action: "logout" },
 ];
+
+const PASSWORD = "Amazon123"; // ✅ CHANGE THIS to your secure password
 
 const Dsbrd = () => {
   const styles = useStyles();
@@ -76,11 +107,23 @@ const Dsbrd = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [enteredPassword, setEnteredPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
+  const handleLogin = () => {
+    if (enteredPassword === PASSWORD) {
+      setIsAuthenticated(true);
+      setPasswordError("");
+    } else {
+      setPasswordError("Incorrect password");
+    }
+  };
+
   const handleClick = useCallback((item) => {
     if (item.action === "logout") {
       if (window.confirm("Are you sure you want to logout?")) {
-        // Clear any local/session data here if needed
-        window.location.href = "https://panel.avenirya.com/logout"; // your logout route
+        window.location.href = "https://panel.avenirya.com/logout";
       }
     } else {
       setIframeUrl(item.url);
@@ -91,9 +134,8 @@ const Dsbrd = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (isLoading) setHasError(true); // Simulate error if iframe doesn't load
-    }, 8000); // 8 seconds
-
+      if (isLoading) setHasError(true);
+    }, 8000);
     return () => clearTimeout(timer);
   }, [iframeUrl, isLoading]);
 
@@ -102,9 +144,28 @@ const Dsbrd = () => {
     setHasError(false);
   };
 
+  if (!isAuthenticated) {
+    return (
+      <div style={styles.passwordScreen}>
+        <h2>🔐 Enter Password to Access Dashboard</h2>
+        <input
+          type="password"
+          style={styles.passwordInput}
+          placeholder="Enter Password"
+          value={enteredPassword}
+          onChange={(e) => setEnteredPassword(e.target.value)}
+        />
+        <button style={styles.button} onClick={handleLogin}>
+          Submit
+        </button>
+        {passwordError && <div style={styles.errorText}>{passwordError}</div>}
+      </div>
+    );
+  }
+
   return (
     <div style={styles.container}>
-      <aside style={styles.sidebar} aria-label="Sidebar Navigation">
+      <aside style={styles.sidebar}>
         <h2 style={styles.title}>📊 Dashboard</h2>
         {MENU_ITEMS.map((item) => (
           <div
@@ -113,7 +174,6 @@ const Dsbrd = () => {
             onClick={() => handleClick(item)}
             role="button"
             tabIndex={0}
-            aria-pressed={iframeUrl === item.url}
             onKeyDown={(e) => e.key === "Enter" && handleClick(item)}
           >
             {item.name}
@@ -125,7 +185,6 @@ const Dsbrd = () => {
         {isLoading && !hasError && (
           <div style={styles.loadingOverlay}>⏳ Loading...</div>
         )}
-
         {hasError ? (
           <div style={styles.errorOverlay}>
             ❌ Failed to load content.<br />
