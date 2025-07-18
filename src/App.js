@@ -15,6 +15,8 @@ import UserMenuCreator from "./pages/UserMenuCreator";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import RegisterFreePage from "./pages/registerfree";
 import NotFound from "./pages/NotFound"; // ✅ Adjust path if needed
+import Dsbrd from "./pages/dsbrd";
+import Dsbrdadmin1 from "./pages/dsbrdadmin1";
 
 
 function App() {
@@ -23,6 +25,8 @@ function App() {
       <Routes>
         <Route path="/menu/:id" element={<MenuPageWithoutCart />} />
         <Route path="/restaurant/:id" element={<RestaurantMenuPage />} />
+        <Route path="/dsbrd" element={<Dsbrd />} />
+        <Route path="/dsbrdadmin1" element={<Dsbrdadmin1 />} />
         <Route path="/admin" element={<AdminLoginPage />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/register-restaurant" element={<RestaurantRegister />} />
