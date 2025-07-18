@@ -17,6 +17,7 @@ import RegisterFreePage from "./pages/registerfree";
 import NotFound from "./pages/NotFound"; // ✅ Adjust path if needed
 import Dsbrd from "./pages/dsbrd";
 import Dsbrdadmin1 from "./pages/dsbrdadmin1";
+import Agentlogin from "./pages/agentlogin";
 
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
         <Route path="/restaurant/:id" element={<RestaurantMenuPage />} />
         <Route path="/dsbrd" element={<Dsbrd />} />
         <Route path="/dsbrdadmin1" element={<Dsbrdadmin1 />} />
+        <Route path="/agentlogin" element={<Agentlogin />} />
         <Route path="/admin" element={<AdminLoginPage />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/register-restaurant" element={<RestaurantRegister />} />

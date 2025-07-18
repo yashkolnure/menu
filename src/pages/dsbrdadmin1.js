@@ -128,10 +128,6 @@ const Dsbrdadmin1 = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="w-full bg-white shadow-md p-4 flex justify-between items-center">
-        <h2 className="text-xl font-bold text-gray-800">Subadmin Restaurant Dashboard</h2>
-      </div>
-
       <div className="p-6 md:p-10 font-sans max-w-6xl mx-auto">
         {message && <p className="text-green-600 text-center mb-2">{message}</p>}
         {error && <p className="text-red-600 text-center mb-2">{error}</p>}

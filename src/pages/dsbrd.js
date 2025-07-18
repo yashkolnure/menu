@@ -65,8 +65,8 @@ const useStyles = () => ({
 
 const MENU_ITEMS = [
   { name: "Add / Edit Restaurant", url: "https://menu-coral-tau.vercel.app/dsbrdadmin1" },
-  { name: "Restaurant Login", url: "https://panel.avenirya.com/restaurant-login" },
-  { name: "Edit Menu", url: "https://panel.avenirya.com/menu-editor" },
+  { name: "Restaurant Login", url: "https://menu-coral-tau.vercel.app/agentlogin" },
+  { name: "Edit Menu", url: "https://menu-coral-tau.vercel.app/freefree1" },
   { name: "Logout", action: "logout" },
 ];
 
