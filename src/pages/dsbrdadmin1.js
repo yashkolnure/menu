@@ -23,7 +23,7 @@ const Dsbrdadmin1 = () => {
   const WP_APP_PASSWORD = "05mq iTLF UvJU dyaz 7KxQ 8pyc";
   const WP_SITE_URL = "https://website.avenirya.com";
 
-  const subadminId = "1"; // Fixed ID
+  const subadminId = "1"; // Fixed
 
   useEffect(() => {
     setForm((prev) => ({ ...prev, subadmin_id: subadminId }));
@@ -32,7 +32,7 @@ const Dsbrdadmin1 = () => {
 
   const fetchRestaurantsBySubadmin = async (subadmin_id) => {
     try {
-      const res = await axios.get(`${API}/restaurants?subadmin_id=${subadmin_id}`);
+      const res = await axios.get(`${API}/restaurant/all?subadmin_id=${subadmin_id}`);
       setRestaurants(res.data);
     } catch (err) {
       console.error(err);
@@ -47,7 +47,7 @@ const Dsbrdadmin1 = () => {
       if (editingId) {
         await axios.put(`${API}/restaurants/${editingId}`, form);
       } else {
-        await axios.post(`${API}/restaurants`, form);
+        await axios.post(`${API}/restaurant/register`, form);
       }
 
       setForm({
@@ -57,7 +57,7 @@ const Dsbrdadmin1 = () => {
         logo: "",
         contact: "",
         password: "",
-        subadmin_id: "1", // Reset with fixed ID
+        subadmin_id: "1",
       });
       setEditingId(null);
       setMessage("✅ Saved successfully!");
