@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 
-const Dsbrdadmin1 = ({ subadminId }) => {
+const Dsbrdadmin1 = () => {
   const [restaurants, setRestaurants] = useState([]);
   const [form, setForm] = useState({
     name: "",
@@ -10,6 +10,7 @@ const Dsbrdadmin1 = ({ subadminId }) => {
     logo: "",
     contact: "",
     password: "",
+    subadmin_id: "", // 👈 added hidden field
   });
   const [editingId, setEditingId] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -18,19 +19,35 @@ const Dsbrdadmin1 = ({ subadminId }) => {
   const formRef = useRef(null);
 
   const API = "https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin";
+
   const WP_USERNAME = "yashkolnure58@gmail.com";
   const WP_APP_PASSWORD = "05mq iTLF UvJU dyaz 7KxQ 8pyc";
   const WP_SITE_URL = "https://website.avenirya.com";
 
   useEffect(() => {
-    fetchRestaurants();
+    const subadminId = localStorage.getItem("subadmin_id");
+
+    if (subadminId) {
+      setForm((prev) => ({ ...prev, subadmin_id: subadminId }));
+      fetchRestaurantsBySubadmin(subadminId);
+    } else {
+      fetchRestaurants(); // fallback to all
+    }
   }, []);
+
+  const fetchRestaurantsBySubadmin = async (subadminId) => {
+    try {
+      const res = await axios.get(`${API}/restaurants?subadmin_id=${subadminId}`);
+      setRestaurants(res.data);
+    } catch (err) {
+      alert("Failed to fetch filtered restaurants");
+    }
+  };
 
   const fetchRestaurants = async () => {
     try {
       const res = await axios.get(`${API}/restaurants`);
-      const filtered = res.data.filter(r => r.subadmin_id === subadminId);
-      setRestaurants(filtered);
+      setRestaurants(res.data);
     } catch (err) {
       alert("Failed to fetch restaurants");
     }
@@ -40,19 +57,24 @@ const Dsbrdadmin1 = ({ subadminId }) => {
 
   const handleSubmit = async () => {
     try {
-      const payload = { ...form };
-      if (subadminId) payload.subadmin_id = subadminId;
-
       if (editingId) {
-        await axios.put(`${API}/restaurants/${editingId}`, payload);
+        await axios.put(`${API}/restaurants/${editingId}`, form);
       } else {
-        await axios.post(`${API}/restaurants`, payload);
+        await axios.post(`${API}/restaurants`, form);
       }
 
-      setForm({ name: "", email: "", address: "", logo: "", contact: "", password: "" });
+      setForm({
+        name: "",
+        email: "",
+        address: "",
+        logo: "",
+        contact: "",
+        password: "",
+        subadmin_id: localStorage.getItem("subadmin_id") || "",
+      });
       setEditingId(null);
-      fetchRestaurants();
       setMessage("✅ Saved successfully!");
+      localStorage.getItem("subadmin_id") ? fetchRestaurantsBySubadmin(form.subadmin_id) : fetchRestaurants();
     } catch (err) {
       setError(err.response?.data?.message || "Failed to save restaurant");
     }
@@ -67,7 +89,9 @@ const Dsbrdadmin1 = ({ subadminId }) => {
       logo: restaurant.logo || "",
       contact: restaurant.contact || "",
       password: "",
+      subadmin_id: restaurant.subadmin_id || localStorage.getItem("subadmin_id") || "",
     });
+
     if (formRef.current) {
       formRef.current.scrollIntoView({ behavior: "smooth" });
     }
@@ -77,7 +101,7 @@ const Dsbrdadmin1 = ({ subadminId }) => {
     if (window.confirm("Are you sure you want to delete this restaurant?")) {
       try {
         await axios.delete(`${API}/restaurants/${id}`);
-        fetchRestaurants();
+        localStorage.getItem("subadmin_id") ? fetchRestaurantsBySubadmin(form.subadmin_id) : fetchRestaurants();
       } catch (err) {
         alert("Failed to delete restaurant");
       }
@@ -103,6 +127,7 @@ const Dsbrdadmin1 = ({ subadminId }) => {
           },
         }
       );
+
       const imageUrl = response.data.source_url;
       setForm((prev) => ({ ...prev, logo: imageUrl }));
       setMessage("✅ Logo uploaded successfully!");
@@ -114,62 +139,102 @@ const Dsbrdadmin1 = ({ subadminId }) => {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 p-6 md:p-10 max-w-6xl mx-auto">
-      {message && <p className="text-green-600 text-center mb-2">{message}</p>}
-      {error && <p className="text-red-600 text-center mb-2">{error}</p>}
+  const menuLinks = [
+    { path: "/", label: "Home" },
+    { path: "/admin", label: "Admin Login" },
+    { path: "/admin/dashboard", label: "Admin Dashboard" },
+    { path: "/register-restaurant", label: "Register Restaurant" },
+    { path: "/restaurant-details", label: "Restaurant Details" },
+    { path: "/login1", label: "Login 1" },
+    { path: "/free", label: "User Menu Creator" },
+  ];
 
-      <div ref={formRef} className="bg-white p-6 rounded-xl shadow-md mb-10">
-        <h2 className="text-xl font-semibold mb-4 text-gray-700">
-          {editingId ? "Edit Restaurant" : "Add Restaurant"}
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input name="name" placeholder="Name" value={form.name} onChange={handleChange} className="p-3 border rounded-lg" />
-          <input name="email" placeholder="Email" value={form.email} onChange={handleChange} className="p-3 border rounded-lg" />
-          <input name="address" placeholder="Address" value={form.address} onChange={handleChange} className="p-3 border rounded-lg" />
-          <input name="contact" placeholder="Contact" value={form.contact} onChange={handleChange} className="p-3 border rounded-lg" />
-          <input name="password" placeholder="Password" value={form.password} onChange={handleChange} className="p-3 border rounded-lg" type="password" />
-          <input type="file" onChange={(e) => uploadImageToWordPress(e.target.files[0])} className="p-3 border rounded-lg" />
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="w-full bg-white shadow-md p-4 flex flex-wrap gap-2 justify-between items-center">
+        <h2 className="text-xl font-bold text-gray-800">Super Admin Dashboard</h2>
+        <div className="flex flex-wrap gap-2">
+          {menuLinks.map((link) => (
+            <a
+              key={link.path}
+              href={link.path.replace(":id", "demo")}
+              className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition text-sm"
+            >
+              {link.label}
+            </a>
+          ))}
         </div>
-        {form.logo && <img src={form.logo} alt="logo" className="h-16 mt-2 rounded" />}
-        <button onClick={handleSubmit} className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-          {editingId ? "Update" : "Create"}
-        </button>
       </div>
 
-      <h2 className="text-xl font-semibold mb-4 text-gray-700">Registered Restaurants</h2>
-      <div className="overflow-x-auto">
-        <table className="w-full border rounded-lg">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="p-2 border">Logo</th>
-              <th className="p-2 border">Name</th>
-              <th className="p-2 border">Email</th>
-              <th className="p-2 border">Address</th>
-              <th className="p-2 border">Contact</th>
-              <th className="p-2 border">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {restaurants.map((r) => (
-              <tr key={r._id}>
-                <td className="p-2 border text-center">{r.logo ? <img src={r.logo} className="h-10 w-10 object-cover mx-auto rounded-full" /> : "-"}</td>
-                <td className="p-2 border">{r.name}</td>
-                <td className="p-2 border">{r.email}</td>
-                <td className="p-2 border">{r.address}</td>
-                <td className="p-2 border">{r.contact}</td>
-                <td className="p-2 border space-x-2 text-center">
-                  <button onClick={() => handleEdit(r)} className="text-blue-600 hover:underline">Edit</button>
-                  <button onClick={() => handleDelete(r._id)} className="text-red-600 hover:underline">Delete</button>
-                  <a href={`/menu/${r._id}`} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline">Menu</a>
-                </td>
+      <div className="p-6 md:p-10 font-sans max-w-6xl mx-auto">
+        {message && <p className="text-green-600 text-center mb-2">{message}</p>}
+        {error && <p className="text-red-600 text-center mb-2">{error}</p>}
+
+        <div ref={formRef} className="bg-white p-6 rounded-xl shadow-md mb-10">
+          <h2 className="text-xl font-semibold mb-4 text-gray-700">
+            {editingId ? "Edit Restaurant" : "Add Restaurant"}
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input name="name" placeholder="Restaurant Name" value={form.name} onChange={handleChange} className="p-3 border rounded-lg" />
+            <input name="email" placeholder="Email" value={form.email} onChange={handleChange} className="p-3 border rounded-lg" />
+            <input name="address" placeholder="Address" value={form.address} onChange={handleChange} className="p-3 border rounded-lg" />
+            <input name="contact" placeholder="Contact Number" value={form.contact} onChange={handleChange} className="p-3 border rounded-lg" />
+            <input name="password" type="password" placeholder={editingId ? "Change Password (optional)" : "Password"} value={form.password} onChange={handleChange} className="p-3 border rounded-lg" />
+
+            <input type="hidden" name="subadmin_id" value={form.subadmin_id} />
+            
+            <div className="md:col-span-2">
+              <label className="block mb-1 text-sm font-medium text-gray-600">Upload Logo</label>
+              <input type="file" accept="image/*" onChange={(e) => uploadImageToWordPress(e.target.files[0])} className="w-full p-3 border rounded-lg" />
+              {uploading && <p className="text-blue-500 mt-1">Uploading...</p>}
+              {form.logo && <img src={form.logo} alt="Uploaded" className="mt-2 rounded-md h-20 object-cover border" />}
+            </div>
+          </div>
+
+          <button onClick={handleSubmit} className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            {editingId ? "Update" : "Create"} Restaurant
+          </button>
+        </div>
+
+        <div className="overflow-x-auto">
+          <h2 className="text-xl font-semibold mb-4 text-gray-700">Registered Restaurants</h2>
+          <table className="w-full border rounded-lg overflow-hidden">
+            <thead className="bg-blue-100 text-gray-700">
+              <tr>
+                <th className="p-3 border">Logo</th>
+                <th className="p-3 border">Name</th>
+                <th className="p-3 border">Email</th>
+                <th className="p-3 border">Address</th>
+                <th className="p-3 border">Contact</th>
+                <th className="p-3 border">Actions</th>
               </tr>
-            ))}
-            {restaurants.length === 0 && (
-              <tr><td colSpan="6" className="text-center p-4 text-gray-500">No restaurants found.</td></tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white">
+              {restaurants.map((rest) => (
+                <tr key={rest._id} className="hover:bg-gray-50 transition-all">
+                  <td className="p-3 border text-center">
+                    {rest.logo ? <img src={rest.logo} alt="logo" className="h-10 w-10 object-cover rounded-full mx-auto" /> : "-"}
+                  </td>
+                  <td className="p-3 border">{rest.name}</td>
+                  <td className="p-3 border">{rest.email}</td>
+                  <td className="p-3 border">{rest.address}</td>
+                  <td className="p-3 border">{rest.contact || "-"}</td>
+                  <td className="p-3 border text-center space-x-2">
+                    <button onClick={() => handleEdit(rest)} className="text-blue-600 hover:underline">Edit</button>
+                    <button onClick={() => handleDelete(rest._id)} className="text-red-600 hover:underline">Delete</button>
+                    <a href={`/menu/${rest._id}`} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline">Menu</a>
+                  </td>
+                </tr>
+              ))}
+              {restaurants.length === 0 && (
+                <tr>
+                  <td colSpan="6" className="p-3 text-center text-gray-500">No restaurants found.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
