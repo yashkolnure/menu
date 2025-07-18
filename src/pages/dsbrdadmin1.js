@@ -10,7 +10,7 @@ const Dsbrdadmin1 = () => {
     logo: "",
     contact: "",
     password: "",
-    subadmin_id: "", // 👈 added hidden field
+    subadmin_id: "1", // Fixed subadmin_id
   });
   const [editingId, setEditingId] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -19,37 +19,24 @@ const Dsbrdadmin1 = () => {
   const formRef = useRef(null);
 
   const API = "https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin";
-
   const WP_USERNAME = "yashkolnure58@gmail.com";
   const WP_APP_PASSWORD = "05mq iTLF UvJU dyaz 7KxQ 8pyc";
   const WP_SITE_URL = "https://website.avenirya.com";
 
-  useEffect(() => {
-    const subadminId = localStorage.getItem("subadmin_id");
+  const subadminId = "1"; // Fixed ID
 
-    if (subadminId) {
-      setForm((prev) => ({ ...prev, subadmin_id: subadminId }));
-      fetchRestaurantsBySubadmin(subadminId);
-    } else {
-      fetchRestaurants(); // fallback to all
-    }
+  useEffect(() => {
+    setForm((prev) => ({ ...prev, subadmin_id: subadminId }));
+    fetchRestaurantsBySubadmin(subadminId);
   }, []);
 
-  const fetchRestaurantsBySubadmin = async (subadminId) => {
+  const fetchRestaurantsBySubadmin = async (subadmin_id) => {
     try {
-      const res = await axios.get(`${API}/restaurants?subadmin_id=${subadminId}`);
+      const res = await axios.get(`${API}/restaurants?subadmin_id=${subadmin_id}`);
       setRestaurants(res.data);
     } catch (err) {
-      alert("Failed to fetch filtered restaurants");
-    }
-  };
-
-  const fetchRestaurants = async () => {
-    try {
-      const res = await axios.get(`${API}/restaurants`);
-      setRestaurants(res.data);
-    } catch (err) {
-      alert("Failed to fetch restaurants");
+      console.error(err);
+      alert("Failed to fetch restaurants for subadmin");
     }
   };
 
@@ -70,11 +57,11 @@ const Dsbrdadmin1 = () => {
         logo: "",
         contact: "",
         password: "",
-        subadmin_id: localStorage.getItem("subadmin_id") || "",
+        subadmin_id: "1", // Reset with fixed ID
       });
       setEditingId(null);
       setMessage("✅ Saved successfully!");
-      localStorage.getItem("subadmin_id") ? fetchRestaurantsBySubadmin(form.subadmin_id) : fetchRestaurants();
+      fetchRestaurantsBySubadmin(subadminId);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to save restaurant");
     }
@@ -89,7 +76,7 @@ const Dsbrdadmin1 = () => {
       logo: restaurant.logo || "",
       contact: restaurant.contact || "",
       password: "",
-      subadmin_id: restaurant.subadmin_id || localStorage.getItem("subadmin_id") || "",
+      subadmin_id: restaurant.subadmin_id || "1",
     });
 
     if (formRef.current) {
@@ -101,7 +88,7 @@ const Dsbrdadmin1 = () => {
     if (window.confirm("Are you sure you want to delete this restaurant?")) {
       try {
         await axios.delete(`${API}/restaurants/${id}`);
-        localStorage.getItem("subadmin_id") ? fetchRestaurantsBySubadmin(form.subadmin_id) : fetchRestaurants();
+        fetchRestaurantsBySubadmin(subadminId);
       } catch (err) {
         alert("Failed to delete restaurant");
       }
@@ -139,31 +126,10 @@ const Dsbrdadmin1 = () => {
     }
   };
 
-  const menuLinks = [
-    { path: "/", label: "Home" },
-    { path: "/admin", label: "Admin Login" },
-    { path: "/admin/dashboard", label: "Admin Dashboard" },
-    { path: "/register-restaurant", label: "Register Restaurant" },
-    { path: "/restaurant-details", label: "Restaurant Details" },
-    { path: "/login1", label: "Login 1" },
-    { path: "/free", label: "User Menu Creator" },
-  ];
-
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="w-full bg-white shadow-md p-4 flex flex-wrap gap-2 justify-between items-center">
-        <h2 className="text-xl font-bold text-gray-800">Super Admin Dashboard</h2>
-        <div className="flex flex-wrap gap-2">
-          {menuLinks.map((link) => (
-            <a
-              key={link.path}
-              href={link.path.replace(":id", "demo")}
-              className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition text-sm"
-            >
-              {link.label}
-            </a>
-          ))}
-        </div>
+      <div className="w-full bg-white shadow-md p-4 flex justify-between items-center">
+        <h2 className="text-xl font-bold text-gray-800">Subadmin Restaurant Dashboard</h2>
       </div>
 
       <div className="p-6 md:p-10 font-sans max-w-6xl mx-auto">
@@ -182,8 +148,9 @@ const Dsbrdadmin1 = () => {
             <input name="contact" placeholder="Contact Number" value={form.contact} onChange={handleChange} className="p-3 border rounded-lg" />
             <input name="password" type="password" placeholder={editingId ? "Change Password (optional)" : "Password"} value={form.password} onChange={handleChange} className="p-3 border rounded-lg" />
 
+            {/* Hidden subadmin_id field */}
             <input type="hidden" name="subadmin_id" value={form.subadmin_id} />
-            
+
             <div className="md:col-span-2">
               <label className="block mb-1 text-sm font-medium text-gray-600">Upload Logo</label>
               <input type="file" accept="image/*" onChange={(e) => uploadImageToWordPress(e.target.files[0])} className="w-full p-3 border rounded-lg" />
