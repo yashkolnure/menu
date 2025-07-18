@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import QRCodeTemplates from "../components/QRCodeTemplates";
 
 function BulkUploadmenu1() {
   const [restaurant, setRestaurant] = useState({ name: "", logo: "", address: "", contact: "" });
@@ -648,6 +649,8 @@ function BulkUploadmenu1() {
           )}
         </div>
       )}
+      <QRCodeTemplates restaurantId={restaurantId} />
+
     </div>
   );
 }
