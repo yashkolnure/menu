@@ -18,6 +18,7 @@ import NotFound from "./pages/NotFound"; // ✅ Adjust path if needed
 import Dsbrd from "./pages/dsbrd";
 import Dsbrdadmin1 from "./pages/dsbrdadmin1";
 import Agentlogin from "./pages/agentlogin";
+import Beautysalon from "./pages/beautysalon";
 
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/menu/:id" element={<MenuPageWithoutCart />} />
+        <Route path="/shop/:id" element={<Beautysalon />} />
         <Route path="/restaurant/:id" element={<RestaurantMenuPage />} />
         <Route path="/dsbrd" element={<Dsbrd />} />
         <Route path="/dsbrdadmin1" element={<Dsbrdadmin1 />} />
