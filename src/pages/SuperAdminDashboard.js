@@ -193,6 +193,7 @@ const handleSubmit = async () => {
                 <th className="p-3 border">Email</th>
                 <th className="p-3 border">Address</th>
                 <th className="p-3 border">Contact</th>
+                <th className="p-3 border">QR Code</th>
                 <th className="p-3 border">Actions</th>
               </tr>
             </thead>
@@ -206,6 +207,23 @@ const handleSubmit = async () => {
                   <td className="p-3 border">{rest.email}</td>
                   <td className="p-3 border">{rest.address}</td>
                   <td className="p-3 border">{rest.contact || "-"}</td>
+                  <td className="p-3 border text-center">
+                  <QRCode
+                    value={`${window.location.origin}/menu/${rest._id}`}
+                    size={64}
+                    level="M"
+                  />
+                  <div>
+                    <a
+                      href={`/menu/${rest._id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 text-xs underline block mt-1"
+                    >
+                      Open Menu
+                    </a>
+                  </div>
+                </td>
                  <td className="p-3 border space-x-2 text-center">
                     <button
                       onClick={() => handleEdit(rest)}
