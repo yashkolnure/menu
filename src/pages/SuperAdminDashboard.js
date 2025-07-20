@@ -194,7 +194,7 @@ const handleSubmit = async () => {
                 <th className="p-3 border">Address</th>
                 <th className="p-3 border">Contact</th>
                 <th className="p-3 border">QR Code</th>
-                <th className="p-3 border">Actions</th>
+                <th className="p-3 border">Actions</th> 
               </tr>
             </thead>
             <tbody className="bg-white">
