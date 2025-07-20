@@ -95,6 +95,22 @@ function BulkUploadmenu1() {
     };
     reader.readAsDataURL(file);
   };
+async function batchUpdate(items, batchSize = 5) {
+  let index = 0;
+  while (index < items.length) {
+    const batch = items.slice(index, index + batchSize);
+    await Promise.all(
+      batch.map(item =>
+        axios.put(
+          `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${item.restaurantId}/menu/${item._id}`,
+          item,
+          { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+        )
+      )
+    );
+    index += batchSize;
+  }
+};
 
   async function uploadImageToWordPress(base64Image, filename) {
     try {
@@ -333,7 +349,7 @@ function BulkUploadmenu1() {
         )
       );
       
-      await Promise.all(requests);
+      await batchUpdate(itemsToSave, 50); 
       setMessage("All items updated successfully.");
       setIsEditMode(false);
       

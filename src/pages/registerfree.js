@@ -62,22 +62,35 @@ const RegisterFreePage = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setMessage("");
+  e.preventDefault();
+  setError("");
+  setMessage("");
 
-    try {
-      const res = await axios.post(
-        "https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/restaurants",
-        formData
-      );
+  // Check for empty fields
+  if (
+    !formData.name.trim() ||
+    !formData.email.trim() ||
+    !formData.contact.trim() ||
+    !formData.address.trim() ||
+    !formData.logo.trim() ||
+    !formData.password.trim()
+  ) {
+    setError("All fields are mandatory.");
+    return;
+  }
 
-      setMessage("✅ Registered successfully!");
-      setTimeout(() => navigate("/login"), 1000);
-    } catch (err) {
-      setError(err.response?.data?.message || "❌ Registration failed.");
-    }
-  };
+  try {
+    const res = await axios.post(
+      "https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/restaurants",
+      formData
+    );
+
+    setMessage("✅ Registered successfully!");
+    setTimeout(() => navigate("/login"), 1000);
+  } catch (err) {
+    setError(err.response?.data?.message || "❌ Registration failed.");
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">

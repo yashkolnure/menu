@@ -39,21 +39,36 @@ const SuperAdminDashboard = () => {
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = async () => {
-    try {
-      if (editingId) {
-        await axios.put(`${API}/restaurants/${editingId}`, form);
-      } else {
-        await axios.post(`${API}/restaurants`, form);
-      }
-      setForm({ name: "", email: "", address: "", logo: "", contact: "", password: "" });
-      setEditingId(null);
-      fetchRestaurants();
-      setMessage("✅ Saved successfully!");
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to save restaurant");
+const handleSubmit = async () => {
+  // Check for empty fields
+  if (
+    !form.name.trim() ||
+    !form.email.trim() ||
+    !form.address.trim() ||
+    !form.logo.trim() ||
+    !form.contact.trim() ||
+    (!editingId && !form.password.trim())
+  ) {
+    setError("All fields are mandatory.");
+    setMessage("");
+    return;
+  }
+  try {
+    if (editingId) {
+      await axios.put(`${API}/restaurants/${editingId}`, form);
+    } else {
+      await axios.post(`${API}/restaurants`, form);
     }
-  };
+    setForm({ name: "", email: "", address: "", logo: "", contact: "", password: "" });
+    setEditingId(null);
+    fetchRestaurants();
+    setMessage("✅ Saved successfully!");
+    setError("");
+  } catch (err) {
+    setError(err.response?.data?.message || "Failed to save restaurant");
+    setMessage("");
+  }
+};
 
   const handleEdit = (restaurant) => {
     setEditingId(restaurant._id);
