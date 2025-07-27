@@ -96,54 +96,63 @@ function BulkUploadmenu1() {
     reader.readAsDataURL(file);
   };
 
-  async function fetchImageForItem(dishName, index) {
-  if (!dishName) {
-    setError("Dish name required to fetch image.");
+const PIXABAY_API_KEY = "51506332-d6cb9f895d10ba3259be57ec5"; // Replace with your key
+
+async function fetchImageForItem(_, index) {
+  const item = editedItems[index];
+  const dishName = item?.name;
+  const description = item?.description;
+
+  if (!dishName && !description) {
+    setError("Dish name or description required to fetch image.");
     return;
   }
 
-  let cleanName = dishName.replace(/\(.*?\)/g, '').replace(/-/g, ' ').replace(/\s+/g, ' ').trim();
+  const fullQuery = `${dishName ?? ""} ${description ?? ""} food`
+    .replace(/\(.*?\)/g, '')
+    .replace(/-/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 
   try {
-    setSavingItems(prev => ({ ...prev, [editedItems[index]._id]: "fetching" }));
+    setSavingItems(prev => ({ ...prev, [item._id]: "fetching" }));
 
-    const tokenRes = await fetch(`https://duckduckgo.com/?q=${encodeURIComponent(cleanName)}+food`);
-    const html = await tokenRes.text();
+    let query = encodeURIComponent(fullQuery);
+    let url = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${query}&image_type=photo&per_page=3&safesearch=true`;
 
-    const vqdMatch = html.match(/vqd='(.+?)'/);
-    if (!vqdMatch) throw new Error("vqd token not found.");
+    let res = await fetch(url);
+    let data = await res.json();
 
-    const vqd = vqdMatch[1];
-    const imageRes = await fetch(`https://duckduckgo.com/i.js?l=us-en&o=json&q=${encodeURIComponent(cleanName + " food")}&vqd=${vqd}`, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0' // Required to avoid 403
-      }
-    });
+    // Fallback: Try with just dish name if description-based search fails
+    if ((!data.hits || data.hits.length === 0) && dishName) {
+      query = encodeURIComponent(`${dishName} food`);
+      url = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${query}&image_type=photo&per_page=3&safesearch=true`;
+      res = await fetch(url);
+      data = await res.json();
+    }
 
-    const imageData = await imageRes.json();
-    if (imageData.results && imageData.results.length > 0) {
-      const imageUrl = imageData.results[0].image;
-
+    if (data.hits && data.hits.length > 0) {
+      const imageUrl = data.hits[0].largeImageURL;
       const imgBlob = await fetch(imageUrl).then(r => r.blob());
       const reader = new FileReader();
       reader.onloadend = () => {
         updateEditedItem(index, "image", reader.result); // base64
-        setSavingItems(prev => ({ ...prev, [editedItems[index]._id]: undefined }));
+        setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
       };
       reader.readAsDataURL(imgBlob);
     } else {
       setError(`No image found for "${dishName}"`);
-      setSavingItems(prev => ({ ...prev, [editedItems[index]._id]: undefined }));
+      setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
     }
   } catch (err) {
     setError("Failed to fetch image: " + err.message);
-    setSavingItems(prev => ({ ...prev, [editedItems[index]._id]: undefined }));
+    setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
   }
 }
 async function fetchAllImages() {
   for (let i = 0; i < editedItems.length; i++) {
     if (!editedItems[i].image || editedItems[i].image.startsWith('data:')) {
-      await fetchImageForItem(editedItems[i].name, i);
+      await fetchImageForItem(null, i);
     }
   }
 }
