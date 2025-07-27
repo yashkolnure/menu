@@ -105,15 +105,27 @@ async function fetchImageForItem(dishName, index) {
     setError("Dish name required to fetch image.");
     return;
   }
+  // Clean the dish name: remove parentheses and their content, dashes, and extra spaces
+  let cleanName = dishName.replace(/\(.*?\)/g, '').replace(/-/g, ' ').replace(/\s+/g, ' ').trim();
+
   try {
     setSavingItems(prev => ({ ...prev, [editedItems[index]._id]: "fetching" }));
-    const query = encodeURIComponent(`${dishName} food`);
-    const url = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${query}&image_type=photo&per_page=3&safesearch=true`;
-    const res = await fetch(url);
-    const data = await res.json();
+    let query = encodeURIComponent(`${cleanName} food`);
+    let url = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${query}&image_type=photo&per_page=3&safesearch=true`;
+    let res = await fetch(url);
+    let data = await res.json();
+
+    // Fallback: Try with just the first word if no results
+    if ((!data.hits || data.hits.length === 0) && cleanName.includes(' ')) {
+      const firstWord = cleanName.split(' ')[0];
+      query = encodeURIComponent(`${firstWord} food`);
+      url = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${query}&image_type=photo&per_page=3&safesearch=true`;
+      res = await fetch(url);
+      data = await res.json();
+    }
+
     if (data.hits && data.hits.length > 0) {
       const imageUrl = data.hits[0].largeImageURL;
-      // Optionally, fetch as base64 for upload preview
       const imgBlob = await fetch(imageUrl).then(r => r.blob());
       const reader = new FileReader();
       reader.onloadend = () => {
