@@ -98,7 +98,7 @@ function BulkUploadmenu1() {
 
 const PEXELS_API_KEY = "ot3ToTyzUmISBLovpXr5cnSVlAdWftjxIV2FFGn3HUe3RfVvXIYTJRHr";
 
-async function fetchImageForItem(dishName, index) {
+async function fetchAllImages(dishName, index) {
   if (!dishName) {
     setError("Dish name required to fetch image.");
     return;
