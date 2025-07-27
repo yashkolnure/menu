@@ -96,9 +96,7 @@ function BulkUploadmenu1() {
     reader.readAsDataURL(file);
   };
 
-const PEXELS_API_KEY = "ot3ToTyzUmISBLovpXr5cnSVlAdWftjxIV2FFGn3HUe3RfVvXIYTJRHr";
-
-async function fetchAllImages(dishName, index) {
+  async function fetchImageForItem(dishName, index) {
   if (!dishName) {
     setError("Dish name required to fetch image.");
     return;
@@ -108,31 +106,18 @@ async function fetchAllImages(dishName, index) {
   try {
     setSavingItems(prev => ({ ...prev, [editedItems[index]._id]: "fetching" }));
 
-    let query = `${cleanName} food`;
-    let url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=3`;
-    let res = await fetch(url, {
-      headers: {
-        Authorization: PEXELS_API_KEY
-      }
-    });
+    let query = encodeURIComponent(cleanName);
+    let url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${query}&search_simple=1&action=process&json=1&page_size=3`;
+
+    let res = await fetch(url);
     let data = await res.json();
 
-    if ((!data.photos || data.photos.length === 0) && cleanName.includes(' ')) {
-      const firstWord = cleanName.split(' ')[0];
-      query = `${firstWord} food`;
-      url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=3`;
-      res = await fetch(url, {
-        headers: { Authorization: PEXELS_API_KEY }
-      });
-      data = await res.json();
-    }
-
-    if (data.photos && data.photos.length > 0) {
-      const imageUrl = data.photos[0].src.large;
+    if (data.products && data.products.length > 0 && data.products[0].image_url) {
+      const imageUrl = data.products[0].image_url;
       const imgBlob = await fetch(imageUrl).then(r => r.blob());
       const reader = new FileReader();
       reader.onloadend = () => {
-        updateEditedItem(index, "image", reader.result); // base64
+        updateEditedItem(index, "image", reader.result); // base64 image
         setSavingItems(prev => ({ ...prev, [editedItems[index]._id]: undefined }));
       };
       reader.readAsDataURL(imgBlob);
@@ -140,11 +125,22 @@ async function fetchAllImages(dishName, index) {
       setError(`No image found for "${dishName}"`);
       setSavingItems(prev => ({ ...prev, [editedItems[index]._id]: undefined }));
     }
+
   } catch (err) {
     setError("Failed to fetch image: " + err.message);
     setSavingItems(prev => ({ ...prev, [editedItems[index]._id]: undefined }));
   }
 }
+
+
+async function fetchAllImages() {
+  for (let i = 0; i < editedItems.length; i++) {
+    if (!editedItems[i].image || editedItems[i].image.startsWith('data:')) {
+      await fetchImageForItem(editedItems[i].name, i);
+    }
+  }
+}
+
 
 
 
