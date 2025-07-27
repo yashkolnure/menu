@@ -103,21 +103,31 @@ function BulkUploadmenu1() {
   }
 
   let cleanName = dishName.replace(/\(.*?\)/g, '').replace(/-/g, ' ').replace(/\s+/g, ' ').trim();
+
   try {
     setSavingItems(prev => ({ ...prev, [editedItems[index]._id]: "fetching" }));
 
-    let query = encodeURIComponent(cleanName);
-    let url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${query}&search_simple=1&action=process&json=1&page_size=3`;
+    const tokenRes = await fetch(`https://duckduckgo.com/?q=${encodeURIComponent(cleanName)}+food`);
+    const html = await tokenRes.text();
 
-    let res = await fetch(url);
-    let data = await res.json();
+    const vqdMatch = html.match(/vqd='(.+?)'/);
+    if (!vqdMatch) throw new Error("vqd token not found.");
 
-    if (data.products && data.products.length > 0 && data.products[0].image_url) {
-      const imageUrl = data.products[0].image_url;
+    const vqd = vqdMatch[1];
+    const imageRes = await fetch(`https://duckduckgo.com/i.js?l=us-en&o=json&q=${encodeURIComponent(cleanName + " food")}&vqd=${vqd}`, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0' // Required to avoid 403
+      }
+    });
+
+    const imageData = await imageRes.json();
+    if (imageData.results && imageData.results.length > 0) {
+      const imageUrl = imageData.results[0].image;
+
       const imgBlob = await fetch(imageUrl).then(r => r.blob());
       const reader = new FileReader();
       reader.onloadend = () => {
-        updateEditedItem(index, "image", reader.result); // base64 image
+        updateEditedItem(index, "image", reader.result); // base64
         setSavingItems(prev => ({ ...prev, [editedItems[index]._id]: undefined }));
       };
       reader.readAsDataURL(imgBlob);
@@ -125,14 +135,11 @@ function BulkUploadmenu1() {
       setError(`No image found for "${dishName}"`);
       setSavingItems(prev => ({ ...prev, [editedItems[index]._id]: undefined }));
     }
-
   } catch (err) {
     setError("Failed to fetch image: " + err.message);
     setSavingItems(prev => ({ ...prev, [editedItems[index]._id]: undefined }));
   }
 }
-
-
 async function fetchAllImages() {
   for (let i = 0; i < editedItems.length; i++) {
     if (!editedItems[i].image || editedItems[i].image.startsWith('data:')) {
