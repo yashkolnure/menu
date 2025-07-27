@@ -95,6 +95,55 @@ function BulkUploadmenu1() {
     };
     reader.readAsDataURL(file);
   };
+
+
+
+const PIXABAY_API_KEY = "51506332-d6cb9f895d10ba3259be57ec5"; // <-- Replace with your Pixabay API key
+
+async function fetchImageForItem(dishName, index) {
+  if (!dishName) {
+    setError("Dish name required to fetch image.");
+    return;
+  }
+  try {
+    setSavingItems(prev => ({ ...prev, [editedItems[index]._id]: "fetching" }));
+    const query = encodeURIComponent(`${dishName} food`);
+    const url = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${query}&image_type=photo&per_page=3&safesearch=true`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.hits && data.hits.length > 0) {
+      const imageUrl = data.hits[0].largeImageURL;
+      // Optionally, fetch as base64 for upload preview
+      const imgBlob = await fetch(imageUrl).then(r => r.blob());
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        updateEditedItem(index, "image", reader.result); // base64
+        setSavingItems(prev => ({ ...prev, [editedItems[index]._id]: undefined }));
+      };
+      reader.readAsDataURL(imgBlob);
+    } else {
+      setError(`No image found for "${dishName}"`);
+      setSavingItems(prev => ({ ...prev, [editedItems[index]._id]: undefined }));
+    }
+  } catch (err) {
+    setError("Failed to fetch image: " + err.message);
+    setSavingItems(prev => ({ ...prev, [editedItems[index]._id]: undefined }));
+  }
+}
+
+async function fetchAllImages() {
+  for (let i = 0; i < editedItems.length; i++) {
+    if (!editedItems[i].image || editedItems[i].image.startsWith('data:')) {
+      await fetchImageForItem(editedItems[i].name, i);
+    }
+  }
+}
+
+
+
+
+
+
 async function batchUpdate(items, batchSize = 5) {
   let index = 0;
   while (index < items.length) {
@@ -478,6 +527,13 @@ async function batchUpdate(items, batchSize = 5) {
           {isEditMode ? (
             <>
               <h3 className="text-xl font-semibold mb-4">Edit Menu Items</h3>
+              <button
+                type="button"
+                className="mb-3 bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded"
+                onClick={fetchAllImages}
+              >
+                Fetch All Images
+              </button>
               <div className="space-y-3 w-full">
                 {editedItems.map((item, index) => (
                   <div
@@ -508,12 +564,22 @@ async function batchUpdate(items, batchSize = 5) {
                     />
 
                     {/* Dish Name */}
+                    <div className="flex items-center gap-2">
                     <input
                       value={item.name}
                       onChange={(e) => updateEditedItem(index, "name", e.target.value)}
                       className="border p-2 rounded text-sm flex-1 min-w-[120px]"
                       placeholder="Name"
                     />
+                    <button
+                      type="button"
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs"
+                      onClick={() => fetchImageForItem(item.name, index)}
+                      title="Fetch image from Pixabay"
+                    >
+                      Fetch Image
+                    </button>
+                  </div>
 
                     {/* Description */}
                     <input
