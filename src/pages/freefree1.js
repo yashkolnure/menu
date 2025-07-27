@@ -96,36 +96,39 @@ function BulkUploadmenu1() {
     reader.readAsDataURL(file);
   };
 
-
-
-const PIXABAY_API_KEY = "51506332-d6cb9f895d10ba3259be57ec5"; // <-- Replace with your Pixabay API key
+const PEXELS_API_KEY = "ot3ToTyzUmISBLovpXr5cnSVlAdWftjxIV2FFGn3HUe3RfVvXIYTJRHr";
 
 async function fetchImageForItem(dishName, index) {
   if (!dishName) {
     setError("Dish name required to fetch image.");
     return;
   }
-  // Clean the dish name: remove parentheses and their content, dashes, and extra spaces
-  let cleanName = dishName.replace(/\(.*?\)/g, '').replace(/-/g, ' ').replace(/\s+/g, ' ').trim();
 
+  let cleanName = dishName.replace(/\(.*?\)/g, '').replace(/-/g, ' ').replace(/\s+/g, ' ').trim();
   try {
     setSavingItems(prev => ({ ...prev, [editedItems[index]._id]: "fetching" }));
-    let query = encodeURIComponent(`${cleanName} food`);
-    let url = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${query}&image_type=photo&per_page=3&safesearch=true`;
-    let res = await fetch(url);
+
+    let query = `${cleanName} food`;
+    let url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=3`;
+    let res = await fetch(url, {
+      headers: {
+        Authorization: PEXELS_API_KEY
+      }
+    });
     let data = await res.json();
 
-    // Fallback: Try with just the first word if no results
-    if ((!data.hits || data.hits.length === 0) && cleanName.includes(' ')) {
+    if ((!data.photos || data.photos.length === 0) && cleanName.includes(' ')) {
       const firstWord = cleanName.split(' ')[0];
-      query = encodeURIComponent(`${firstWord} food`);
-      url = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${query}&image_type=photo&per_page=3&safesearch=true`;
-      res = await fetch(url);
+      query = `${firstWord} food`;
+      url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=3`;
+      res = await fetch(url, {
+        headers: { Authorization: PEXELS_API_KEY }
+      });
       data = await res.json();
     }
 
-    if (data.hits && data.hits.length > 0) {
-      const imageUrl = data.hits[0].largeImageURL;
+    if (data.photos && data.photos.length > 0) {
+      const imageUrl = data.photos[0].src.large;
       const imgBlob = await fetch(imageUrl).then(r => r.blob());
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -142,16 +145,6 @@ async function fetchImageForItem(dishName, index) {
     setSavingItems(prev => ({ ...prev, [editedItems[index]._id]: undefined }));
   }
 }
-
-async function fetchAllImages() {
-  for (let i = 0; i < editedItems.length; i++) {
-    if (!editedItems[i].image || editedItems[i].image.startsWith('data:')) {
-      await fetchImageForItem(editedItems[i].description, i);
-    }
-  }
-}
-
-
 
 
 
@@ -576,32 +569,30 @@ async function batchUpdate(items, batchSize = 5) {
                     />
 
                     {/* Dish Name */}
+                    <div className="flex items-center gap-2">
                     <input
                       value={item.name}
                       onChange={(e) => updateEditedItem(index, "name", e.target.value)}
                       className="border p-2 rounded text-sm flex-1 min-w-[120px]"
                       placeholder="Name"
                     />
-                    
-
-                    {/* Description */}
-                    <div className="flex items-center gap-2">
-                     <input
-                      value={item.description}
-                      onChange={(e) => updateEditedItem(index, "description", e.target.value)}
-                      className="border p-2 rounded text-sm flex-1 min-w-[150px]"
-                      placeholder="Description"
-                    />
-  
                     <button
                       type="button"
                       className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs"
-                      onClick={() => fetchImageForItem(item.description, index)}
+                      onClick={() => fetchImageForItem(item.name, index)}
                       title="Fetch image from Pixabay"
                     >
                       Fetch Image
                     </button>
                   </div>
+
+                    {/* Description */}
+                    <input
+                      value={item.description}
+                      onChange={(e) => updateEditedItem(index, "description", e.target.value)}
+                      className="border p-2 rounded text-sm flex-1 min-w-[150px]"
+                      placeholder="Description"
+                    />
 
                     {/* Price */}
                     <input
