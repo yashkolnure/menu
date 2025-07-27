@@ -98,7 +98,7 @@ function BulkUploadmenu1() {
 
 const PEXELS_API_KEY = "ot3ToTyzUmISBLovpXr5cnSVlAdWftjxIV2FFGn3HUe3RfVvXIYTJRHr";
 
-async function fetchAllImages(dishName, index) {
+async function fetchImageForItem(dishName, index) {
   if (!dishName) {
     setError("Dish name required to fetch image.");
     return;
@@ -569,14 +569,22 @@ async function batchUpdate(items, batchSize = 5) {
                     />
 
                     {/* Dish Name */}
-             
+                    <div className="flex items-center gap-2">
                     <input
                       value={item.name}
                       onChange={(e) => updateEditedItem(index, "name", e.target.value)}
                       className="border p-2 rounded text-sm flex-1 min-w-[120px]"
                       placeholder="Name"
                     />
-                   
+                    <button
+                      type="button"
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs"
+                      onClick={() => fetchImageForItem(item.name, index)}
+                      title="Fetch image from Pixabay"
+                    >
+                      Fetch Image
+                    </button>
+                  </div>
 
                     {/* Description */}
                     <input
