@@ -243,15 +243,16 @@ async function batchUpdate(items, batchSize = 5) {
 
 
   const WORDPRESS_MEDIA_API = "https://website.avenirya.com/wp-json/wp/v2/media"; // Change this
-
-function cleanDishName(name) {
+function cleanName(name) {
   return name
-    .replace(/\(.*?\)/g, '') // remove (1 Kg)
-    .replace(/[^a-zA-Z\s]/g, '') // remove digits/symbols
-    .replace(/\s+/g, ' ')       // collapse spaces
-    .trim()
-    .toLowerCase();
+    .toLowerCase()
+    .replace(/\(.*?\)/g, '')       // Remove (anything)
+    .replace(/[^a-z\s-]/g, '')     // Remove special characters, digits
+    .replace(/-/g, ' ')            // Replace dashes with space
+    .replace(/\s+/g, ' ')          // Collapse whitespace
+    .trim();
 }
+
 async function fetchImageForItem(_, index) {
   const item = editedItems[index];
   const rawName = item?.name;
@@ -261,8 +262,8 @@ async function fetchImageForItem(_, index) {
     return;
   }
 
-  const cleanName = cleanDishName(rawName); // e.g. "chocolate cake"
-  const url = `https://yourwordpresssite.com/wp-json/wp/v2/media?search=${encodeURIComponent(cleanName)}&per_page=5`;
+  const cleanedDishName = cleanName(rawName); // e.g., "chicken delight pizza"
+  const url = `https://website.avenirya.com/wp-json/wp/v2/media?search=${encodeURIComponent(cleanedDishName)}&per_page=10`;
 
   try {
     setSavingItems(prev => ({ ...prev, [item._id]: "fetching" }));
@@ -271,9 +272,19 @@ async function fetchImageForItem(_, index) {
     const mediaItems = await res.json();
 
     if (mediaItems.length > 0) {
-      const bestMatch = mediaItems.find(m =>
-        cleanDishName(m.title.rendered).includes(cleanName)
-      ) || mediaItems[0]; // fallback to first item
+      let bestMatch = null;
+
+      // 1. Try to find exact or partial match
+      for (let media of mediaItems) {
+        const title = cleanName(media.title.rendered);
+        if (title.includes(cleanedDishName) || cleanedDishName.includes(title)) {
+          bestMatch = media;
+          break;
+        }
+      }
+
+      // 2. If no match, fallback to first item
+      bestMatch = bestMatch || mediaItems[0];
 
       const imageUrl = bestMatch.source_url;
 
@@ -285,7 +296,7 @@ async function fetchImageForItem(_, index) {
       };
       reader.readAsDataURL(imgBlob);
     } else {
-      setError(`No image found in WordPress for "${rawName}"`);
+      setError(`No image found for "${rawName}"`);
       setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
     }
 
@@ -294,6 +305,7 @@ async function fetchImageForItem(_, index) {
     setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
   }
 }
+
 
 async function fetchAllImages() {
   for (let i = 0; i < editedItems.length; i++) {
