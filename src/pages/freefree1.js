@@ -96,68 +96,6 @@ function BulkUploadmenu1() {
     reader.readAsDataURL(file);
   };
 
-const PIXABAY_API_KEY = "51506332-d6cb9f895d10ba3259be57ec5"; // Replace with your key
-
-async function fetchImageForItem(_, index) {
-  const item = editedItems[index];
-  const dishName = item?.name;
-  const description = item?.description;
-
-  if (!dishName && !description) {
-    setError("Dish name or description required to fetch image.");
-    return;
-  }
-
-  const fullQuery = `${dishName ?? ""} ${description ?? ""} food`
-    .replace(/\(.*?\)/g, '')
-    .replace(/-/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-  try {
-    setSavingItems(prev => ({ ...prev, [item._id]: "fetching" }));
-
-    let query = encodeURIComponent(fullQuery);
-    let url = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${query}&image_type=photo&per_page=3&safesearch=true`;
-
-    let res = await fetch(url);
-    let data = await res.json();
-
-    // Fallback: Try with just dish name if description-based search fails
-    if ((!data.hits || data.hits.length === 0) && dishName) {
-      query = encodeURIComponent(`${dishName} food`);
-      url = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${query}&image_type=photo&per_page=3&safesearch=true`;
-      res = await fetch(url);
-      data = await res.json();
-    }
-
-    if (data.hits && data.hits.length > 0) {
-      const imageUrl = data.hits[0].largeImageURL;
-      const imgBlob = await fetch(imageUrl).then(r => r.blob());
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        updateEditedItem(index, "image", reader.result); // base64
-        setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
-      };
-      reader.readAsDataURL(imgBlob);
-    } else {
-      setError(`No image found for "${dishName}"`);
-      setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
-    }
-  } catch (err) {
-    setError("Failed to fetch image: " + err.message);
-    setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
-  }
-}
-async function fetchAllImages() {
-  for (let i = 0; i < editedItems.length; i++) {
-    if (!editedItems[i].image || editedItems[i].image.startsWith('data:')) {
-      await fetchImageForItem(null, i);
-    }
-  }
-}
-
-
 
 
 
@@ -302,6 +240,68 @@ async function batchUpdate(items, batchSize = 5) {
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+
+  const WORDPRESS_MEDIA_API = "https://website.avenirya.com/wp-json/wp/v2/media"; // Change this
+
+function normalizeQuery(name = "", desc = "") {
+  return decodeURIComponent(`${name} ${desc}`)
+    .replace(/\(.*?\)/g, "")
+    .replace(/[-_]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+async function fetchImageForItem(_, index) {
+  const item = editedItems[index];
+  const name = item?.name ?? "";
+  const description = item?.description ?? "";
+
+  if (!name && !description) {
+    setError("Dish name or description required to fetch image.");
+    return;
+  }
+
+  const searchQuery = normalizeQuery(name, description);
+  const url = `${WORDPRESS_MEDIA_API}?search=${encodeURIComponent(searchQuery)}&per_page=5`;
+
+  try {
+    setSavingItems(prev => ({ ...prev, [item._id]: "fetching" }));
+
+    const res = await fetch(url);
+    const images = await res.json();
+
+    // fallback: search again with just name if no results
+    if ((!images || images.length === 0) && name) {
+      const fallbackUrl = `${WORDPRESS_MEDIA_API}?search=${encodeURIComponent(name)}&per_page=5`;
+      const fallbackRes = await fetch(fallbackUrl);
+      const fallbackImages = await fallbackRes.json();
+      images.push(...fallbackImages);
+    }
+
+    const firstImage = images.find(img => img?.media_type === "image" && img?.source_url);
+
+    if (firstImage) {
+      updateEditedItem(index, "image", firstImage.source_url); // Use direct URL
+    } else {
+      setError(`No image found in WordPress for "${name}"`);
+    }
+
+    setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
+  } catch (err) {
+    setError("Failed to fetch from WordPress: " + err.message);
+    setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
+  }
+}
+
+async function fetchAllImages() {
+  for (let i = 0; i < editedItems.length; i++) {
+    const img = editedItems[i].image;
+    if (!img || img.startsWith("data:")) {
+      await fetchImageForItem(null, i);
+    }
+  }
+}
 
   const handleUpdate = async () => {
     try {
