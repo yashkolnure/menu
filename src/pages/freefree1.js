@@ -244,52 +244,53 @@ async function batchUpdate(items, batchSize = 5) {
 
   const WORDPRESS_MEDIA_API = "https://website.avenirya.com/wp-json/wp/v2/media"; // Change this
 
-function normalizeQuery(name = "", desc = "") {
-  return decodeURIComponent(`${name} ${desc}`)
-    .replace(/\(.*?\)/g, "")
-    .replace(/[-_]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+function cleanDishName(name) {
+  return name
+    .replace(/\(.*?\)/g, '') // remove (1 Kg)
+    .replace(/[^a-zA-Z\s]/g, '') // remove digits/symbols
+    .replace(/\s+/g, ' ')       // collapse spaces
+    .trim()
+    .toLowerCase();
 }
-
 async function fetchImageForItem(_, index) {
   const item = editedItems[index];
-  const name = item?.name ?? "";
-  const description = item?.description ?? "";
+  const rawName = item?.name;
 
-  if (!name && !description) {
-    setError("Dish name or description required to fetch image.");
+  if (!rawName) {
+    setError("Dish name required to fetch image.");
     return;
   }
 
-  const searchQuery = normalizeQuery(name, description);
-  const url = `${WORDPRESS_MEDIA_API}?search=${encodeURIComponent(searchQuery)}&per_page=5`;
+  const cleanName = cleanDishName(rawName); // e.g. "chocolate cake"
+  const url = `https://yourwordpresssite.com/wp-json/wp/v2/media?search=${encodeURIComponent(cleanName)}&per_page=5`;
 
   try {
     setSavingItems(prev => ({ ...prev, [item._id]: "fetching" }));
 
     const res = await fetch(url);
-    const images = await res.json();
+    const mediaItems = await res.json();
 
-    // fallback: search again with just name if no results
-    if ((!images || images.length === 0) && name) {
-      const fallbackUrl = `${WORDPRESS_MEDIA_API}?search=${encodeURIComponent(name)}&per_page=5`;
-      const fallbackRes = await fetch(fallbackUrl);
-      const fallbackImages = await fallbackRes.json();
-      images.push(...fallbackImages);
-    }
+    if (mediaItems.length > 0) {
+      const bestMatch = mediaItems.find(m =>
+        cleanDishName(m.title.rendered).includes(cleanName)
+      ) || mediaItems[0]; // fallback to first item
 
-    const firstImage = images.find(img => img?.media_type === "image" && img?.source_url);
+      const imageUrl = bestMatch.source_url;
 
-    if (firstImage) {
-      updateEditedItem(index, "image", firstImage.source_url); // Use direct URL
+      const imgBlob = await fetch(imageUrl).then(r => r.blob());
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        updateEditedItem(index, "image", reader.result);
+        setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
+      };
+      reader.readAsDataURL(imgBlob);
     } else {
-      setError(`No image found in WordPress for "${name}"`);
+      setError(`No image found in WordPress for "${rawName}"`);
+      setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
     }
 
-    setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
   } catch (err) {
-    setError("Failed to fetch from WordPress: " + err.message);
+    setError("Failed to fetch image: " + err.message);
     setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
   }
 }
