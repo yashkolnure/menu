@@ -240,52 +240,84 @@ async function batchUpdate(items, batchSize = 5) {
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-// Clean and normalize image titles and dish names
+  
+  // Clean and normalize dish/media names
 function cleanName(name) {
   return name
     .toLowerCase()
     .replace(/\(.*?\)/g, '')       // Remove (anything)
-    .replace(/[^a-z\s-]/g, '')     // Remove digits and special characters
-    .replace(/-/g, ' ')            // Replace dashes with space
-    .replace(/\s+/g, ' ')          // Collapse extra spaces
+    .replace(/[^a-z\s-]/g, '')     // Remove digits/special characters
+    .replace(/-/g, ' ')            // Dashes to space
+    .replace(/\s+/g, ' ')          // Collapse spaces
     .trim();
 }
 
-// Character-based word similarity
-function wordSimilarity(a, b) {
-  const minLength = Math.min(a.length, b.length);
-  let matchCount = 0;
-  for (let i = 0; i < minLength; i++) {
-    if (a[i] === b[i]) matchCount++;
+// Levenshtein similarity
+function levenshteinSimilarity(a, b) {
+  a = a.toLowerCase();
+  b = b.toLowerCase();
+  const matrix = Array.from({ length: b.length + 1 }, (_, i) =>
+    Array(a.length + 1).fill(0)
+  );
+
+  for (let i = 0; i <= b.length; i++) matrix[i][0] = i;
+  for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      const cost = a[j - 1] === b[i - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1,
+        matrix[i][j - 1] + 1,
+        matrix[i - 1][j - 1] + cost
+      );
+    }
   }
-  return matchCount / Math.max(a.length, b.length);
+
+  const distance = matrix[b.length][a.length];
+  const maxLen = Math.max(a.length, b.length);
+  return 1 - distance / maxLen;
 }
 
-// Fetch all paginated images (up to 6000)
+// Try bulk fetch, fallback to pagination if needed
 async function fetchAllMediaItems(search) {
   const allItems = [];
+
+  // Try large bulk fetch first
+  try {
+    const bulkRes = await fetch(
+      `https://website.avenirya.com/wp-json/wp/v2/media?per_page=10000`
+    );
+    if (!bulkRes.ok) throw new Error("Bulk fetch failed");
+
+    const bulkData = await bulkRes.json();
+    return bulkData;
+  } catch (e) {
+    console.warn("Falling back to paginated fetch...");
+  }
+
+  // Fallback to pagination
   let page = 1;
   const perPage = 100;
-  let totalFetched = 0;
+  const maxPages = 70;
 
-  while (true) {
-    const res = await fetch(`https://website.avenirya.com/wp-json/wp/v2/media?search=${encodeURIComponent(search)}&per_page=${perPage}&page=${page}`);
+  while (page <= maxPages) {
+    const res = await fetch(
+      `https://website.avenirya.com/wp-json/wp/v2/media?per_page=${perPage}&page=${page}`
+    );
     if (!res.ok) break;
 
     const data = await res.json();
-    if (!data.length) break;
-
     allItems.push(...data);
-    totalFetched += data.length;
 
-    if (data.length < perPage || totalFetched >= 6000) break;
+    if (data.length < perPage) break;
     page++;
   }
 
   return allItems;
 }
 
-// Fetch image for a single item
+// Fetch and attach best match image for a single item
 async function fetchImageForItem(_, index) {
   const item = editedItems[index];
   const rawName = item?.name;
@@ -298,66 +330,51 @@ async function fetchImageForItem(_, index) {
   const cleanedDishName = cleanName(rawName);
 
   try {
-    setSavingItems(prev => ({ ...prev, [item._id]: "fetching" }));
+    setSavingItems((prev) => ({ ...prev, [item._id]: "fetching" }));
 
     const mediaItems = await fetchAllMediaItems(cleanedDishName);
-
-    if (mediaItems.length === 0) {
+    if (!mediaItems.length) {
       setError(`No image found for "${rawName}"`);
-      setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
+      setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
       return;
     }
 
     let bestMatch = null;
     let bestScore = 0;
 
-    const nameWords = cleanedDishName.split(' ');
+    for (const media of mediaItems) {
+      if (!media.title?.rendered) continue;
 
-    for (let media of mediaItems) {
-      const title = cleanName(media.title.rendered);
-      const titleWords = title.split(' ');
+      const mediaTitle = cleanName(media.title.rendered);
+      const sim = levenshteinSimilarity(cleanedDishName, mediaTitle);
 
-      let totalScore = 0;
-
-      for (let nWord of nameWords) {
-        let maxSim = 0;
-        for (let tWord of titleWords) {
-          const sim = wordSimilarity(nWord, tWord);
-          if (sim > maxSim) maxSim = sim;
-        }
-        totalScore += maxSim;
-      }
-
-      const avgScore = totalScore / nameWords.length;
-
-      if (avgScore > bestScore) {
-        bestScore = avgScore;
+      if (sim > bestScore) {
+        bestScore = sim;
         bestMatch = media;
       }
     }
 
-    if (bestMatch) {
+    if (bestMatch && bestScore >= 0.3) {
       const imageUrl = bestMatch.source_url;
-      const imgBlob = await fetch(imageUrl).then(r => r.blob());
+      const imgBlob = await fetch(imageUrl).then((r) => r.blob());
 
       const reader = new FileReader();
       reader.onloadend = () => {
         updateEditedItem(index, "image", reader.result);
-        setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
+        setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
       };
       reader.readAsDataURL(imgBlob);
     } else {
       setError(`No image matched for "${rawName}"`);
-      setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
+      setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
     }
-
   } catch (err) {
     setError("Failed to fetch image: " + err.message);
-    setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
+    setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
   }
 }
 
-// Loop through all items to fetch missing images
+// Fetch all items without images
 async function fetchAllImages() {
   for (let i = 0; i < editedItems.length; i++) {
     const img = editedItems[i].image;
@@ -366,6 +383,7 @@ async function fetchAllImages() {
     }
   }
 }
+
 
 
   const handleUpdate = async () => {
