@@ -299,7 +299,7 @@ async function fetchAllMediaItems(search) {
   // Fallback to pagination
   let page = 1;
   const perPage = 100;
-  const maxPages = 70;
+  const maxPages = 40;
 
   while (page <= maxPages) {
     const res = await fetch(
