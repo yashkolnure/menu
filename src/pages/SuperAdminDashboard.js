@@ -1,6 +1,7 @@
 // src/components/SuperAdminDashboard.jsx
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { QRCodeSVG as QRCode } from "qrcode.react";
 
 const SuperAdminDashboard = () => {
   const [restaurants, setRestaurants] = useState([]);
@@ -206,20 +207,7 @@ const handleSubmit = async () => {
                   <td className="p-3 border">{rest.email}</td>
                   <td className="p-3 border">{rest.address}</td>
                   <td className="p-3 border">{rest.contact || "-"}</td>
-                  <td className="p-3 border text-center">
-                  
-                  <div>
-                    <a
-                      href={`/menu/${rest._id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-500 text-xs underline block mt-1"
-                    >
-                      Open Menu
-                    </a>
-                  </div>
-                </td>
-                 <td className="p-3 border space-x-2 text-center">
+                  <td className="p-3 border space-x-2 text-center">
                     <button
                       onClick={() => handleEdit(rest)}
                       className="text-blue-600 hover:underline font-medium"
