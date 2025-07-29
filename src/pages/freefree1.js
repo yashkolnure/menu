@@ -241,16 +241,23 @@ async function batchUpdate(items, batchSize = 5) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-
-  const WORDPRESS_MEDIA_API = "https://website.avenirya.com/wp-json/wp/v2/media"; // Change this
 function cleanName(name) {
   return name
     .toLowerCase()
     .replace(/\(.*?\)/g, '')       // Remove (anything)
-    .replace(/[^a-z\s-]/g, '')     // Remove special characters, digits
+    .replace(/[^a-z\s-]/g, '')     // Remove digits and special characters
     .replace(/-/g, ' ')            // Replace dashes with space
-    .replace(/\s+/g, ' ')          // Collapse whitespace
+    .replace(/\s+/g, ' ')          // Collapse extra spaces
     .trim();
+}
+
+function wordSimilarity(a, b) {
+  const minLength = Math.min(a.length, b.length);
+  let matchCount = 0;
+  for (let i = 0; i < minLength; i++) {
+    if (a[i] === b[i]) matchCount++;
+  }
+  return matchCount / Math.max(a.length, b.length);
 }
 
 async function fetchImageForItem(_, index) {
@@ -262,8 +269,8 @@ async function fetchImageForItem(_, index) {
     return;
   }
 
-  const cleanedDishName = cleanName(rawName); // e.g., "chicken delight pizza"
-  const url = `https://website.avenirya.com/wp-json/wp/v2/media?search=${encodeURIComponent(cleanedDishName)}&per_page=10`;
+  const cleanedDishName = cleanName(rawName); // e.g., "chiken burger"
+  const url = `https://website.avenirya.com/wp-json/wp/v2/media?search=${encodeURIComponent(cleanedDishName)}&per_page=20`;
 
   try {
     setSavingItems(prev => ({ ...prev, [item._id]: "fetching" }));
@@ -273,28 +280,48 @@ async function fetchImageForItem(_, index) {
 
     if (mediaItems.length > 0) {
       let bestMatch = null;
+      let bestScore = 0;
 
-      // 1. Try to find exact or partial match
+      const nameWords = cleanedDishName.split(' ');
+
       for (let media of mediaItems) {
         const title = cleanName(media.title.rendered);
-        if (title.includes(cleanedDishName) || cleanedDishName.includes(title)) {
+        const titleWords = title.split(' ');
+
+        let totalScore = 0;
+
+        for (let nWord of nameWords) {
+          let maxSim = 0;
+          for (let tWord of titleWords) {
+            const sim = wordSimilarity(nWord, tWord);
+            if (sim > maxSim) maxSim = sim;
+          }
+          totalScore += maxSim;
+        }
+
+        const avgScore = totalScore / nameWords.length;
+
+        if (avgScore > bestScore) {
+          bestScore = avgScore;
           bestMatch = media;
-          break;
         }
       }
 
-      // 2. If no match, fallback to first item
-      bestMatch = bestMatch || mediaItems[0];
+      if (bestMatch) {
+        const imageUrl = bestMatch.source_url;
 
-      const imageUrl = bestMatch.source_url;
-
-      const imgBlob = await fetch(imageUrl).then(r => r.blob());
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        updateEditedItem(index, "image", reader.result);
+        const imgBlob = await fetch(imageUrl).then(r => r.blob());
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          updateEditedItem(index, "image", reader.result);
+          setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
+        };
+        reader.readAsDataURL(imgBlob);
+      } else {
+        setError(`No image matched for "${rawName}"`);
         setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
-      };
-      reader.readAsDataURL(imgBlob);
+      }
+
     } else {
       setError(`No image found for "${rawName}"`);
       setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
