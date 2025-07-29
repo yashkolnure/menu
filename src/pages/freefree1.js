@@ -240,7 +240,7 @@ async function batchUpdate(items, batchSize = 5) {
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-
+// Clean and normalize image titles and dish names
 function cleanName(name) {
   return name
     .toLowerCase()
@@ -251,6 +251,7 @@ function cleanName(name) {
     .trim();
 }
 
+// Character-based word similarity
 function wordSimilarity(a, b) {
   const minLength = Math.min(a.length, b.length);
   let matchCount = 0;
@@ -260,6 +261,31 @@ function wordSimilarity(a, b) {
   return matchCount / Math.max(a.length, b.length);
 }
 
+// Fetch all paginated images (up to 6000)
+async function fetchAllMediaItems(search) {
+  const allItems = [];
+  let page = 1;
+  const perPage = 100;
+  let totalFetched = 0;
+
+  while (true) {
+    const res = await fetch(`https://website.avenirya.com/wp-json/wp/v2/media?search=${encodeURIComponent(search)}&per_page=${perPage}&page=${page}`);
+    if (!res.ok) break;
+
+    const data = await res.json();
+    if (!data.length) break;
+
+    allItems.push(...data);
+    totalFetched += data.length;
+
+    if (data.length < perPage || totalFetched >= 6000) break;
+    page++;
+  }
+
+  return allItems;
+}
+
+// Fetch image for a single item
 async function fetchImageForItem(_, index) {
   const item = editedItems[index];
   const rawName = item?.name;
@@ -269,61 +295,59 @@ async function fetchImageForItem(_, index) {
     return;
   }
 
-  const cleanedDishName = cleanName(rawName); // e.g., "chiken burger"
-  const url = `https://website.avenirya.com/wp-json/wp/v2/media?search=${encodeURIComponent(cleanedDishName)}&per_page=1000`;
+  const cleanedDishName = cleanName(rawName);
 
   try {
     setSavingItems(prev => ({ ...prev, [item._id]: "fetching" }));
 
-    const res = await fetch(url);
-    const mediaItems = await res.json();
+    const mediaItems = await fetchAllMediaItems(cleanedDishName);
 
-    if (mediaItems.length > 0) {
-      let bestMatch = null;
-      let bestScore = 0;
-
-      const nameWords = cleanedDishName.split(' ');
-
-      for (let media of mediaItems) {
-        const title = cleanName(media.title.rendered);
-        const titleWords = title.split(' ');
-
-        let totalScore = 0;
-
-        for (let nWord of nameWords) {
-          let maxSim = 0;
-          for (let tWord of titleWords) {
-            const sim = wordSimilarity(nWord, tWord);
-            if (sim > maxSim) maxSim = sim;
-          }
-          totalScore += maxSim;
-        }
-
-        const avgScore = totalScore / nameWords.length;
-
-        if (avgScore > bestScore) {
-          bestScore = avgScore;
-          bestMatch = media;
-        }
-      }
-
-      if (bestMatch) {
-        const imageUrl = bestMatch.source_url;
-
-        const imgBlob = await fetch(imageUrl).then(r => r.blob());
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          updateEditedItem(index, "image", reader.result);
-          setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
-        };
-        reader.readAsDataURL(imgBlob);
-      } else {
-        setError(`No image matched for "${rawName}"`);
-        setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
-      }
-
-    } else {
+    if (mediaItems.length === 0) {
       setError(`No image found for "${rawName}"`);
+      setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
+      return;
+    }
+
+    let bestMatch = null;
+    let bestScore = 0;
+
+    const nameWords = cleanedDishName.split(' ');
+
+    for (let media of mediaItems) {
+      const title = cleanName(media.title.rendered);
+      const titleWords = title.split(' ');
+
+      let totalScore = 0;
+
+      for (let nWord of nameWords) {
+        let maxSim = 0;
+        for (let tWord of titleWords) {
+          const sim = wordSimilarity(nWord, tWord);
+          if (sim > maxSim) maxSim = sim;
+        }
+        totalScore += maxSim;
+      }
+
+      const avgScore = totalScore / nameWords.length;
+
+      if (avgScore > bestScore) {
+        bestScore = avgScore;
+        bestMatch = media;
+      }
+    }
+
+    if (bestMatch) {
+      const imageUrl = bestMatch.source_url;
+      const imgBlob = await fetch(imageUrl).then(r => r.blob());
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        updateEditedItem(index, "image", reader.result);
+        setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
+      };
+      reader.readAsDataURL(imgBlob);
+    } else {
+      setError(`No image matched for "${rawName}"`);
       setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
     }
 
@@ -333,7 +357,7 @@ async function fetchImageForItem(_, index) {
   }
 }
 
-
+// Loop through all items to fetch missing images
 async function fetchAllImages() {
   for (let i = 0; i < editedItems.length; i++) {
     const img = editedItems[i].image;
@@ -342,6 +366,7 @@ async function fetchAllImages() {
     }
   }
 }
+
 
   const handleUpdate = async () => {
     try {
