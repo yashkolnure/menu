@@ -241,7 +241,83 @@ async function batchUpdate(items, batchSize = 5) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   
- // Fetch image for a single item via backend API
+  // Clean and normalize dish/media names
+function cleanName(name) {
+  return name
+    .toLowerCase()
+    .replace(/\(.*?\)/g, '')       // Remove (anything)
+    .replace(/[^a-z\s-]/g, '')     // Remove digits/special characters
+    .replace(/-/g, ' ')            // Dashes to space
+    .replace(/\s+/g, ' ')          // Collapse spaces
+    .trim();
+}
+
+// Levenshtein similarity
+function levenshteinSimilarity(a, b) {
+  a = a.toLowerCase();
+  b = b.toLowerCase();
+  const matrix = Array.from({ length: b.length + 1 }, (_, i) =>
+    Array(a.length + 1).fill(0)
+  );
+
+  for (let i = 0; i <= b.length; i++) matrix[i][0] = i;
+  for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      const cost = a[j - 1] === b[i - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1,
+        matrix[i][j - 1] + 1,
+        matrix[i - 1][j - 1] + cost
+      );
+    }
+  }
+
+  const distance = matrix[b.length][a.length];
+  const maxLen = Math.max(a.length, b.length);
+  return 1 - distance / maxLen;
+}
+
+// Try bulk fetch, fallback to pagination if needed
+async function fetchAllMediaItems(search) {
+  const allItems = [];
+
+  // Try large bulk fetch first
+  try {
+    const bulkRes = await fetch(
+      `https://website.avenirya.com/wp-json/wp/v2/media?per_page=7000`
+    );
+    if (!bulkRes.ok) throw new Error("Bulk fetch failed");
+
+    const bulkData = await bulkRes.json();
+    return bulkData;
+  } catch (e) {
+    console.warn("Falling back to paginated fetch...");
+  }
+
+  // Fallback to pagination
+  let page = 1;
+  const perPage = 100;
+  const maxPages = 40;
+
+  while (page <= maxPages) {
+    const res = await fetch(
+      `https://website.avenirya.com/wp-json/wp/v2/media?per_page=${perPage}&page=${page}`
+    );
+    if (!res.ok) break;
+
+    const data = await res.json();
+    allItems.push(...data);
+
+    if (data.length < perPage) break;
+    page++;
+  }
+
+  return allItems;
+}
+
+// Fetch and attach best match image for a single item
 async function fetchImageForItem(_, index) {
   const item = editedItems[index];
   const rawName = item?.name;
@@ -251,21 +327,36 @@ async function fetchImageForItem(_, index) {
     return;
   }
 
+  const cleanedDishName = cleanName(rawName);
+
   try {
     setSavingItems((prev) => ({ ...prev, [item._id]: "fetching" }));
 
-    const response = await fetch(
-      `https://yourwebsite.com/wp-json/myapi/v1/match-image?title=${encodeURIComponent(rawName)}`
-    );
-
-    if (!response.ok) {
-      throw new Error("No image found or API error");
+    const mediaItems = await fetchAllMediaItems(cleanedDishName);
+    if (!mediaItems.length) {
+      setError(`No image found for "${rawName}"`);
+      setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
+      return;
     }
 
-    const data = await response.json();
+    let bestMatch = null;
+    let bestScore = 0;
 
-    if (data?.url) {
-      const imgBlob = await fetch(data.url).then((r) => r.blob());
+    for (const media of mediaItems) {
+      if (!media.title?.rendered) continue;
+
+      const mediaTitle = cleanName(media.title.rendered);
+      const sim = levenshteinSimilarity(cleanedDishName, mediaTitle);
+
+      if (sim > bestScore) {
+        bestScore = sim;
+        bestMatch = media;
+      }
+    }
+
+    if (bestMatch && bestScore >= 0.3) {
+      const imageUrl = bestMatch.source_url;
+      const imgBlob = await fetch(imageUrl).then((r) => r.blob());
 
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -274,15 +365,16 @@ async function fetchImageForItem(_, index) {
       };
       reader.readAsDataURL(imgBlob);
     } else {
-      throw new Error("No match returned");
+      setError(`No image matched for "${rawName}"`);
+      setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
     }
   } catch (err) {
-    setError(`Failed to fetch image for "${rawName}": ${err.message}`);
+    setError("Failed to fetch image: " + err.message);
     setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
   }
 }
 
-// Loop through all items to fetch missing images
+// Fetch all items without images
 async function fetchAllImages() {
   for (let i = 0; i < editedItems.length; i++) {
     const img = editedItems[i].image;
@@ -291,6 +383,7 @@ async function fetchAllImages() {
     }
   }
 }
+
 
 
   const handleUpdate = async () => {
