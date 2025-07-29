@@ -270,7 +270,7 @@ async function fetchImageForItem(_, index) {
   }
 
   const cleanedDishName = cleanName(rawName); // e.g., "chiken burger"
-  const url = `https://website.avenirya.com/wp-json/wp/v2/media?search=${encodeURIComponent(cleanedDishName)}&per_page=20`;
+  const url = `https://website.avenirya.com/wp-json/wp/v2/media?search=${encodeURIComponent(cleanedDishName)}&per_page=1000`;
 
   try {
     setSavingItems(prev => ({ ...prev, [item._id]: "fetching" }));
