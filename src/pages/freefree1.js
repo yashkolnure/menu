@@ -286,7 +286,7 @@ async function fetchAllMediaItems(search) {
   // Try large bulk fetch first
   try {
     const bulkRes = await fetch(
-      `https://website.avenirya.com/wp-json/wp/v2/media?per_page=2000`
+      `https://website.avenirya.com/wp-json/wp/v2/media?per_page=5000`
     );
     if (!bulkRes.ok) throw new Error("Bulk fetch failed");
 
@@ -299,7 +299,7 @@ async function fetchAllMediaItems(search) {
   // Fallback to pagination
   let page = 1;
   const perPage = 100;
-  const maxPages = 10;
+  const maxPages = 40;
 
   while (page <= maxPages) {
     const res = await fetch(
