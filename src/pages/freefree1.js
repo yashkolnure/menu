@@ -241,7 +241,10 @@ async function batchUpdate(items, batchSize = 5) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   
-  // Clean and normalize dish/media names
+ // Memory cache for media items
+let mediaCache = null;
+
+// Clean and normalize dish/media names
 function cleanName(name) {
   return name
     .toLowerCase()
@@ -279,32 +282,24 @@ function levenshteinSimilarity(a, b) {
   return 1 - distance / maxLen;
 }
 
-// Try bulk fetch, fallback to pagination if needed
-async function fetchAllMediaItems(search) {
+// Fetch all media items once (bulk first, fallback to pagination)
+async function fetchAllMediaItems() {
   const allItems = [];
 
-  // Try large bulk fetch first
   try {
-    const bulkRes = await fetch(
-      `https://website.avenirya.com/wp-json/wp/v2/media?per_page=5000`
-    );
+    const bulkRes = await fetch(`https://website.avenirya.com/wp-json/wp/v2/media?per_page=5000`);
     if (!bulkRes.ok) throw new Error("Bulk fetch failed");
-
-    const bulkData = await bulkRes.json();
-    return bulkData;
+    return await bulkRes.json();
   } catch (e) {
-    console.warn("Falling back to paginated fetch...");
+    console.warn("Bulk fetch failed, falling back to pagination...");
   }
 
-  // Fallback to pagination
   let page = 1;
   const perPage = 100;
   const maxPages = 40;
 
   while (page <= maxPages) {
-    const res = await fetch(
-      `https://website.avenirya.com/wp-json/wp/v2/media?per_page=${perPage}&page=${page}`
-    );
+    const res = await fetch(`https://website.avenirya.com/wp-json/wp/v2/media?per_page=${perPage}&page=${page}`);
     if (!res.ok) break;
 
     const data = await res.json();
@@ -317,8 +312,8 @@ async function fetchAllMediaItems(search) {
   return allItems;
 }
 
-// Fetch and attach best match image for a single item
-async function fetchImageForItem(_, index) {
+// Fetch and attach best match image using cached media
+async function fetchImageForItemCached(index) {
   const item = editedItems[index];
   const rawName = item?.name;
 
@@ -328,21 +323,18 @@ async function fetchImageForItem(_, index) {
   }
 
   const cleanedDishName = cleanName(rawName);
+  setSavingItems((prev) => ({ ...prev, [item._id]: "fetching" }));
 
   try {
-    setSavingItems((prev) => ({ ...prev, [item._id]: "fetching" }));
-
-    const mediaItems = await fetchAllMediaItems(cleanedDishName);
-    if (!mediaItems.length) {
-      setError(`No image found for "${rawName}"`);
-      setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
+    if (!mediaCache || mediaCache.length === 0) {
+      setError("Media cache is empty.");
       return;
     }
 
     let bestMatch = null;
     let bestScore = 0;
 
-    for (const media of mediaItems) {
+    for (const media of mediaCache) {
       if (!media.title?.rendered) continue;
 
       const mediaTitle = cleanName(media.title.rendered);
@@ -374,16 +366,33 @@ async function fetchImageForItem(_, index) {
   }
 }
 
-// Fetch all items without images
-async function fetchAllImages() {
-  for (let i = 0; i < editedItems.length; i++) {
-    const img = editedItems[i].image;
-    if (!img || img.startsWith("data:")) {
-      await fetchImageForItem(null, i);
-    }
+// Helper: run async tasks in batches
+async function runInBatches(tasks, batchSize = 5) {
+  const results = [];
+  for (let i = 0; i < tasks.length; i += batchSize) {
+    const batch = tasks.slice(i, i + batchSize);
+    const res = await Promise.allSettled(batch.map(fn => fn()));
+    results.push(...res);
   }
+  return results;
 }
 
+// Main: fetch images for all dishes using memory cache
+async function fetchAllImages() {
+  if (!mediaCache) {
+    mediaCache = await fetchAllMediaItems();
+  }
+
+  const tasks = editedItems.map((item, index) => {
+    const img = item.image;
+    if (!img || img.startsWith("data:")) {
+      return () => fetchImageForItemCached(index);
+    }
+    return null;
+  }).filter(Boolean);
+
+  await runInBatches(tasks, 5); // adjust concurrency limit if needed
+}
 
 
   const handleUpdate = async () => {
