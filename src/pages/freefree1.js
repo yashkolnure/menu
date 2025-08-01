@@ -287,7 +287,7 @@ async function fetchAllMediaItems() {
   const allItems = [];
 
   try {
-    const bulkRes = await fetch(`https://website.avenirya.com/wp-json/wp/v2/media?per_page=5000`);
+    const bulkRes = await fetch(`https://website.avenirya.com/wp-json/wp/v2/media?per_page=10000`);
     if (!bulkRes.ok) throw new Error("Bulk fetch failed");
     return await bulkRes.json();
   } catch (e) {
@@ -296,7 +296,7 @@ async function fetchAllMediaItems() {
 
   let page = 1;
   const perPage = 100;
-  const maxPages = 40;
+  const maxPages = 100;
 
   while (page <= maxPages) {
     const res = await fetch(`https://website.avenirya.com/wp-json/wp/v2/media?per_page=${perPage}&page=${page}`);
