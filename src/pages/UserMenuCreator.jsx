@@ -444,14 +444,14 @@ function UserMenuCreator() {
   
   <div className="mt-6 p-4 max-w-xl mx-auto bg-yellow-50 border border-yellow-300 rounded-lg shadow-sm">
     <h3 className="text-lg font-bold text-yellow-800 mb-2">📦 Too busy to upload your menu?</h3>
-    <p className="text-sm text-gray-800 mb-4">Let our team handle it for you. We’ll add your full menu in just <span className="font-semibold text-green-700">₹199</span>, including a WhatsApp sticky menu setup.</p>
+    <p className="text-sm text-gray-800 mb-4">Let our team handle it for you. We’ll add your full menu in just <span className="font-semibold text-green-700">₹249</span>, including a WhatsApp sticky menu setup.</p>
     
     <form
       onSubmit={(e) => {
         e.preventDefault();
         const name = e.target.restaurantName.value.trim();
         if (name) {
-          window.open(`https://wa.me/917499835687?text=Hello%2C%20I%20want%20Petoba%20team%20to%20upload%20my%20menu%20for%20Rs199.%20Restaurant%20Name%3A%20${encodeURIComponent(name)}`, "_blank");
+          window.open(`https://wa.me/917499835687?text=Hello%2C%20I%20want%20Petoba%20team%20to%20upload%20my%20menu%20for%20Rs249.%20Restaurant%20Name%3A%20${encodeURIComponent(name)}`, "_blank");
         } else {
           alert("Please enter your restaurant name.");
         }

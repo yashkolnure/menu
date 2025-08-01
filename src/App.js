@@ -11,7 +11,6 @@ import BulkUploadmenu from "./pages/freefree";
 import BulkUploadmenu1 from "./pages/freefree1";
 import AdminLoginPage1 from "./pages/loginbulk";
 import Loginfree from "./pages/loginfree";
-import WordPressUploader from "./pages/aaa";
 import UserMenuCreator from "./pages/UserMenuCreator";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import RegisterFreePage from "./pages/registerfree";
@@ -29,7 +28,6 @@ function App() {
         <Route path="/menu/:id" element={<MenuPageWithoutCart />} />
         <Route path="/shop/:id" element={<Beautysalon />} />
         <Route path="/restaurant/:id" element={<RestaurantMenuPage />} />
-        <Route path="/aaa" element={<WordPressUploader />} />
         <Route path="/dsbrd" element={<Dsbrd />} />
         <Route path="/dsbrdadmin1" element={<Dsbrdadmin1 />} />
         <Route path="/agentlogin" element={<Agentlogin />} />
