@@ -17,59 +17,83 @@ const SuperAdminDashboard = () => {
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [minItemCount, setMinItemCount] = useState(0);
   const formRef = useRef(null);
 
   const API = "https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin";
-
   const WP_USERNAME = "yashkolnure58@gmail.com";
   const WP_APP_PASSWORD = "05mq iTLF UvJU dyaz 7KxQ 8pyc";
   const WP_SITE_URL = "https://website.avenirya.com";
 
   useEffect(() => {
     fetchRestaurants();
-  }, []);
+  }, [minItemCount]);
 
   const fetchRestaurants = async () => {
     try {
       const res = await axios.get(`${API}/restaurants`);
-      setRestaurants(res.data);
+      const restaurantList = res.data;
+
+      const filtered = await Promise.all(
+        restaurantList.map(async (rest) => {
+          try {
+            const menuRes = await axios.get(`${API}/${rest._id}/menu`);
+            const items = menuRes.data;
+            if (items.length >= minItemCount) {
+              return { ...rest, itemCount: items.length };
+            }
+          } catch (err) {
+            console.warn(`Failed to fetch menu for ${rest.name}`, err);
+          }
+          return null;
+        })
+      );
+
+      setRestaurants(filtered.filter(Boolean));
     } catch (err) {
       alert("Failed to fetch restaurants");
     }
   };
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
-const handleSubmit = async () => {
-  // Check for empty fields
-  if (
-    !form.name.trim() ||
-    !form.email.trim() ||
-    !form.address.trim() ||
-    !form.logo.trim() ||
-    !form.contact.trim() ||
-    (!editingId && !form.password.trim())
-  ) {
-    setError("All fields are mandatory.");
-    setMessage("");
-    return;
-  }
-  try {
-    if (editingId) {
-      await axios.put(`${API}/restaurants/${editingId}`, form);
-    } else {
-      await axios.post(`${API}/restaurants`, form);
+  const handleSubmit = async () => {
+    if (
+      !form.name.trim() ||
+      !form.email.trim() ||
+      !form.address.trim() ||
+      !form.logo.trim() ||
+      !form.contact.trim() ||
+      (!editingId && !form.password.trim())
+    ) {
+      setError("All fields are mandatory.");
+      setMessage("");
+      return;
     }
-    setForm({ name: "", email: "", address: "", logo: "", contact: "", password: "" });
-    setEditingId(null);
-    fetchRestaurants();
-    setMessage("✅ Saved successfully!");
-    setError("");
-  } catch (err) {
-    setError(err.response?.data?.message || "Failed to save restaurant");
-    setMessage("");
-  }
-};
+    try {
+      if (editingId) {
+        await axios.put(`${API}/restaurants/${editingId}`, form);
+      } else {
+        await axios.post(`${API}/restaurants`, form);
+      }
+      setForm({
+        name: "",
+        email: "",
+        address: "",
+        logo: "",
+        contact: "",
+        password: "",
+      });
+      setEditingId(null);
+      fetchRestaurants();
+      setMessage("✅ Saved successfully!");
+      setError("");
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to save restaurant");
+      setMessage("");
+    }
+  };
 
   const handleEdit = (restaurant) => {
     setEditingId(restaurant._id);
@@ -185,6 +209,21 @@ const handleSubmit = async () => {
         </div>
 
         <div className="overflow-x-auto">
+          <div className="flex justify-end mb-4">
+            <label className="text-gray-700 mr-2 font-medium">Min Menu Items:</label>
+            <select
+              value={minItemCount}
+              onChange={(e) => setMinItemCount(parseInt(e.target.value))}
+              className="border px-3 py-2 rounded-lg text-sm"
+            >
+              <option value={0}>All</option>
+              <option value={5}>5+</option>
+              <option value={10}>10+</option>
+              <option value={15}>15+</option>
+              <option value={20}>20+</option>
+            </select>
+          </div>
+
           <h2 className="text-xl font-semibold mb-4 text-gray-700">Registered Restaurants</h2>
           <table className="w-full border rounded-lg overflow-hidden">
             <thead className="bg-blue-100 text-gray-700">
@@ -226,10 +265,9 @@ const handleSubmit = async () => {
                       rel="noopener noreferrer"
                       className="text-green-600 hover:underline font-medium"
                     >
-                     Menu
+                      Menu
                     </a>
                   </td>
-
                 </tr>
               ))}
               {restaurants.length === 0 && (

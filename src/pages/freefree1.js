@@ -193,7 +193,7 @@ async function batchUpdate(items, batchSize = 5) {
             try {
               const imageUrl = await uploadImageToWordPress(
                 item.image,
-                `${item.name.replace(/\s+/g, '-')}-${Date.now()}.jpg`
+                `${item.name.replace(/\s+/g, '-')}_${item.description.replace(/\s+/g, '-')}.jpg`
               );
               return { ...item, image: imageUrl };
             } catch (error) {
@@ -486,7 +486,7 @@ async function fetchAllImages() {
             try {
               const imageUrl = await uploadImageToWordPress(
                 item.image,
-                `${item.name.replace(/\s+/g, '-')}-${Date.now()}.jpg`
+                `${item.name.replace(/\s+/g, '-')}_${item.description.replace(/\s+/g, '-')}.jpg`
               );
               return { ...item, image: imageUrl };
             } catch (error) {
@@ -742,7 +742,7 @@ async function fetchAllImages() {
                             if (item.image.startsWith('data:')) {
                               imageUrl = await uploadImageToWordPress(
                                 item.image,
-                                `${item.name.replace(/\s+/g, '-')}-${Date.now()}.jpg`
+                                `${item.name.replace(/\s+/g, '-')}_${item.description.replace(/\s+/g, '-')}.jpg`
                               );
                             }
                             
