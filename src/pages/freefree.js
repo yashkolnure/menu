@@ -23,7 +23,7 @@ function BulkUploadmenu() {
       return;
     }
 
-    fetch(`https://menubackend-25njatju5-yashkolnures-projects.vercel.app//api/admin/${restaurantId}/details`, {
+    fetch(`https://menubackend-25njatju5-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/details`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -91,7 +91,7 @@ function BulkUploadmenu() {
     try {
       setUploading(true);
       await axios.post(
-        "https://menubackend-25njatju5-yashkolnures-projects.vercel.app//api/admin/bulk",
+        "https://menubackend-25njatju5-yashkolnures-projects.vercel.app/api/admin/bulk",
         enrichedData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
