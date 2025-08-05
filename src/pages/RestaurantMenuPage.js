@@ -167,6 +167,7 @@ const carouselRef = useRef(null);
             <img
               src={restaurantDetails.logo}
               alt="Logo"
+              
               className="h-20 sm:h-20 object-contain"
             />
           )}

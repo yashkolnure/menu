@@ -19,7 +19,7 @@ function Agentlogin() {
       if (res.ok) {
         localStorage.setItem("token", data.token);
         localStorage.setItem("restaurantId", data.restaurant._id);
-        navigate("/freefree1");
+        navigate("/65mx.=");
       } else {
         alert(data.message || "Login failed");
       }

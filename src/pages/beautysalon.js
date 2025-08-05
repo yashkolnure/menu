@@ -214,14 +214,14 @@ function Beautysalon() {
           {loading ? (
             <div className="flex justify-center items-center w-full py-10">
               <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
-              <p className="ml-3 text-gray-500 text-sm">Loading menu...</p>
+              <p className="ml-3 text-gray-500 text-sm">Loading Services...</p>
             </div>
           ) : filteredMenu.length > 0 ? (
             filteredMenu.map(item => (
               <MenuCard key={item._id} item={item} addToCart={addToCart} />
             ))
           ) : (
-            <p className="text-gray-500 text-center mb-4">No items match your search.</p>
+            <p className="text-gray-500 text-center mb-4">No Services match your search.</p>
           )}
         </div>
       </div>
