@@ -191,20 +191,7 @@ const fetchRestaurants = async () => {
         </div>
 
         <div className="overflow-x-auto">
-          <div className="flex justify-end mb-4">
-            <label className="text-gray-700 mr-2 font-medium">Min Menu Items:</label>
-            <select
-              value={minItemCount}
-              onChange={(e) => setMinItemCount(parseInt(e.target.value))}
-              className="border px-3 py-2 rounded-lg text-sm"
-            >
-              <option value={0}>All</option>
-              <option value={5}>5+</option>
-              <option value={10}>10+</option>
-              <option value={15}>15+</option>
-              <option value={20}>20+</option>
-            </select>
-          </div>
+         
 
           <h2 className="text-xl font-semibold mb-4 text-gray-700">Registered Restaurants</h2>
           <table className="w-full border rounded-lg overflow-hidden">
