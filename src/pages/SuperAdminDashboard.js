@@ -29,32 +29,14 @@ const SuperAdminDashboard = () => {
     fetchRestaurants();
   }, [minItemCount]);
 
-  const fetchRestaurants = async () => {
-    try {
-      const res = await axios.get(`${API}/restaurants`);
-      const restaurantList = res.data;
-
-      const filtered = await Promise.all(
-        restaurantList.map(async (rest) => {
-          try {
-            const menuRes = await axios.get(`${API}/${rest._id}/menu`);
-            const items = menuRes.data;
-            if (items.length >= minItemCount) {
-              return { ...rest, itemCount: items.length };
-            }
-          } catch (err) {
-            console.warn(`Failed to fetch menu for ${rest.name}`, err);
-          }
-          return null;
-        })
-      );
-
-      setRestaurants(filtered.filter(Boolean));
-    } catch (err) {
-      alert("Failed to fetch restaurants");
-    }
-  };
-
+const fetchRestaurants = async () => {
+  try {
+    const res = await axios.get(`${API}/restaurants`);
+    setRestaurants(res.data);  // Directly use the fetched restaurant list
+  } catch (err) {
+    alert("Failed to fetch restaurants");
+  }
+};
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
