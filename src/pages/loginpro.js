@@ -19,7 +19,7 @@ function Loginpro() {
       if (res.ok) {
         localStorage.setItem("token", data.token);
         localStorage.setItem("restaurantId", data.restaurant._id);
-        navigate("/free");
+        navigate("/proedit");
       } else {
         alert(data.message || "Login failed");
       }
