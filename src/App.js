@@ -10,6 +10,8 @@ import RestaurantDetails from "./pages/RestaurantDetails";
 import BulkUploadmenu from "./pages/freefree";
 import BulkUploadmenu1 from "./pages/freefree1";
 import AdminLoginPage1 from "./pages/loginbulk";
+import Loginpro from "./pages/loginpro";
+import Proedit from "./pages/proedit";
 import Loginfree from "./pages/loginfree";
 import UserMenuCreator from "./pages/UserMenuCreator";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
@@ -41,6 +43,8 @@ function App() {
         <Route path="/login1" element={<AdminLoginPage1 />} />
         <Route path="/free" element={<UserMenuCreator />} />
         <Route path="/login" element={<Loginfree />} />
+        <Route path="/mymenu" element={<Loginpro />} />
+        <Route path="/proedit" element={<Proedit />} />
         <Route path="/register" element={<RegisterFreePage />} />
         <Route path="/yashkolnure" element={<SuperAdminDashboard />} />
         <Route path="*" element={<NotFound />} />
