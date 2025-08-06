@@ -30,14 +30,6 @@ function Loginpro() {
 
   return (
     <div className="min-h-screen flex flex-col justify-between bg-gray-100 relative">
-      {/* Logo Section */}
-      <div className="flex justify-center mt-8">
-        <img
-          src="https://petoba.avenirya.com/wp-content/uploads/2022/07/Untitled-design-6.png"
-          alt="Petoba Logo"
-          className="w-40 h-auto"
-        />
-      </div>
 
       {/* Login Card */}
       <div className="flex flex-col items-center min-h-screen bg-gray-100">
