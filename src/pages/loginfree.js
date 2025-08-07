@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 function Loginfree() {
   const [email, setEmail] = useState("");
@@ -63,6 +64,12 @@ function Loginfree() {
           >
             Login
           </button>
+              <p className="text-center text-sm text-gray-600 mt-4">
+                Don't have an account?{" "}
+                <Link to="/register" className="text-orange-600 font-semibold hover:underline">
+                  Register
+                </Link>
+              </p>
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const RegisterFreePage = () => {
   const navigate = useNavigate();
@@ -171,6 +172,13 @@ const RegisterFreePage = () => {
           >
             Register & Continue
           </button>
+          <p className="text-center text-sm text-gray-600 mt-4">
+            Already have an account?{" "}
+            <Link to="/login" className="text-orange-600 font-semibold hover:underline">
+              Login
+            </Link>
+          </p>
+
         </form>
       </div>
     </div>
