@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import RestaurantMenuPage from "./pages/RestaurantMenuPage";
+import RestaurantMenuPagewp from "./pages/Menuwporder";
 import MenuPageWithoutCart from "./pages/MenuPageWithoutCart";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -28,6 +29,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/menu/:id" element={<MenuPageWithoutCart />} />
+        <Route path="/menuwp/:id" element={<RestaurantMenuPagewp />} />
         <Route path="/shop/:id" element={<Beautysalon />} />
         <Route path="/restaurant/:id" element={<RestaurantMenuPage />} />
         <Route path="/dsbrd" element={<Dsbrd />} />
