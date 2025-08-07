@@ -315,7 +315,7 @@ if (!adminPhone) {
 
 
 
-      <ToastContainer position="bottom-left" autoClose={2000} />
+      <ToastContainer position="bottom-left"  toastClassName="!mb-20" autoClose={1000} />
     </>
   );
 }
