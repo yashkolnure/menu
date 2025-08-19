@@ -33,6 +33,7 @@ import BulkUploadInfo from "./pages/bulkuploadinfo";
 import AgencyDashboard from "./pages/AgencyDashboard";
 import Dashboard from "./pages/Dashboard";
 import FeaturesPage from "./pages/FeaturesPage";
+import Kolnure from "./pages/Kolnure";
 
 // Wrapper to handle conditional Header/Footer
 function AppWrapper() {
@@ -87,6 +88,7 @@ function AppWrapper() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/bulk-upload" element={<BulkUploadInfo />} />
         <Route path="/features" element={<FeaturesPage />} />
+        <Route path="/kolnure" element={<Kolnure />} />
       </Routes>
       {!hideHeaderFooter && <Footer />}
     </>

@@ -2,11 +2,13 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import QRCodeTemplates from "../components/QRCodeTemplates";
+import OfferBannerManager from "../components/OfferBannerManager";
 
 function Dashboard() {
   const [restaurant, setRestaurant] = useState({ name: "", logo: "", address: "", contact: "" });
   const [restaurantId, setRestaurantId] = useState(localStorage.getItem("restaurantId") || "");
   const [menuItems, setMenuItems] = useState([]);
+  const [offers, setOffers] = useState([]);
   const [existingItems, setExistingItems] = useState([]);
   const [itemForm, setItemForm] = useState({ name: "", category: "", description: "", price: "", image: "", _id: null });
   const [customCategory, setCustomCategory] = useState("");
@@ -19,6 +21,8 @@ function Dashboard() {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const [savingItems, setSavingItems] = useState({});
+  const [isFetching, setIsFetching] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const imagePasteRef = useRef(null);
   const [customEditCategories, setCustomEditCategories] = useState({});
 
@@ -399,6 +403,7 @@ async function runInBatches(tasks, batchSize = 5) {
 
 // Main: fetch images for all dishes using memory cache
 async function fetchAllImages() {
+  setIsFetching(true); // start loading
   if (!mediaCache) {
     mediaCache = await fetchAllMediaItems();
   }
@@ -412,6 +417,7 @@ async function fetchAllImages() {
   }).filter(Boolean);
 
   await runInBatches(tasks, 5); // adjust concurrency limit if needed
+  setIsFetching(false); // stop loading
 }
 
 
@@ -495,6 +501,7 @@ async function fetchAllImages() {
   };
 
   const saveAllEditedItems = async () => {
+    setIsSaving(true);
     try {
       setMessage("");
       setError("");
@@ -541,6 +548,7 @@ async function fetchAllImages() {
     } catch (err) {
       setError("Failed to save changes: " + (err.response?.data?.message || err.message));
     }
+    setIsSaving(false);
   };
 
   const handleMenuClick = () => {
@@ -571,9 +579,7 @@ return (
         <h3 className="text-xl font-semibold flex items-center gap-2">
           🍽️ Add / Edit Dish
         </h3>
-        <p className="text-xs text-gray-500">
-          Tip: Paste an image directly (Ctrl/Cmd + V)
-        </p>
+
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -706,43 +712,65 @@ return (
     {error && (
       <div className="p-3 bg-red-100 text-red-700 rounded">{error}</div>
     )}
+<div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+  {/* Left Column - Offer Banner Manager */}
+  <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[220px]">
+    <div className="absolute -top-20 -right-20 w-72 h-72 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full blur-3xl opacity-20"></div>
 
+    <h2 className="text-2xl font-semibold text-gray-800 relative z-10">
+      Offer Banner Manager
+    </h2>
 
-
-
-
-
-{/* Bulk Upload Section */}
-<div className="mt-10 bg-white rounded-xl shadow-md p-6 min-h-[180px] flex flex-col items-center justify-center text-center relative overflow-hidden">
-  {/* Gradient background blob */}
-  <div className="absolute -top-20 -right-20 w-72 h-72 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full blur-3xl opacity-20"></div>
-
-  <h2 className="text-2xl font-semibold text-gray-800 relative z-10">
-    Bulk Upload Your Menu ( AI )
-  </h2>
-  
-  <p className="text-gray-600 mt-2 max-w-xl relative z-10">
-    Upload your full menu using <span className="font-medium">Images, PDF, or Excel</span> — our AI will process it automatically.
-  </p>
-
-  {/* Show button only for Premium/Pro users */}
-  {restaurant.membership_level === 3 || restaurant.membership_level === 2 ? (
-    <a
-      href="/bulk-upload"
-      className="mt-5 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-lg shadow hover:opacity-90 relative z-10"
-    >
-      Upload Menu
-    </a>
-  ) : (
-    <p className="mt-5 text-gray-500 italic relative z-10">
-      ⚠ Upgrade to <span className="font-semibold text-purple-600">Premium</span> or{" "}
-      <span className="font-semibold text-blue-600">Pro</span> to use this feature.
+    <p className="text-gray-600 mt-2 max-w-sm relative z-10">
+      Add offer banner images to instantly highlight promotions and discounts.
     </p>
-  )}
+
+    {restaurant.membership_level === 3 ? (
+      <OfferBannerManager
+        className="mt-5"
+        restaurantId={restaurantId}
+        token={token}
+        offers={offers}
+        setOffers={setOffers}
+      />
+    ) : (
+      <p className="mt-5 text-gray-500 italic relative z-10">
+        ⚠ Upgrade to <span className="font-semibold text-purple-600">Pro</span>{" "}
+        to use this feature.
+      </p>
+    )}
+  </div>
+
+  {/* Right Column - Bulk Upload Section */}
+  <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[220px]">
+    <div className="absolute -top-20 -right-20 w-72 h-72 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full blur-3xl opacity-20"></div>
+
+    <h2 className="text-2xl font-semibold text-gray-800 relative z-10">
+      Bulk Upload Your Menu ( AI )
+    </h2>
+
+    <p className="text-gray-600 mt-2 max-w-sm relative z-10">
+      Upload your full menu using{" "}
+      <span className="font-medium">Images, PDF, or Excel</span> — our AI will
+      process it automatically.
+    </p>
+
+    {restaurant.membership_level === 3 || restaurant.membership_level === 2 ? (
+      <a
+        href="/bulk-upload"
+        className="mt-5 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-lg shadow hover:opacity-90 relative z-10"
+      >
+        Upload Menu
+      </a>
+    ) : (
+      <p className="mt-5 text-gray-500 italic relative z-10">
+        ⚠ Upgrade to <span className="font-semibold text-purple-600">Premium</span>{" "}
+        or <span className="font-semibold text-blue-600">Pro</span> to use this
+        feature.
+      </p>
+    )}
+  </div>
 </div>
-
-
-
 
 
 
@@ -820,8 +848,19 @@ return (
                     fetchAllImages();
                   }
                 }}
+                  disabled={isFetching}   
               >
-                Fetch All Images ( AI )
+               {isFetching ? (
+  <>
+    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z"></path>
+    </svg>
+    Fetching...
+  </>
+) : (
+  "Fetch All Images ( AI )"
+)}
                 <span className="relative group ml-1 w-5 h-5 flex items-center justify-center rounded-full bg-white text-blue-700 font-bold text-xs cursor-pointer shadow border border-blue-300">
                   i
                   <span className="absolute bottom-full mb-2 w-56 text-xs text-white bg-gray-900 rounded-lg py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow z-10 left-1/2 -translate-x-1/2 sm:left-auto sm:right-0">
@@ -1010,7 +1049,17 @@ return (
                 onClick={saveAllEditedItems}
                 className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
               >
-                Save All Changes
+               {isSaving ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z"></path>
+                    </svg>
+                    Saving All Items...
+                  </>
+                ) : (
+                  "Save All Changes"
+                )}
               </button>
               <button
                 onClick={() => setIsEditMode(false)}
