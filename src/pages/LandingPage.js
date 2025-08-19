@@ -96,7 +96,7 @@ const HomePage = () => {
       </div>
 
       {/* Hero Section */}
-      <section className="relative py-16">
+      <section className="relative py-10">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center gap-12">
           {/* Left: Text */}
           <div className="md:w-1/2 text-center md:text-left">
@@ -137,9 +137,9 @@ const HomePage = () => {
       </section>
 
 {/* Key Features - Multi-Info Professional Style */}
-<section className="py-24 ">
-  <div className="max-w-7xl mx-auto px-6">
-    <h2 className="text-4xl font-extrabold text-center mb-16 text-gray-900">
+<section className="py-16 items-center">
+  <div className="max-w-7xl mx-auto px-6 items-center ">
+    <h2 className="text-4xl font-extrabold text-center  mb-10 text-gray-900">
       Key Features You’ll Get
     </h2>
 
@@ -198,18 +198,24 @@ const HomePage = () => {
             ))}
           </ul>
         </div>
+        
       ))}
+      <a href="/Features">
+              <button className="px-10 items-center py-4 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 font-bold shadow-lg hover:scale-105 transition-transform">
+                Explore All Features
+              </button>
+            </a>
     </div>
   </div>
 </section>
 
 {/* How It Works Section */}
-<section className="relative py-16 bg-transparent">
+<section className="relative py-10 bg-transparent">
   <div className="max-w-7xl mx-auto px-6 text-center">
     <h2 className="text-4xl font-extrabold mb-4 text-gray-900">
       How It Works: Your Menu, Online
     </h2>
-    <p className="text-lg text-gray-700 mb-16 max-w-2xl mx-auto">
+    <p className="text-lg text-gray-700 mb-10 max-w-2xl mx-auto">
      Easily convert your paper menu into a digital QR menu that customers can scan and order from instantly. </p>
 
     <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
@@ -245,7 +251,7 @@ const HomePage = () => {
     </div>
   </div>
 </section>
-<section className="py-16 bg-transparent">
+<section className="py-10 bg-transparent">
   <div className="max-w-6xl mx-auto px-6 text-center">
     <h2 className="text-4xl font-bold mb-8 text-gray-900">
      600+ Digital Menus already live

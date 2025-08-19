@@ -32,6 +32,9 @@ const Header = () => {
             <a href="/" className="text-black font-medium  text-xl hover:text-blue-600 transition">
               Home
             </a>
+            <a href="/features" className="text-black text-xl  font-medium hover:text-blue-600 transition">
+              Features
+            </a>
             <a href="/agency" className="text-black text-xl  font-medium hover:text-blue-600 transition">
               Agency
             </a>
@@ -81,6 +84,7 @@ const Header = () => {
       >
         <nav className="flex flex-col p-6 gap-4 text-black font-medium">
           <a href="/" onClick={closeMenu} className="hover:text-blue-600">Home</a>
+          <a href="/features" onClick={closeMenu} className="hover:text-blue-600">Features</a>
           <a href="/membership" onClick={closeMenu} className="hover:text-blue-600">Pricing</a>
           <a href="/agency" onClick={closeMenu} className="hover:text-blue-600">Agency</a>
           <a href="/contact" onClick={closeMenu} className="hover:text-blue-600">Contact Us</a>
