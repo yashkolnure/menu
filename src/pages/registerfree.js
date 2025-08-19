@@ -169,8 +169,7 @@ const RegisterFreePage = () => {
       {/* Blobs */}
       <div className="absolute -top-32 -left-32 w-96 h-96 bg-gradient-to-r from-pink-300 to-purple-300 rounded-full filter blur-3xl opacity-30"></div>
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-gradient-to-r from-green-400 to-blue-500 rounded-full blur-3xl opacity-20"></div>
-      <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-gradient-to-r from-blue-300 to-green-300 rounded-full filter blur-3xl opacity-30"></div>
-
+      
       <h2 className="text-4xl font-bold text-center mb-4">Register Your Restaurant</h2>
       <p className="text-center text-gray-600 mb-12">
         Create your digital menu account — manage dishes, update offers, and connect with customers.
