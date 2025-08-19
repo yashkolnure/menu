@@ -350,13 +350,44 @@ function UserMenuCreator() {
           </div>
         </div>
       ))}
-
-      {/* QR Code Template Section */}
+{/* QR Code Template Section */}
 <div className="mt-12 border-t pt-10">
   <h3 className="text-2xl font-bold mb-8 text-center text-gray-800">
     📱 Restaurant QR Code Stickers
   </h3>
 
+  {/* Free Simple QR */}
+  <div className="bg-white rounded-xl shadow-md p-4 flex flex-col items-center mb-10">
+    <div className="p-4 border rounded-lg bg-gray-50">
+      <QRCodeCanvas
+        value={`https://app.avenirya.com/menu/${restaurantId}`}
+        size={180}
+        bgColor="#ffffff"
+        fgColor="#000000"
+        level="H"
+        includeMargin={false}
+      />
+    </div>
+    <button
+      onClick={() => {
+        const qrElement = document.querySelector("#freeQR");
+        html2canvas(qrElement, { useCORS: true, scale: 3 }).then((canvas) => {
+          const link = document.createElement("a");
+          link.download = `simple_qr_${restaurantId}.png`;
+          link.href = canvas.toDataURL("image/png");
+          link.click();
+        });
+      }}
+      className="mt-4 bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-full shadow transition-all duration-200"
+    >
+      ⬇️ Download Free QR
+    </button>
+  </div>
+
+  {/* Premium QR Templates */}
+  <h4 className="text-lg font-semibold text-center text-gray-700 mb-4">
+    Premium QR Code Stickers (Download Locked)
+  </h4>
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
     {[
       {
@@ -374,11 +405,10 @@ function UserMenuCreator() {
     ].map((template, index) => (
       <div
         key={template.id}
-        className="bg-white rounded-xl shadow-md p-4 flex flex-col items-center"
+        className="bg-white rounded-xl shadow-md p-4 flex flex-col items-center relative"
       >
         <div
-          id={template.id}
-          className="relative w-full max-w-xs rounded-md overflow-hidden border border-gray-200"
+          className="relative w-full max-w-xs rounded-md overflow-hidden border border-gray-200 opacity-60"
         >
           <img
             src={template.img}
@@ -405,24 +435,18 @@ function UserMenuCreator() {
           </div>
         </div>
 
+        {/* Locked Download Button */}
         <button
-          onClick={() => {
-            const qrElement = document.getElementById(template.id);
-            html2canvas(qrElement, { useCORS: true, scale: 3 }).then((canvas) => {
-              const link = document.createElement("a");
-              link.download = `menu_qr_${restaurantId}_${template.id}.png`;
-              link.href = canvas.toDataURL("image/png");
-              link.click();
-            });
-          }}
-          className="mt-4 bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-full shadow transition-all duration-200"
+          disabled
+          className="mt-4 bg-gray-400 text-white px-5 py-2 rounded-full shadow cursor-not-allowed"
         >
-          ⬇️ Download QR
+          🔒 Premium Only
         </button>
       </div>
     ))}
   </div>
 
+  {/* Live Menu Link */}
   <p className="mt-10 text-center text-sm text-gray-500">
     Link to your live menu:&nbsp;
     <a

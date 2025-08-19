@@ -31,9 +31,11 @@ function BulkUploadmenu1() {
           headers: { Authorization: `Bearer ${token}` },
         });
         setRestaurant(res.data);
+        
       } catch (e) {
         console.error(e);
         setError("Failed to fetch restaurant.");
+        
       }
     };
 
@@ -96,7 +98,12 @@ function BulkUploadmenu1() {
     reader.readAsDataURL(file);
   };
 
-
+// Define limits
+const membershipLimits = {
+  1: 30,
+  2: 100,
+  3: Infinity
+};
 
 
 async function batchUpdate(items, batchSize = 5) {
@@ -167,16 +174,29 @@ async function batchUpdate(items, batchSize = 5) {
     }
   }
 
-  const addItemToList = () => {
-    if (!itemForm.name || !itemForm.category || !itemForm.price || !itemForm.image || !itemForm.description) {
-      setError("All fields are required.");
-      return;
-    }
-    const newItem = { ...itemForm, price: parseFloat(itemForm.price), restaurantId };
-    setMenuItems((prev) => [...prev, newItem]);
-    setItemForm({ name: "", category: "", description: "", price: "", image: "", _id: null });
-    setCustomCategory("");
-  };
+const addItemToList = () => {
+  if (!itemForm.name || !itemForm.category || !itemForm.price) {
+    setError("All fields are required.");
+    return;
+  }
+
+  // Get current plan's limit
+  const limit = membershipLimits[restaurant.membership_level] || 0;
+  const totalItems = existingItems.length + menuItems.length;
+
+  // Check if limit reached
+  if (totalItems >= limit && limit !== Infinity) {
+    setError(`You have reached the limit of ${limit} items for your membership plan.`);
+    return;
+  }
+
+  // Add item
+  const newItem = { ...itemForm, price: parseFloat(itemForm.price), restaurantId };
+  setMenuItems((prev) => [...prev, newItem]);
+  setItemForm({ name: "", category: "", description: "", price: "", image: "", _id: null });
+  setCustomCategory("");
+};
+
 
   const handleUpload = async () => {
     if (!menuItems.length) return;
@@ -523,6 +543,11 @@ async function fetchAllImages() {
     }
   };
 
+  const handleMenuClick = () => {
+    window.open(`https://app.avenirya.com/menu/${restaurantId}`, "_blank");
+  };
+
+
   const allCategories = [...new Set([...existingItems.map((i) => i.category), ...menuItems.map((i) => i.category)])];
   const groupedItems = allCategories.map(cat => ({
     category: cat,
@@ -560,8 +585,43 @@ async function fetchAllImages() {
                 onChange={(e) => setItemForm({ ...itemForm, category: e.target.value })}
                 className="border p-2 rounded"
             />
-            )}
-          <input type="file" accept="image/*" onChange={handleImageChange} className="border p-2 rounded" />
+            )}<div className="relative">
+  {restaurant.membership_level === 1 ? (
+    <div className="flex items-center gap-2">
+      <input
+        type="file"
+        accept="image/*"
+        className="border p-2 rounded cursor-not-allowed opacity-50 flex-1"
+        onClick={(e) => {
+          e.preventDefault();
+          alert("Please upgrade your plan to upload images.");
+        }}
+      />
+
+      {/* Get Premium button with tooltip */}
+      <div className="relative flex flex-col items-center">
+        <span
+          className="w-20 h-6 flex items-center justify-center rounded-full bg-blue-700 text-white font-semibold text-xs cursor-pointer shadow-md border border-blue-300"
+          onClick={() => window.location.href = "https://app.avenirya.com/upgrade"}
+        >
+          Get Premium
+        </span>
+        {/* Tooltip */}
+        <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-48 text-xs text-white bg-gray-900 rounded-lg py-2 px-3 opacity-0 hover:opacity-100 transition-opacity duration-200 shadow-lg pointer-events-none">
+          Pro Feature: Image upload is available only for paid members.
+        </span>
+      </div>
+    </div>
+  ) : (
+    <input
+      type="file"
+      accept="image/*"
+      onChange={handleImageChange}
+      className="border p-2 rounded"
+    />
+  )}
+</div>
+
         </div>
         {itemForm.image && (
           <div className="mt-2">
@@ -571,7 +631,7 @@ async function fetchAllImages() {
               className="h-24 object-contain border rounded" 
             />
             <p className="text-xs text-gray-500 mt-1">
-              {itemForm.image.startsWith('data:') ? "New image (will be uploaded to WordPress)" : "Existing image"}
+              {itemForm.image.startsWith('data:') ? "" : "Existing image"}
             </p>
           </div>
         )}
@@ -636,146 +696,174 @@ async function fetchAllImages() {
           {isEditMode ? (
             <>
               <h3 className="text-xl font-semibold mb-4">Edit Menu Items</h3>
-              <button
-                type="button"
-                className="mb-3 bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded"
-                onClick={fetchAllImages}
-              >
-                Fetch All Images
-              </button>
+           <button
+  type="button"
+  className="mb-3 bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded flex items-center gap-2"
+  onClick={() => {
+    if (restaurant.membership_level === 1 || restaurant.membership_level === 2) {
+      alert("Please upgrade your plan to use this feature.");
+    } else {
+      fetchAllImages();
+    }
+  }}
+>
+  Fetch All Images
+  <span
+    className="relative group ml-2 w-5 h-5 flex items-center justify-center rounded-full bg-white text-blue-700 font-bold text-xs cursor-pointer shadow-md border border-blue-300"
+  >
+    i
+    <span className="absolute bottom-full mb-2 w-56 text-xs text-white bg-gray-900 rounded-lg py-2 px-3 opacity-0 
+    group-hover:opacity-100 transition-opacity duration-200 shadow-lg z-10
+    left-1/2 transform -translate-x-1/2
+    max-w-[90vw] 
+    sm:left-auto sm:right-0">
+  <strong>Pro Feature:</strong> This will automatically get all the images for all dishes you added.
+</span>
+
+  </span>
+</button>
+
               <div className="space-y-3 w-full">
-                {editedItems.map((item, index) => (
-                  <div
-                    key={item._id}
-                    className="w-full flex flex-wrap items-center gap-3 p-3 border rounded shadow bg-white"
-                    onPaste={(e) => handlePasteImage(e, index)}
-                  >
-                    {/* Image Preview */}
-                    {item.image && (
-                      <div className="flex flex-col">
-                        <img
-                          src={item.image}
-                          alt="preview"
-                          className="h-14 w-14 object-cover rounded border"
-                        />
-                        <span className="text-xs text-gray-500 mt-1">
-                          {item.image.startsWith('data:') ? "New image" : "Existing"}
-                        </span>
-                      </div>
-                    )}
+  {editedItems.map((item, index) => (
+    <div
+      key={item._id}
+      className="w-full flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-3 p-3 border rounded shadow bg-white"
+      onPaste={(e) => handlePasteImage(e, index)}
+    >
+     {/* Image Preview and Upload - hide for membership level 1 */}
+{restaurant.membership_level > 1 && item.image && (
+  <div className="flex flex-col items-center sm:items-start">
+    <img
+      src={item.image}
+      alt="preview"
+      className="h-14 w-14 object-cover rounded border"
+    />
+    <span className="text-xs text-gray-500 mt-1 text-center sm:text-left">
+      {item.image.startsWith("data:") ? "New image" : "Existing"}
+    </span>
+  </div>
+)}
 
-                    {/* Image Upload */}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleImageFileChange(e, index)}
-                      className="text-sm border rounded px-2 py-1"
-                    />
+{restaurant.membership_level > 1 && (
+  <input
+    type="file"
+    accept="image/*"
+    onChange={(e) => handleImageFileChange(e, index)}
+    className="text-sm border rounded px-2 py-1 w-full sm:w-auto"
+  />
+)}
 
-                    {/* Dish Name */}
-                    <input
-                      value={item.name}
-                      onChange={(e) => updateEditedItem(index, "name", e.target.value)}
-                      className="border p-2 rounded text-sm flex-1 min-w-[120px]"
-                      placeholder="Name"
-                    />
-                    
+      {/* Dish Name */}
+      <input
+        value={item.name}
+        onChange={(e) => updateEditedItem(index, "name", e.target.value)}
+        className="border p-2 rounded text-sm flex-1 w-full sm:w-auto min-w-[120px]"
+        placeholder="Name"
+      />
 
-                    {/* Description */}
-                    <input
-                      value={item.description}
-                      onChange={(e) => updateEditedItem(index, "description", e.target.value)}
-                      className="border p-2 rounded text-sm flex-1 min-w-[150px]"
-                      placeholder="Description"
-                    />
+      {/* Description */}
+      <input
+        value={item.description}
+        onChange={(e) => updateEditedItem(index, "description", e.target.value)}
+        className="border p-2 rounded text-sm flex-1 w-full sm:w-auto min-w-[150px]"
+        placeholder="Description"
+      />
 
-                    {/* Price */}
-                    <input
-                      value={item.price}
-                      onChange={(e) => /^[0-9]*$/.test(e.target.value) && updateEditedItem(index, "price", e.target.value)}
-                      className="border p-2 rounded text-sm w-20 text-center"
-                      placeholder="₹"
-                    />
+      {/* Price */}
+      <input
+        value={item.price}
+        onChange={(e) =>
+          /^[0-9]*$/.test(e.target.value) &&
+          updateEditedItem(index, "price", e.target.value)
+        }
+        className="border p-2 rounded text-sm w-full sm:w-20 text-center"
+        placeholder="₹"
+      />
 
-                    {/* Category */}
-                    <div className="flex flex-col w-44">
-                      <select
-                        value={allCategories.includes(item.category) ? item.category : "__custom__"}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          if (val === "__custom__") {
-                            setCustomEditCategories(prev => ({ ...prev, [item._id]: true }));
-                            updateEditedItem(index, "category", "");
-                          } else {
-                            setCustomEditCategories(prev => ({ ...prev, [item._id]: false }));
-                            updateEditedItem(index, "category", val);
-                          }
-                        }}
-                        className="border p-2 rounded text-sm"
-                      >
-                        <option value="">Select Category</option>
-                        {allCategories.map((cat, i) => (
-                          <option key={i} value={cat}>{cat}</option>
-                        ))}
-                        <option value="__custom__">➕ Custom</option>
-                      </select>
+      {/* Category */}
+      <div className="flex flex-col w-full sm:w-44">
+        <select
+          value={allCategories.includes(item.category) ? item.category : "__custom__"}
+          onChange={(e) => {
+            const val = e.target.value;
+            if (val === "__custom__") {
+              setCustomEditCategories((prev) => ({ ...prev, [item._id]: true }));
+              updateEditedItem(index, "category", "");
+            } else {
+              setCustomEditCategories((prev) => ({ ...prev, [item._id]: false }));
+              updateEditedItem(index, "category", val);
+            }
+          }}
+          className="border p-2 rounded text-sm w-full"
+        >
+          <option value="">Select Category</option>
+          {allCategories.map((cat, i) => (
+            <option key={i} value={cat}>
+              {cat}
+            </option>
+          ))}
+          <option value="__custom__">➕ Custom</option>
+        </select>
 
-                      {customEditCategories[item._id] && (
-                        <input
-                          type="text"
-                          placeholder="Enter category"
-                          value={item.category}
-                          onChange={(e) => updateEditedItem(index, "category", e.target.value)}
-                          className="mt-1 border p-1 rounded text-sm"
-                        />
-                      )}
-                    </div>
+        {customEditCategories[item._id] && (
+          <input
+            type="text"
+            placeholder="Enter category"
+            value={item.category}
+            onChange={(e) => updateEditedItem(index, "category", e.target.value)}
+            className="mt-1 border p-1 rounded text-sm w-full"
+          />
+        )}
+      </div>
 
-                    {/* Save Button */}
-                    <button
-                      onClick={async () => {
-                          setSavingItems(prev => ({ ...prev, [item._id]: "saving" }));
-                          try {
-                            let imageUrl = item.image;
-                            
-                            // If it's a new image, upload to WordPress first
-                            if (item.image.startsWith('data:')) {
-                              imageUrl = await uploadImageToWordPress(
-                                item.image,
-                                `${item.name.replace(/\s+/g, '-')}_${item.category.replace(/\s+/g, '-')}.jpg`
-                              );
-                            }
-                            
-                            const updatedItem = { ...item, image: imageUrl };
-                            
-                            await axios.put(
-                              `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu/${item._id}`,
-                              updatedItem,
-                              { headers: { Authorization: `Bearer ${token}` } }
-                            );
-                            
-                            setSavingItems(prev => ({ ...prev, [item._id]: "saved" }));
-                            setMessage(`Saved: ${item.name}`);
-                            setTimeout(() => {
-                                setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
-                            }, 1200);
-                          } catch {
-                            setSavingItems(prev => ({ ...prev, [item._id]: undefined }));
-                            setError("Save failed");
-                          }
-                      }}
-                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded text-sm"
-                      disabled={savingItems[item._id] === "saving"}
-                    >
-                      {savingItems[item._id] === "saving"
-                          ? "Saving..."
-                          : savingItems[item._id] === "saved"
-                          ? "Saved"
-                          : "Save"}
-                    </button>
-                  </div>
-                ))}
-              </div>
+      {/* Save Button */}
+      <button
+        onClick={async () => {
+          setSavingItems((prev) => ({ ...prev, [item._id]: "saving" }));
+          try {
+            let imageUrl = item.image;
+
+            if (item.image.startsWith("data:")) {
+              imageUrl = await uploadImageToWordPress(
+                item.image,
+                `${item.name.replace(/\s+/g, "-")}_${item.category.replace(
+                  /\s+/g,
+                  "-"
+                )}.jpg`
+              );
+            }
+
+            const updatedItem = { ...item, image: imageUrl };
+
+            await axios.put(
+              `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu/${item._id}`,
+              updatedItem,
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            setSavingItems((prev) => ({ ...prev, [item._id]: "saved" }));
+            setMessage(`Saved: ${item.name}`);
+            setTimeout(() => {
+              setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
+            }, 1200);
+          } catch {
+            setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
+            setError("Save failed");
+          }
+        }}
+        className="bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded text-sm mt-2 sm:mt-0"
+        disabled={savingItems[item._id] === "saving"}
+      >
+        {savingItems[item._id] === "saving"
+          ? "Saving..."
+          : savingItems[item._id] === "saved"
+          ? "Saved"
+          : "Save"}
+      </button>
+    </div>
+  ))}
+</div>
+
 
               <div className="flex gap-4 mt-4">
                 <button 
@@ -794,44 +882,85 @@ async function fetchAllImages() {
             </>
           ) : (
             groupedItems.sort((a, b) => a.category.localeCompare(b.category)).map((group, index) => (
-              <div key={index} className="mb-6">
-                <h4 className="text-lg font-bold mb-2 text-blue-700 border-b pb-1">{group.category}</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-                  {group.items.map((item, i) => (
-                    <div key={i} className="p-4 border rounded bg-white shadow relative">
-                      <h4 className="font-bold">{item.name}</h4>
-                      <p className="text-sm">{item.description}</p>
-                      <p className="text-green-700 font-semibold">₹{item.price}</p>
-                      {item.image && (
-                        <img 
-                          src={item.image} 
-                          alt={item.name} 
-                          className="h-24 w-full object-contain mt-2 rounded border" 
-                        />
-                      )}
-                      <div className="flex gap-2 mt-2">
-                        <button 
-                          onClick={() => handleEditItem(item)} 
-                          className="text-xs px-2 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded"
-                        >
-                          Edit
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(item._id)} 
-                          className="text-xs px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+             <div key={index} className="mb-8">
+<h4 className="text-xl font-bold mb-4 text-blue-700 border-b pb-1">{group.category}</h4>
+<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+  {group.items.map((item, i) => (
+    <div
+      key={i}
+      className="p-4 border rounded-lg bg-white shadow hover:shadow-lg transition-shadow duration-200 flex gap-4"
+    >
+      {/* Left: Image */}
+      {item.image && (
+        <img
+          src={item.image}
+          alt={item.name}
+          className="h-16 w-16 object-cover rounded border flex-shrink-0"
+        />
+      )}
+
+      {/* Right: Info */}
+      <div className="flex-1 flex flex-col">
+        {/* Name */}
+        <h4 className="font-semibold text-lg">{item.name}</h4>
+
+        {/* Description */}
+        <p className="text-sm text-gray-600 flex-1">{item.description}</p>
+
+        {/* Price */}
+        <p className="text-green-700 font-semibold mt-1">₹{item.price}</p>
+
+        {/* Buttons */}
+        <div className="flex gap-2 mt-2">
+          <button
+            onClick={() => handleEditItem(item)}
+            className="flex-1 text-xs px-2 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded transition-colors duration-200"
+          >
+            Edit
+          </button>
+          <button
+            onClick={() => handleDelete(item._id)}
+            className="flex-1 text-xs px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded transition-colors duration-200"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
+
+</div>
+
             ))
           )}
+          <button
+        onClick={handleMenuClick}
+        className="fixed bottom-6 right-6 flex items-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full shadow-lg transition-colors duration-200 z-50"
+      >
+        {/* Menu Icon */}
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-5 w-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 6h16M4 12h16M4 18h16"
+          />
+        </svg>
+        My Menu
+      </button>
         </div>
       )}
-      <QRCodeTemplates restaurantId={restaurantId} />
+  <QRCodeTemplates
+  restaurantId={restaurantId}
+  membership_level={restaurant.membership_level}
+/>
 
     </div>
   );

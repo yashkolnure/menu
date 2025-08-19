@@ -15,15 +15,14 @@ function RestaurantMenuPage() {
   const [menuData, setMenuData] = useState([]);
   const [categories, setCategories] = useState([]);
   const [tableNumber, setTableNumber] = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [showCart, setShowCart] = useState(false);
-  const [restaurantDetails, setRestaurantDetails] = useState(null);
   const [activeOffer, setActiveOffer] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [offers, setOffers] = useState([]);
+  const [restaurantDetails, setRestaurantDetails] = useState(null);
 
   const carouselRef = useRef(null);
-  const [offers, setOffers] = useState([]);
 
+  // Fetch offers
   useEffect(() => {
     const fetchOffers = async () => {
       try {
@@ -41,15 +40,16 @@ function RestaurantMenuPage() {
     fetchOffers();
   }, [id]);
 
+  // Set table from URL
   useEffect(() => {
     if (tableFromURL) setTableNumber(tableFromURL);
   }, [tableFromURL]);
 
+  // Fetch menu and restaurant details
   useEffect(() => {
     const fetchAllData = async () => {
       try {
         const token = localStorage.getItem("token");
-
         const [menuRes, detailsRes] = await Promise.all([
           fetch(`https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${id}/menu`, {
             headers: { Authorization: `Bearer ${token}` },
@@ -72,14 +72,15 @@ function RestaurantMenuPage() {
         setLoading(false);
       }
     };
-
     fetchAllData();
   }, [id]);
 
+  // Set categories
   useEffect(() => {
     setCategories(["All", ...new Set(menuData.map(item => item.category))]);
   }, [menuData]);
 
+  // Load cart from localStorage
   useEffect(() => {
     const savedCart = JSON.parse(localStorage.getItem("cart"));
     if (savedCart) setCart(savedCart);
@@ -89,12 +90,14 @@ function RestaurantMenuPage() {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
+  // Filtered menu
   const filteredMenu = menuData.filter(item => {
     const matchCategory = category === "All" || item.category === category;
     const matchSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
     return matchCategory && matchSearch;
   });
 
+  // Add to cart
   const addToCart = item => {
     if (cart.find(c => c._id === item._id)) toast.warn("Item already in cart!");
     else {
@@ -103,43 +106,16 @@ function RestaurantMenuPage() {
     }
   };
 
-  const handleTableNumberSubmit = async () => {
-    if (!tableNumber) return toast.error("Please enter a valid table number.");
-
-    try {
-      const res = await fetch("https://menubackend-git-main-yashkolnures-projects.vercel.app/api/order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          restaurantId: id,
-          tableNumber,
-          items: cart.map(item => ({ itemId: item._id, quantity: item.quantity })),
-          total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
-        }),
-      });
-
-      if (res.ok) {
-        toast.success("✅ Order placed!");
-        setCart([]);
-        setShowModal(false);
-        setShowCart(false);
-      } else {
-        toast.error("❌ Order failed");
-      }
-    } catch {
-      toast.error("⚠️ Server error");
-    }
-  };
-
   return (
-    <>
-      <header className="relative h-56 w-full mb-0 overflow-hidden rounded-b-xl shadow-lg">
+    <div className="w-screen h-screen flex flex-col bg-gray-100 overflow-hidden">
+      {/* Top section */}
+      <div className="relative flex-shrink-0 h-60 sm:h-72 w-full bg-black">
         <img
           src="https://t3.ftcdn.net/jpg/02/97/67/70/360_F_297677001_zX7ZzRq8DObUV5IWTHAIhAae6DuiEQh4.jpg"
-          alt="Food Background"
-          className="absolute inset-0 w-full h-full object-cover z-0"
+          alt="Background"
+          className="absolute inset-0 w-full h-full object-cover"
         />
-        <div className="relative z-10 bg-black/40 w-full h-full flex flex-col items-center justify-center px-4 py-6 space-y-4">
+        <div className="relative z-10 bg-black/40 w-full h-full flex flex-col items-center justify-center px-4 py-4 space-y-4">
           {restaurantDetails?.logo && (
             <img src={restaurantDetails.logo} alt="Logo" className="h-20 sm:h-24 object-contain" />
           )}
@@ -151,10 +127,11 @@ function RestaurantMenuPage() {
             className="w-full max-w-md px-4 py-2 rounded-xl text-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white shadow"
           />
         </div>
-      </header>
+      </div>
 
+      {/* Offers Carousel */}
       {offers.length > 0 && (
-        <div className="bg-gray-100">
+        <div className="flex-shrink-0 bg-gray-100">
           <div
             ref={carouselRef}
             onScroll={() => {
@@ -180,7 +157,7 @@ function RestaurantMenuPage() {
             </div>
           </div>
 
-          <div className="flex justify-center space-x-2 pb-6 bg-gray-100">
+          <div className="flex justify-center space-x-2 pb-4 bg-gray-100">
             {offers.map((_, idx) => (
               <span
                 key={idx}
@@ -193,7 +170,8 @@ function RestaurantMenuPage() {
         </div>
       )}
 
-      <div className="min-h-screen bg-gray-100 p-3">
+      {/* Menu Items */}
+      <div className="flex-1 overflow-y-auto p-3">
         <div className="overflow-x-auto mb-4">
           <div className="flex gap-2 w-max px-2">
             {categories.map(cat => (
@@ -217,9 +195,7 @@ function RestaurantMenuPage() {
               <p className="ml-3 text-gray-500 text-sm">Loading menu...</p>
             </div>
           ) : filteredMenu.length > 0 ? (
-            filteredMenu.map(item => (
-              <MenuCard key={item._id} item={item} addToCart={addToCart} />
-            ))
+            filteredMenu.map(item => <MenuCard key={item._id} item={item} addToCart={addToCart} />)
           ) : (
             <p className="text-gray-500 text-center mb-4">No items match your search.</p>
           )}
@@ -227,13 +203,13 @@ function RestaurantMenuPage() {
       </div>
 
       {tableNumber && (
-        <p className="text-center text-sm text-gray-600 mt-2 mb-5">
+        <p className="text-center text-sm text-gray-600 mt-2 mb-2">
           Ordering for <strong>Table {tableNumber}</strong>
         </p>
       )}
 
       <ToastContainer position="bottom-right" autoClose={2000} />
-    </>
+    </div>
   );
 }
 

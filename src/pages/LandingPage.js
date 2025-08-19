@@ -1,168 +1,279 @@
-import React, { useEffect } from "react";
+import { useRef, useState, useEffect } from 'react';
+const HomePage = () => {
+  const screenshots = [
+        "https://petoba.avenirya.com/wp-content/uploads/2025/08/1.jpg",
+        "https://petoba.avenirya.com/wp-content/uploads/2025/08/2.jpg",
+        "https://petoba.avenirya.com/wp-content/uploads/2025/08/3.jpg",
+        "https://petoba.avenirya.com/wp-content/uploads/2025/08/4.jpg",
+        "https://petoba.avenirya.com/wp-content/uploads/2025/08/5.jpg",
+        "https://petoba.avenirya.com/wp-content/uploads/2025/08/6.jpg",
+        "https://petoba.avenirya.com/wp-content/uploads/2025/08/8.jpg",
+        "https://petoba.avenirya.com/wp-content/uploads/2025/08/9.jpg",
+        "https://petoba.avenirya.com/wp-content/uploads/2025/08/10.jpg",
+        "https://petoba.avenirya.com/wp-content/uploads/2025/08/11.jpg",
+        "https://petoba.avenirya.com/wp-content/uploads/2025/08/12.jpg",
+        "https://petoba.avenirya.com/wp-content/uploads/2025/08/13.jpg",
+        "https://petoba.avenirya.com/wp-content/uploads/2025/08/14.jpg",
+        "https://petoba.avenirya.com/wp-content/uploads/2025/08/15.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/16.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/17.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/18.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/19.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/20.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/21.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/22.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/23.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/24.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/25.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/26.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/27.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/28.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/29.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/30.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/31.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/32.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/33.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/34.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/35.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/36.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/37.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/38.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/39.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/40.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/41.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/42.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/43.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/44.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/45.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/46.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/47.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/48.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/49.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/50.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/51.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/52.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/53.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/54.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/55.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/56.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/57.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/58.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/59.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/60.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/61.jpg",
+    "https://petoba.avenirya.com/wp-content/uploads/2025/08/62.jpg",
+    // Add all 60+ screenshot URLs here
+  ];
 
-function RedirectToPetoba() {
+     const [currentIndices, setCurrentIndices] = useState([0, 1, 2]);
+
   useEffect(() => {
-    window.location.href = "https://petoba.avenirya.com";
-  }, []);
+    const interval = setInterval(() => {
+      const newIndices = [];
+      const used = new Set();
+      while (newIndices.length < 3) {
+        const randomIndex = Math.floor(Math.random() * screenshots.length);
+        if (!used.has(randomIndex)) {
+          newIndices.push(randomIndex);
+          used.add(randomIndex);
+        }
+      }
+      setCurrentIndices(newIndices);
+    }, 2000); // change images every 2 seconds
 
-  return <p>Redirecting to Petoba...</p>;
+    return () => clearInterval(interval);
+  }, [screenshots.length]);
+
+
+  return (
+    <div className="relative">
+
+      {/* Background Blobs */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute -top-20 -left-20 w-72 h-72 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full blur-3xl opacity-30"></div>
+        <div className="absolute top-40 -right-20 w-80 h-80 bg-gradient-to-r from-orange-400 to-pink-500 rounded-full blur-3xl opacity-30"></div>
+        <div className="absolute top-[400px] left-1/2 -translate-x-1/2 w-96 h-96 bg-gradient-to-r from-green-400 to-blue-500 rounded-full blur-3xl opacity-20"></div>
+      </div>
+
+      {/* Hero Section */}
+      <section className="relative py-16">
+        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center gap-12">
+          {/* Left: Text */}
+          <div className="md:w-1/2 text-center md:text-left">
+            <h1 className="text-5xl md:text-6xl font-extrabold mb-6 text-gray-900">
+             From Paper Menus to Digital QR in Minutes
+            </h1>
+            <p className="text-xl md:text-2xl mb-8 text-gray-700">
+             Give your customers a modern, easy-to-use digital menu. Scan the QR code to view instantly, with fast setup and professional design.
+            </p>
+            <a href="/membership">
+              <button className="px-10 py-4 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 font-bold shadow-lg hover:scale-105 transition-transform">
+                Get Started
+              </button>
+            </a>
+          </div>
+
+          {/* Right: Illustration */}
+          <div className="md:w-1/2 flex justify-center md:justify-end hidden md:flex">
+            <img
+              src="https://petoba.avenirya.com/wp-content/uploads/2025/08/image-removebg-preview-11.png"
+              alt="Digital Menu Illustration"
+              className="w-86 md:w-96 drop-shadow-lg animate-float"
+            />
+          </div>
+        </div>
+
+        {/* Floating Animation */}
+        <style jsx>{`
+          @keyframes float {
+            0% { transform: translatey(0px); }
+            50% { transform: translatey(-10px); }
+            100% { transform: translatey(0px); }
+          }
+          .animate-float {
+            animation: float 3s ease-in-out infinite;
+          }
+        `}</style>
+      </section>
+
+{/* Key Features - Multi-Info Professional Style */}
+<section className="py-24 ">
+  <div className="max-w-7xl mx-auto px-6">
+    <h2 className="text-5xl font-extrabold text-center mb-16 text-gray-900">
+      Key Features You’ll Get
+    </h2>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {[
+        {
+          icon: "🤖",
+          title: "AI-Powered Menu Upload",
+          subtitle: "Save hours of manual work",
+          points: [
+            "Extract items, prices, and descriptions automatically",
+            "Organizes menu images intelligently",
+            "Works for multiple menus at once"
+          ]
+        },
+        {
+          icon: "💬",
+          title: "WhatsApp Order Integration",
+          subtitle: "Direct orders to your WhatsApp",
+          points: [
+            "Receive orders instantly",
+            "Track customer requests",
+            "Manage multiple branches easily"
+          ]
+        },
+        {
+          icon: "🎨",
+          title: "Premium UI & Menu Layouts",
+          subtitle: "Beautiful and intuitive",
+          points: [
+            "Professionally designed layouts",
+            "Customizable colors and fonts",
+            "Mobile-friendly and responsive"
+          ]
+        },
+        {
+          icon: "📋",
+          title: "Real-Time Menu Management",
+          subtitle: "Instant updates everywhere",
+          points: [
+            "Change items, prices, categories instantly",
+            "Sync across all devices",
+            "Easy to manage even large menus"
+          ]
+        }
+      ].map((feature, idx) => (
+        <div key={idx} className="bg-white rounded-3xl shadow-lg p-6 flex flex-col items-start hover:scale-105 transition-transform duration-300">
+          <div className="w-16 h-16 flex items-center justify-center rounded-full bg-orange-500 text-white text-4xl mb-4">
+            {feature.icon}
+          </div>
+          <h3 className="text-2xl font-bold mb-1">{feature.title}</h3>
+          <p className="text-orange-600 font-semibold mb-4">{feature.subtitle}</p>
+          <ul className="list-disc pl-5 text-gray-700 space-y-2">
+            {feature.points.map((point, i) => (
+              <li key={i}>{point}</li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+{/* How It Works Section */}
+<section className="relative py-16 bg-transparent">
+  <div className="max-w-7xl mx-auto px-6 text-center">
+    <h2 className="text-5xl font-extrabold mb-4 text-gray-900">
+      How It Works: Your Menu, Online
+    </h2>
+    <p className="text-lg text-gray-700 mb-16 max-w-2xl mx-auto">
+     Easily convert your paper menu into a digital QR menu that customers can scan and order from instantly. </p>
+
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+      {[
+       {
+  icon: "🏢",
+  title: "Step 1: Choose Plan & Sign Up",
+  desc: "Select the plan that suits your restaurant and quickly create your account to get started."
+},
+{
+  icon: "🖼️",
+  title: "Step 2: Add Your Menu with AI",
+  desc: "Upload your menu or images and let our AI automatically organize items, descriptions, and prices for you."
+},
+{
+  icon: "⚡",
+  title: "Step 3: Download & Use",
+  desc: "Publish your digital menu and download the QR code. Customers can instantly scan and view your menu on any device."
 }
 
-export default RedirectToPetoba;
+      ].map((step, index) => (
+        <div
+          key={index}
+          className="bg-white/40 backdrop-blur-lg rounded-3xl shadow-xl p-8 flex flex-col items-center text-center hover:scale-105 hover:-translate-y-2 hover:shadow-2xl transition-transform duration-300"
+        >
+          <div className="w-16 h-16 flex items-center justify-center bg-blue-500 text-white rounded-full text-3xl mb-4">
+            {step.icon}
+          </div>
+          <h3 className="text-xl font-bold mb-2">{step.title}</h3>
+          <p className="text-gray-700">{step.desc}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+<section className="py-16 bg-transparent">
+  <div className="max-w-6xl mx-auto px-6 text-center">
+    <h2 className="text-4xl font-bold mb-8 text-gray-900">
+     600+ Digital Menus already live
+    </h2>
 
+    <div className="flex gap-4 justify-center items-end">
+      {currentIndices.map((idx, index) => {
+        const isMiddle = index === 1; // middle slide
+        return (
+          <div
+            key={idx}
+            className={`relative rounded-3xl shadow-xl overflow-hidden border-8 border-gray-200 transition-transform duration-500 hover:scale-[1.02] ${
+              isMiddle ? "w-80 md:w-94 md:h-[580px]" : "w-72 md:w-80 md:h-[550px]"
+            }`}
+          >
+            <img
+              src={screenshots[idx]}
+              alt={`Menu Screenshot ${idx + 1}`}
+              className="w-full h-full object-cover rounded-2xl"
+            />
+          </div>
+        );
+      })}
+    </div>
+  </div>
+</section>
+        </div>
+  );
+};
 
-// import React from 'react';
-// import { motion, useViewportScroll, useTransform } from 'framer-motion';
-
-// // Feature, Why, Testimonial, Plan data (unchanged)...
-// const features = [
-//   'Table-wise Order Management',
-//   'Digital QR Menus',
-//   'Bluetooth KOT & Billing',
-//   'Real-Time Order Notifications',
-//   'Sales Tracking & Analytics'
-// ];
-
-
-// const testimonials = [
-//   { text: 'Petoba transformed our order flow—no more paper menus or lost tickets!', author: 'Ritu Singh, Café Blossom' },
-//   { text: 'Real-time alerts keep our kitchen efficient and customers happy.', author: 'Raj Patel, Spice Corner' }
-// ];
-
-// const plans = [
-//   { name: 'Basic Plan', price: '$499/mo', features: ['Social Media Management', 'Basic SEO Optimization', 'Monthly Report'] },
-//   { name: 'Standard Plan', price: '$999/mo', features: ['Advanced SEO Optimization', 'Bi-weekly Blog Posts', 'Email Campaigns'], recommended: true },
-//   { name: 'Premium Plan', price: '$1499/mo', features: ['Comprehensive SEO', 'Weekly Blog & Newsletter', 'PPC Management'] }
-// ];
-
-// // Hero animation variants
-// const heroVariants = {
-//   panel: {
-//     hidden: { x: '-100vw', opacity: 0 },
-//     visible: { x: 0, opacity: 1, transition: { type: 'spring', stiffness: 50, damping: 20, delay: 2 } }
-//   },
-//   phone: {
-//     hidden: { y: '-100vh', opacity: 0 },
-//     visible: { y: 0, opacity: 1, transition: { type: 'spring', stiffness: 80, damping: 12, delay: 2.3 } }
-//   },
-//   textContainer: {
-//     hidden: {},
-//     visible: { transition: { staggerChildren: 0.2, delayChildren: 2.6 } }
-//   },
-//   textLine: {
-//     hidden: { opacity: 0, y: 20 },
-//     visible: { opacity: 1, y: 0, transition: { duration: 0.8 } }
-//   },
-//   button: {
-//     hidden: { scale: 0 },
-//     visible: { scale: 1, transition: { type: 'spring', stiffness: 120, damping: 10, delay: 3 } }
-//   }
-// };
-
-// const LandingPage = () => {
-//   // scroll-based zoom for panel
-//   const { scrollYProgress } = useViewportScroll();
-//   const panelScale = useTransform(scrollYProgress, [0, 1], [1, 1.05]);
-
-//   return (
-//     <div className="relative overflow-hidden bg-gray-900 text-white">
-//       {/* Gradient Blobs */}
-//       <div className="absolute -top-48 -left-48 w-96 h-96 bg-gradient-to-tr from-purple-900 to-blue-700 opacity-60 rounded-full filter blur-3xl" />
-//       <div className="absolute -bottom-48 -right-48 w-[600px] h-[600px] bg-gradient-to-br from-green-800 to-teal-700 opacity-50 rounded-full filter blur-3xl" />
-
-//       {/* Header */}
-//       <header className="z-20 relative">
-//         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-//           <h2 className="text-2xl font-bold text-white">Petoba</h2>
-//           <nav>
-//             <ul className="flex space-x-6 text-gray-300">
-//               <li><a href="#features" className="hover:text-white">Features</a></li>
-//               <li><a href="#why" className="hover:text-white">Why Petoba</a></li>
-//               <li><a href="#screenshots" className="hover:text-white">Screenshots</a></li>
-//               <li><a href="#how" className="hover:text-white">How It Works</a></li>
-//               <li><a href="#pricing" className="hover:text-white">Pricing</a></li>
-//               <li><a href="#contact" className="hover:text-white">Contact</a></li>
-//             </ul>
-//           </nav>
-//         </div>
-//       </header>
-
-//       {/* Hero Animation Section */}
-//       <motion.section className="relative min-h-screen flex items-center justify-center px-6 py-16 text-center overflow-hidden">
-//         {/* Animated Admin Panel */}
-//         <motion.img
-//           variants={heroVariants.panel}
-//           initial="hidden"
-//           animate="visible"
-//           style={{ scale: panelScale }}
-//           src="https://panel.avenirya.com/wp-content/uploads/2025/04/Purple-and-White-Gradient-Business-Marketing-Presentation-Device-Mockup-Instagram-Post-Website.webp"
-//           alt="Admin Dashboard"
-//           className="relative mx-auto w-full md:w-3/4 rounded-xl shadow-2xl z-10"
-//         />
-
-//         {/* Animated Mobile UI coming down */}
-//         <motion.img
-//           variants={heroVariants.phone}
-//           initial="hidden"
-//           animate="visible"
-//           src="https://panel.avenirya.com/wp-content/uploads/2025/04/Untitled-design-1.webp"
-//           alt="Mobile Menu"
-//           className="absolute top-1/4 right-40 w-50 md:w-44 rounded-2xl shadow-xl z-20"
-//         />
-//       </motion.section>
-
-//       {/* Hero Text & CTA below animations */}
-//       <motion.section
-//         className="pb-16 bg-gray-900 text-center"
-//         variants={heroVariants.textContainer}
-//         initial="hidden"
-//         animate="visible"
-//       >
-//         <motion.h1 variants={heroVariants.textLine} className="text-4xl md:text-6xl font-bold text-white mb-4">
-//           Smart Restaurant Management Made Easy
-//         </motion.h1>
-//         <motion.p variants={heroVariants.textLine} className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-8">
-//           Manage orders, print bills, and give your customers a seamless digital menu experience — all in one place.
-//         </motion.p>
-//         <motion.a
-//           variants={heroVariants.button}
-//           href="#contact"
-//           className="inline-block bg-green-600 hover:bg-green-500 text-white text-lg px-8 py-3 rounded-xl"
-//         >
-//           Get Started
-//         </motion.a>
-//       </motion.section>
-
-//             {/* Features Section */}
-//       <motion.section
-//         id="features"
-//         className="py-16 bg-gray-800 text-white"
-//         initial="hidden"
-//         whileInView="visible"
-//         viewport={{ once: true, amount: 0.3 }}
-//         transition={{ staggerChildren: 0.2 }}
-//       >
-//         <div className="container mx-auto px-6">
-//           <h2 className="text-3xl font-bold mb-8 text-center">Key Features</h2>
-//           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-//             {features.map((feat, i) => (
-//               <motion.div
-//                 key={i}
-//                 className="p-6 bg-gray-700 rounded-lg"
-//                 whileHover={{ scale: 1.05 }}
-//                 transition={{ type: 'spring', stiffness: 300 }}
-//               >
-//                 <h3 className="font-semibold text-xl">{feat}</h3>
-//               </motion.div>
-//             ))}
-//           </div>
-//         </div>
-//       </motion.section>
-
-
-//       {/* ... other sections (Features, Why, Screenshots, etc.) ... */}
-//     </div>
-//   );
-// };
-
-// export default LandingPage;
+export default HomePage;
