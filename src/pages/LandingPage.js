@@ -139,7 +139,7 @@ const HomePage = () => {
 {/* Key Features - Multi-Info Professional Style */}
 <section className="py-24 ">
   <div className="max-w-7xl mx-auto px-6">
-    <h2 className="text-5xl font-extrabold text-center mb-16 text-gray-900">
+    <h2 className="text-4xl font-extrabold text-center mb-16 text-gray-900">
       Key Features You’ll Get
     </h2>
 
@@ -206,7 +206,7 @@ const HomePage = () => {
 {/* How It Works Section */}
 <section className="relative py-16 bg-transparent">
   <div className="max-w-7xl mx-auto px-6 text-center">
-    <h2 className="text-5xl font-extrabold mb-4 text-gray-900">
+    <h2 className="text-4xl font-extrabold mb-4 text-gray-900">
       How It Works: Your Menu, Online
     </h2>
     <p className="text-lg text-gray-700 mb-16 max-w-2xl mx-auto">
