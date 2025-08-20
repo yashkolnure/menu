@@ -19,6 +19,7 @@ const Kolnure = () => {
     retypePassword: "",
     membership_level: 1,
   });
+  
 
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");

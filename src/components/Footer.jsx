@@ -29,7 +29,7 @@ const Footer = () => {
               <h3 className="font-semibold text-gray-800 mb-2">Contact</h3>
               <p className="text-gray-600">📞 +91 7499835687</p>
               <p className="text-gray-600">📧 admin@avenirya.com</p>
-              <p className="text-gray-600">📧 yashkolnure58@gmail.com</p>
+              {/* <p className="text-gray-600">📧 yashkolnure58@gmail.com</p> */}
             </div>
 
             {/* Quick Links */}
