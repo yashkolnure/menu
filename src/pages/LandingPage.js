@@ -1,4 +1,61 @@
-import { useRef, useState, useEffect } from 'react';
+import {React, useRef, useState, useEffect } from 'react';
+import {
+  QrCode,
+  MessageCircle,
+  Megaphone,
+  LayoutDashboard,
+  Bot,
+  Image,
+  Headphones,
+} from "lucide-react";
+
+
+
+const features = [
+    {
+      title: "Scannable QR Menus",
+      description:
+        "Generate modern QR codes that customers can scan from any device. Fast, simple, and user-friendly access to your digital menu.",
+      icon: <QrCode size={48} className="text-blue-500" />,
+    },
+    {
+      title: "WhatsApp Ordering",
+      description:
+        "Turn conversations into sales. Customers can scan, browse, and place orders directly through WhatsApp, and you receive them instantly.",
+      icon: <MessageCircle size={48} className="text-green-500" />,
+    },
+    {
+      title: "Promote Daily Offers",
+      description:
+        "Highlight your latest deals and discounts with attractive offer banners inside your menu. Keep customers engaged and coming back.",
+      icon: <Megaphone size={48} className="text-orange-500" />,
+    },
+    {
+      title: "Powerful Admin Dashboard",
+      description:
+        "Stay in control with an easy-to-use dashboard. Add or update items, adjust prices, and manage categories anytime, anywhere.",
+      icon: <LayoutDashboard size={48} className="text-purple-500" />,
+    },
+    {
+      title: "AI Menu Upload",
+      description:
+        "No more manual entry. Upload photos or PDFs of your menu, and let our AI instantly digitize everything for you.",
+      icon: <Bot size={48} className="text-pink-500" />,
+    },
+    {
+      title: "Food Items with Images",
+      description:
+        "Enhance your menu effortlessly. Our AI automatically pairs food items with high-quality images to make dishes irresistible.",
+      icon: <Image size={48} className="text-indigo-500" />,
+    },
+    {
+      title: "Dedicated Support",
+      description:
+        "Get help when you need it. Our support team is always available via WhatsApp and email to keep your restaurant running smoothly.",
+      icon: <Headphones size={48} className="text-red-500" />,
+    },
+  ];
+
 const HomePage = () => {
   const screenshots = [
         "https://petoba.avenirya.com/wp-content/uploads/2025/08/1.jpg",
@@ -82,9 +139,20 @@ const HomePage = () => {
     }, 2000); // change images every 2 seconds
 
     return () => clearInterval(interval);
+
+
   }, [screenshots.length]);
 
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState("");
 
+  const sendMessage = () => {
+    if (!message.trim()) return;
+    const url = `https://wa.me/917499835687?text=${encodeURIComponent(message)}`;
+    window.open(url, "_blank");
+    setMessage("");
+    setOpen(false);
+  };
   return (
     <div className="relative">
 
@@ -114,9 +182,9 @@ const HomePage = () => {
           </div>
 
           {/* Right: Illustration */}
-          <div className="md:w-1/2 flex justify-center md:justify-end hidden md:flex">
+          <div className="md:w-1/2 flex justify-center md:justify-end md:flex">
             <img
-              src="https://petoba.avenirya.com/wp-content/uploads/2025/08/image-removebg-preview-11.png"
+              src="https://petoba.avenirya.com/wp-content/uploads/2025/08/Blue-Purple-Modern-Gradient-Mobile-App-Development-Facebook-Cover-700-x-800-px.png"
               alt="Digital Menu Illustration"
               className="w-86 md:w-96 drop-shadow-lg animate-float"
             />
@@ -146,37 +214,37 @@ const HomePage = () => {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {[
         {
-          icon: "🤖",
+          icon: "AI",
           title: "AI-Powered Menu Upload",
           subtitle: "Save hours of manual work",
           points: [
             "Extract items, prices, and descriptions automatically",
-            "Organizes menu images intelligently",
-            "Works for multiple menus at once"
+            "AI Image uploading",
+            "Edit multiple items at once"
           ]
         },
         {
-          icon: "💬",
+          icon: "W",
           title: "WhatsApp Order Integration",
           subtitle: "Direct orders to your WhatsApp",
           points: [
             "Receive orders instantly",
-            "Track customer requests",
-            "Manage multiple branches easily"
+            "Get customer numbers data",
+            "Easy to track & manage orders"
           ]
         },
         {
-          icon: "🎨",
+          icon: "QR",
           title: "Premium UI & Menu Layouts",
           subtitle: "Beautiful and intuitive",
           points: [
             "Professionally designed layouts",
-            "Customizable colors and fonts",
-            "Mobile-friendly and responsive"
+            "User-friendly interfaces",
+            "With your brand Logo"
           ]
         },
         {
-          icon: "📋",
+          icon: "M",
           title: "Real-Time Menu Management",
           subtitle: "Instant updates everywhere",
           points: [
@@ -200,11 +268,6 @@ const HomePage = () => {
         </div>
         
       ))}
-      <a href="/Features">
-              <button className="px-10 items-center py-4 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 font-bold shadow-lg hover:scale-105 transition-transform">
-                Explore All Features
-              </button>
-            </a>
     </div>
   </div>
 </section>
@@ -221,20 +284,20 @@ const HomePage = () => {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
       {[
        {
-  icon: "🏢",
-  title: "Step 1: Choose Plan & Sign Up",
-  desc: "Select the plan that suits your restaurant and quickly create your account to get started."
-},
-{
-  icon: "🖼️",
-  title: "Step 2: Add Your Menu with AI",
-  desc: "Upload your menu or images and let our AI automatically organize items, descriptions, and prices for you."
-},
-{
-  icon: "⚡",
-  title: "Step 3: Download & Use",
-  desc: "Publish your digital menu and download the QR code. Customers can instantly scan and view your menu on any device."
-}
+          icon: "1",
+          title: "Step 1: Choose Plan & Sign Up",
+          desc: "Select the plan that suits your restaurant and quickly create your account to get started."
+        },
+        {
+          icon: "2",
+          title: "Step 2: Add Your Menu with AI",
+          desc: "Upload your menu or images and let our AI automatically organize items, descriptions, and prices for you."
+        },
+        {
+          icon: "3",
+          title: "Step 3: Download & Use",
+          desc: "Publish your digital menu and download the QR code. Customers can instantly scan and view your menu on any device."
+        }
 
       ].map((step, index) => (
         <div
@@ -252,12 +315,29 @@ const HomePage = () => {
   </div>
 </section>
 <section className="py-10 bg-transparent">
-  <div className="max-w-6xl mx-auto px-6 text-center">
-    <h2 className="text-4xl font-bold mb-8 text-gray-900">
-     600+ Digital Menus already live
+  <div className="max-w-6xl mx-auto text-center">
+    <h2 className="text-4xl md:text-4xl font-bold mb-8 text-gray-900">
+      600+ Menus Delivered
     </h2>
 
-    <div className="flex gap-4 justify-center items-end">
+    {/* 👇 Mobile: horizontal scroll */}
+    <div className="flex md:hidden gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide">
+      {screenshots.map((src, idx) => (
+        <div
+          key={idx}
+          className="flex-shrink-0 w-72 snap-center relative rounded-3xl shadow-lg overflow-hidden border-4 border-gray-200"
+        >
+          <img
+            src={src}
+            alt={`Menu Screenshot ${idx + 1}`}
+            className="w-full h-full object-cover rounded-2xl"
+          />
+        </div>
+      ))}
+    </div>
+
+    {/* 👇 Desktop: your existing animated 3-cards layout */}
+    <div className="hidden md:flex gap-4 justify-center items-end">
       {currentIndices.map((idx, index) => {
         const isMiddle = index === 1; // middle slide
         return (
@@ -277,8 +357,87 @@ const HomePage = () => {
       })}
     </div>
   </div>
+
 </section>
+
+
+
+ <section className="relative py-16">
+      <div className="max-w-6xl mx-auto px-6 text-center">
+        {/* Page Header */}
+        <h2 className="text-4xl font-bold mb-4">All Features</h2>
+        <p className="text-gray-600 mb-12">
+          Everything you need to modernize your restaurant and delight customers.
+        </p>
+
+        {/* Features Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10 text-left">
+          {features.map((feature, index) => (
+            <div
+              key={index}
+              className=""
+            >
+              <div className="mb-4 flex justify-left">{feature.icon}</div>
+              <h3 className="text-xl font-semibold mb-2 text-left">
+                {feature.title}
+              </h3>
+              <p className="text-gray-600 text-base text-left">
+                {feature.description}
+              </p>
+            </div>
+          ))}
         </div>
+      </div>
+    </section>
+
+ <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+      {/* Chat Box */}
+      <div
+        className={`transition-all duration-300 ease-in-out overflow-hidden ${
+          open ? "max-h-96 opacity-100 mb-3" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="w-72 bg-white rounded-2xl shadow-xl border p-4">
+          <h4 className="text-lg font-semibold text-gray-800 mb-2 flex items-center gap-2">
+            💬 Chat with us
+          </h4>
+          <textarea
+            rows={3}
+            placeholder="Type your message..."
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-400 text-gray-700"
+          />
+          <button
+            onClick={sendMessage}
+            className="mt-3 w-full bg-[#25D366] text-white font-medium py-2 rounded-lg hover:scale-[1.02] active:scale-[0.98] transition"
+          >
+            Send via WhatsApp
+          </button>
+        </div>
+      </div>
+
+      {/* Floating Button with Icon + Text */}
+      <button
+        onClick={() => setOpen(!open)}
+        className="group flex items-center gap-2 px-4 py-3 rounded-full shadow-lg border
+                   bg-[#25D366] hover:scale-105 active:scale-95 transition text-white font-medium"
+      >
+        {/* Icon */}
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20">
+         <svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 256 256"
+  className="h-6 w-6 fill-white"
+>
+  <path d="M128 20c-59.55 0-108 48.45-108 108 0 19.05 5.05 37.61 14.64 53.89L20 236l55.06-14.22C91.15 230.34 109.35 236 128 236c59.55 0 108-48.45 108-108S187.55 20 128 20zm0 192c-17.05 0-33.66-4.98-47.91-14.38l-3.41-2.29-32.71 8.44 8.75-31.94-2.21-3.47C43.11 156.91 38 142.84 38 128c0-49.61 40.39-90 90-90s90 40.39 90 90-40.39 90-90 90zm44.93-66.02c-2.46-1.23-14.54-7.17-16.8-7.99-2.26-.82-3.9-1.23-5.54 1.23-1.64 2.46-6.35 7.99-7.78 9.63-1.43 1.64-2.87 1.85-5.33.62-2.46-1.23-10.39-3.83-19.79-12.2-7.31-6.52-12.25-14.56-13.68-17.02-1.43-2.46-.15-3.79 1.08-5.02 1.11-1.1 2.46-2.87 3.69-4.3 1.23-1.43 1.64-2.46 2.46-4.1.82-1.64.41-3.08-.21-4.3-.62-1.23-5.54-13.32-7.61-18.23-2.07-4.97-4.16-4.28-5.54-4.34-1.43-.06-3.08-.07-4.72-.07-1.64 0-4.31.62-6.56 2.87-2.25 2.25-8.6 8.39-8.6 20.45s8.8 23.73 10.04 25.37c1.23 1.64 17.3 26.38 41.91 36.96 5.86 2.54 10.43 4.06 14 5.2 5.88 1.87 11.23 1.61 15.45.98 4.71-.7 14.54-5.95 16.59-11.7 2.05-5.75 2.05-10.67 1.43-11.7-.62-1.02-2.25-1.64-4.72-2.87z" />
+</svg>
+
+        </div>
+        <span className="pr-1">Need Help?</span>
+      </button>
+    </div>
+</div>
   );
 };
 
