@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from "react-route
 import RestaurantMenuPage from "./pages/RestaurantMenuPage";
 import RestaurantMenuPagewp from "./pages/Menuwporder";
 import MenuPageWithoutCart from "./pages/MenuPageWithoutCart";
+import MenuPageWithoutCartCloud from "./pages/MenuPageWithoutCartCloud";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import RestaurantRegister from "./pages/RestaurantRegister";
@@ -43,6 +44,7 @@ function AppWrapper() {
   // Pages where we want to hide Header/Footer
   const noHeaderFooterRoutes = [
     "/menu/:id",
+    "/cloudkitchen/:id",
     "/menuwp/:id",
     "/shop/:id",
     "/restaurant/:id",
@@ -59,6 +61,7 @@ function AppWrapper() {
       {!hideHeaderFooter && <Header />}
       <Routes>
         <Route path="/menu/:id" element={<MenuPageWithoutCart />} />
+        <Route path="/cloudkitchen/:id" element={<MenuPageWithoutCartCloud />} />
         <Route path="/menuwp/:id" element={<RestaurantMenuPagewp />} />
         <Route path="/shop/:id" element={<Beautysalon />} />
         <Route path="/restaurant/:id" element={<RestaurantMenuPage />} />
