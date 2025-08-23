@@ -34,7 +34,7 @@ const Kolnuree = () => {
     if (!formData.email) return;
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/admin/agency/check-email?email=${formData.email}`
+        `/api/admin/agency/check-email?email=${formData.email}`
       );
       if (res.data.exists) {
         setErrors((prev) => ({ ...prev, email: "Email already exists" }));
@@ -67,7 +67,7 @@ const Kolnuree = () => {
 
     try {
       await axios.post(
-        "http://localhost:5000/api/admin/register-agency",
+        "/api/admin/register-agency",
         {
           agencyName: formData.agencyName,
           email: formData.email,

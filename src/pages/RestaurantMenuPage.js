@@ -31,7 +31,7 @@ const carouselRef = useRef(null);
       try {
         const token = localStorage.getItem("token");
         const res = await fetch(
-          `http://localhost:5000/api/admin/${id}/offers`,
+          `/api/admin/${id}/offers`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const data = await res.json();
@@ -53,7 +53,7 @@ const carouselRef = useRef(null);
     const fetchDetails = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:5000/api/admin/${id}/details`, {
+        const res = await fetch(`/api/admin/${id}/details`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -69,7 +69,7 @@ const carouselRef = useRef(null);
     const fetchMenu = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:5000/api/admin/${id}/menu`, {
+        const res = await fetch(`/api/admin/${id}/menu`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -129,7 +129,7 @@ const carouselRef = useRef(null);
     if (!tableNumber) return toast.error("Please enter a valid table number.");
 
     try {
-      const res = await fetch("http://localhost:5000/api/order", {
+      const res = await fetch("/api/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

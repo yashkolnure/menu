@@ -9,7 +9,7 @@ function RestaurantDetails() {
   useEffect(() => {
     if (!restaurantId || !token) return;
 
-    fetch(`http://localhost:5000/api/admin/${restaurantId}/details`, {
+    fetch(`/api/admin/${restaurantId}/details`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,

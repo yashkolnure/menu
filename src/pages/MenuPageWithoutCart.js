@@ -29,7 +29,7 @@ function RestaurantMenuPage() {
       try {
         const token = localStorage.getItem("token");
         const res = await fetch(
-          `http://localhost:5000/api/admin/${id}/offers`,
+          `/api/admin/${id}/offers`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const data = await res.json();
@@ -51,10 +51,10 @@ function RestaurantMenuPage() {
         const token = localStorage.getItem("token");
 
         const [menuRes, detailsRes] = await Promise.all([
-          fetch(`http://localhost:5000/api/admin/${id}/menu`, {
+          fetch(`/api/admin/${id}/menu`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          fetch(`http://localhost:5000/api/admin/${id}/details`, {
+          fetch(`/api/admin/${id}/details`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -107,7 +107,7 @@ function RestaurantMenuPage() {
     if (!tableNumber) return toast.error("Please enter a valid table number.");
 
     try {
-      const res = await fetch("http://localhost:5000/api/order", {
+      const res = await fetch("/api/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

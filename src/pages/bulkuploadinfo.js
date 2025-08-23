@@ -89,7 +89,7 @@ const handleUpload = async () => {
   try {
     setUploading(true);
     await axios.post(
-      "http://localhost:5000/api/admin/bulk",
+      "/api/admin/bulk",
       enrichedData,
       { headers: { Authorization: `Bearer ${token}` } }
     );

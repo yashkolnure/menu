@@ -98,7 +98,7 @@ const RegisterFreePage = () => {
   try {
     // ✅ Check if email exists first
     const checkRes = await axios.get(
-      `http://localhost:5000/api/admin/restaurants/check-email?email=${formData.email}`
+      `/api/admin/restaurants/check-email?email=${formData.email}`
     );
 
     if (checkRes.data.exists) {
@@ -108,14 +108,14 @@ const RegisterFreePage = () => {
 
     // ✅ Proceed with free plan or payment
     if (formData.membership_level === 1) {
-      await axios.post("http://localhost:5000/api/admin/restaurants", formData);
+      await axios.post("/api/admin/restaurants", formData);
       setMessage("✅ Registered successfully with Free Plan!");
       setTimeout(() => navigate("/login"), 1000);
     } else {
       // Paid plan → Razorpay flow (same as before)
       const amount = formData.membership_level === 2 ? 399 : 599;
 
-      const { data } = await axios.post("http://localhost:5000/api/create-order", {
+      const { data } = await axios.post("/api/create-order", {
         amount,
         currency: "INR",
       });
@@ -130,14 +130,14 @@ const RegisterFreePage = () => {
         order_id: data.id,
         handler: async function (response) {
           try {
-            const verifyRes = await axios.post("http://localhost:5000/api/verify-payment", {
+            const verifyRes = await axios.post("/api/verify-payment", {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
             });
 
             if (verifyRes.data.success) {
-              await axios.post("http://localhost:5000/api/admin/restaurants", formData);
+              await axios.post("/api/admin/restaurants", formData);
               setMessage("✅ Registered successfully with Paid Plan!");
               setTimeout(() => navigate("/login"), 1000);
             } else {

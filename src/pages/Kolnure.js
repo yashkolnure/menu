@@ -86,7 +86,7 @@ const Kolnure = () => {
     try {
       // ✅ Check if email exists
       const checkRes = await axios.get(
-        `http://localhost:500/api/admin/restaurants/check-email?email=${formData.email}`
+        `/api/admin/restaurants/check-email?email=${formData.email}`
       );
 
       if (checkRes.data.exists) {
@@ -96,7 +96,7 @@ const Kolnure = () => {
 
       // ✅ Register directly (no Razorpay)
       await axios.post(
-        "http://localhost:500/api/admin/restaurants",
+        "/api/admin/restaurants",
         formData
       );
 

@@ -40,7 +40,7 @@ function RestaurantMenuPageCloud() {
       try {
         const token = localStorage.getItem("token");
         const res = await fetch(
-          `http://localhost:5000/api/admin/${id}/offers`,
+          `/api/admin/${id}/offers`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const data = await res.json();
@@ -58,7 +58,7 @@ function RestaurantMenuPageCloud() {
       try {
         const token = localStorage.getItem("token");
         const res = await fetch(
-          `http://localhost:5000/api/admin/${id}/details`,
+          `/api/admin/${id}/details`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const data = await res.json();
@@ -76,7 +76,7 @@ function RestaurantMenuPageCloud() {
       try {
         const token = localStorage.getItem("token");
         const res = await fetch(
-          `http://localhost:5000/api/admin/${id}/menu`,
+          `/api/admin/${id}/menu`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const data = await res.json();

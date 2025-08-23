@@ -82,7 +82,7 @@ const RestaurantRegister = () => {
 
     try {
       const response = await axios.post(
-       "http://localhost:5000/api/admin/restaurant/register",
+       "/api/admin/restaurant/register",
         formData
       );
 

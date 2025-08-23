@@ -23,7 +23,7 @@ function BulkUploadmenu() {
       return;
     }
 
-    fetch(`http://localhost:500/api/admin/${restaurantId}/details`, {
+    fetch(`/api/admin/${restaurantId}/details`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -91,7 +91,7 @@ function BulkUploadmenu() {
     try {
       setUploading(true);
       await axios.post(
-        "http://localhost:500/api/admin/bulk",
+        "/api/admin/bulk",
         enrichedData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
