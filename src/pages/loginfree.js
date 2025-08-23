@@ -11,7 +11,7 @@ function Loginfree() {
     setError("");
     try {
       const res = await fetch(
-        "http://localhost:5000/api/admin/login",
+        "http://localhost:5000/api/api/admin/login",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
