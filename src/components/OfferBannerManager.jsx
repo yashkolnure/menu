@@ -58,7 +58,7 @@ const OfferBannerModal = ({ restaurantId, token, offers, setOffers }) => {
 
       // Step 2: Save URL to your backend
       const res = await fetch(
-        `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/offers`,
+        `http://localhost:5000/api/admin/${restaurantId}/offers`,
         {
           method: "POST",
           headers: {
@@ -91,7 +91,7 @@ const OfferBannerModal = ({ restaurantId, token, offers, setOffers }) => {
     setMessage("⏳ Deleting...");
     try {
       const res = await fetch(
-        `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/offers/${offerId}`,
+        `http://localhost:5000/api/admin/${restaurantId}/offers/${offerId}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },

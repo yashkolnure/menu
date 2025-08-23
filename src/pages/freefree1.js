@@ -27,7 +27,7 @@ function BulkUploadmenu1() {
 
     const fetchRestaurant = async () => {
       try {
-        const res = await axios.get(`https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/details`, {
+        const res = await axios.get(`http://localhost:500/api/admin/${restaurantId}/details`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setRestaurant(res.data);
@@ -41,7 +41,7 @@ function BulkUploadmenu1() {
 
     const fetchMenu = async () => {
       try {
-        const res = await axios.get(`https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu`, {
+        const res = await axios.get(`http://localhost:500/api/admin/${restaurantId}/menu`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setExistingItems(res.data);
@@ -113,7 +113,7 @@ async function batchUpdate(items, batchSize = 5) {
     await Promise.all(
       batch.map(item =>
         axios.put(
-          `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${item.restaurantId}/menu/${item._id}`,
+          `http://localhost:500/api/admin/${item.restaurantId}/menu/${item._id}`,
           item,
           { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
         )
@@ -227,7 +227,7 @@ const addItemToList = () => {
       
       // Then send to your backend
       await axios.post(
-        `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/bulk`,
+        `http://localhost:500/api/admin/bulk`,
         itemsWithImageUrls,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -237,7 +237,7 @@ const addItemToList = () => {
       
       // Refresh the existing items
       const res = await axios.get(
-        `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu`,
+        `http://localhost:500/api/admin/${restaurantId}/menu`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setExistingItems(res.data);
@@ -433,7 +433,7 @@ async function fetchAllImages() {
       const updatedItem = { ...itemForm, image: imageUrl };
       
       await axios.put(
-        `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu/${itemForm._id}`,
+        `http://localhost:500/api/admin/${restaurantId}/menu/${itemForm._id}`,
         updatedItem,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -443,7 +443,7 @@ async function fetchAllImages() {
       
       // Refresh the menu
       const res = await axios.get(
-        `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu`,
+        `http://localhost:500/api/admin/${restaurantId}/menu`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setExistingItems(res.data);
@@ -455,7 +455,7 @@ async function fetchAllImages() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu/${id}`, {
+      await axios.delete(`http://localhost:500/api/admin/${restaurantId}/menu/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setExistingItems(existingItems.filter(item => item._id !== id));
@@ -521,7 +521,7 @@ async function fetchAllImages() {
       // Then save all items
       const requests = itemsToSave.map(item =>
         axios.put(
-          `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu/${item._id}`,
+          `http://localhost:500/api/admin/${restaurantId}/menu/${item._id}`,
           item,
           { headers: { Authorization: `Bearer ${token}` } }
         )
@@ -533,7 +533,7 @@ async function fetchAllImages() {
       
       // Refresh the menu
       const res = await axios.get(
-        `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu`,
+        `http://localhost:500/api/admin/${restaurantId}/menu`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setExistingItems(res.data);
@@ -836,7 +836,7 @@ async function fetchAllImages() {
             const updatedItem = { ...item, image: imageUrl };
 
             await axios.put(
-              `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/menu/${item._id}`,
+              `http://localhost:500/api/admin/${restaurantId}/menu/${item._id}`,
               updatedItem,
               { headers: { Authorization: `Bearer ${token}` } }
             );

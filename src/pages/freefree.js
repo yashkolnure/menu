@@ -23,7 +23,7 @@ function BulkUploadmenu() {
       return;
     }
 
-    fetch(`https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${restaurantId}/details`, {
+    fetch(`http://localhost:500/api/admin/${restaurantId}/details`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -91,7 +91,7 @@ function BulkUploadmenu() {
     try {
       setUploading(true);
       await axios.post(
-        "https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/bulk",
+        "http://localhost:500/api/admin/bulk",
         enrichedData,
         { headers: { Authorization: `Bearer ${token}` } }
       );

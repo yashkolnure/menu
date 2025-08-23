@@ -34,7 +34,7 @@ const Kolnuree = () => {
     if (!formData.email) return;
     try {
       const res = await axios.get(
-        `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/agency/check-email?email=${formData.email}`
+        `http://localhost:5000/api/admin/agency/check-email?email=${formData.email}`
       );
       if (res.data.exists) {
         setErrors((prev) => ({ ...prev, email: "Email already exists" }));
@@ -67,7 +67,7 @@ const Kolnuree = () => {
 
     try {
       await axios.post(
-        "https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/register-agency",
+        "http://localhost:5000/api/admin/register-agency",
         {
           agencyName: formData.agencyName,
           email: formData.email,

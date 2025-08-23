@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
+
 const AgencyRegister = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -74,7 +75,7 @@ const AgencyRegister = () => {
     if (!formData.email) return;
     try {
       const res = await axios.get(
-        `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/agency/check-email?email=${formData.email}`
+        `http://localhost:5000/api/admin/agency/check-email?email=${formData.email}`
       );
       if (res.data.exists) setErrors({ email: "Email already exists" });
     } catch (err) {
@@ -105,7 +106,7 @@ const AgencyRegister = () => {
       const amount = getPlanAmount(selectedPlan);
 
       // Create Razorpay order
-      const orderRes = await axios.post("https://menubackend-git-main-yashkolnures-projects.vercel.app/api/create-order", {
+      const orderRes = await axios.post("http://localhost:5000/api/create-order", {
         amount,
         currency: "INR",
       });
@@ -120,7 +121,7 @@ const AgencyRegister = () => {
         handler: async function (response) {
           try {
             // Register agency with payment details
-            await axios.post("https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/register-agency", {
+            await axios.post("http://localhost:5000/api/admin/register-agency", {
               agencyName: formData.agencyName,
               email: formData.email,
               contactNumber: formData.contactNumber,
@@ -156,6 +157,7 @@ const AgencyRegister = () => {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="relative bg-white py-16">

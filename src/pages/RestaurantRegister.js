@@ -82,7 +82,7 @@ const RestaurantRegister = () => {
 
     try {
       const response = await axios.post(
-       "https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/restaurant/register",
+       "http://localhost:5000/api/admin/restaurant/register",
         formData
       );
 

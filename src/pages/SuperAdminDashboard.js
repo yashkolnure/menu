@@ -20,7 +20,7 @@ const SuperAdminDashboard = () => {
   const [minItemCount, setMinItemCount] = useState(0);
   const formRef = useRef(null);
 
-  const API = "https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin";
+  const API = "http://localhost:5000/api/admin";
   const WP_USERNAME = "yashkolnure58@gmail.com";
   const WP_APP_PASSWORD = "05mq iTLF UvJU dyaz 7KxQ 8pyc";
   const WP_SITE_URL = "https://website.avenirya.com";

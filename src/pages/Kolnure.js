@@ -86,7 +86,7 @@ const Kolnure = () => {
     try {
       // ✅ Check if email exists
       const checkRes = await axios.get(
-        `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/restaurants/check-email?email=${formData.email}`
+        `http://localhost:500/api/admin/restaurants/check-email?email=${formData.email}`
       );
 
       if (checkRes.data.exists) {
@@ -96,7 +96,7 @@ const Kolnure = () => {
 
       // ✅ Register directly (no Razorpay)
       await axios.post(
-        "https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/restaurants",
+        "http://localhost:500/api/admin/restaurants",
         formData
       );
 

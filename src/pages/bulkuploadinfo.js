@@ -89,7 +89,7 @@ const handleUpload = async () => {
   try {
     setUploading(true);
     await axios.post(
-      "https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/bulk",
+      "http://localhost:5000/api/admin/bulk",
       enrichedData,
       { headers: { Authorization: `Bearer ${token}` } }
     );

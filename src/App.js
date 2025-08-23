@@ -20,7 +20,6 @@ import MembershipPage from "./pages/MembershipPage";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import RegisterFreePage from "./pages/registerfree";
 import NotFound from "./pages/NotFound";
-import Dsbrd from "./pages/dsbrd";
 import Dsbrdadmin1 from "./pages/dsbrdadmin1";
 import Agentlogin from "./pages/agentlogin";
 import Beautysalon from "./pages/beautysalon";
@@ -65,7 +64,6 @@ function AppWrapper() {
         <Route path="/menuwp/:id" element={<RestaurantMenuPagewp />} />
         <Route path="/shop/:id" element={<Beautysalon />} />
         <Route path="/restaurant/:id" element={<RestaurantMenuPage />} />
-        <Route path="/dsbrd" element={<Dsbrd />} />
         <Route path="/dsbrdadmin1" element={<Dsbrdadmin1 />} />
         <Route path="/membership" element={<MembershipPage />} />
         <Route path="/agentlogin" element={<Agentlogin />} />

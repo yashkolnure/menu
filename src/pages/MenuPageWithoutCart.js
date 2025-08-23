@@ -29,7 +29,7 @@ function RestaurantMenuPage() {
       try {
         const token = localStorage.getItem("token");
         const res = await fetch(
-          `https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${id}/offers`,
+          `http://localhost:5000/api/admin/${id}/offers`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const data = await res.json();
@@ -51,10 +51,10 @@ function RestaurantMenuPage() {
         const token = localStorage.getItem("token");
 
         const [menuRes, detailsRes] = await Promise.all([
-          fetch(`https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${id}/menu`, {
+          fetch(`http://localhost:5000/api/admin/${id}/menu`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          fetch(`https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/${id}/details`, {
+          fetch(`http://localhost:5000/api/admin/${id}/details`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -107,7 +107,7 @@ function RestaurantMenuPage() {
     if (!tableNumber) return toast.error("Please enter a valid table number.");
 
     try {
-      const res = await fetch("https://menubackend-git-main-yashkolnures-projects.vercel.app/api/order", {
+      const res = await fetch("http://localhost:5000/api/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

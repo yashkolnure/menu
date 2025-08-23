@@ -21,7 +21,7 @@ const AgencyLogin = () => {
 
     try {
       const res = await axios.post(
-        "https://menubackend-git-main-yashkolnures-projects.vercel.app/api/admin/agency-login",
+        "http://localhost:5000/api/admin/agency-login",
         { email, password }
       );
 
