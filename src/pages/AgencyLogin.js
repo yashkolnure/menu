@@ -22,7 +22,7 @@ const AgencyLogin = () => {
 
     try {
       const res = await axios.post(
-        "/api/admin/agency-login",
+        "http://localhost:5000/api/admin/agency-login",
         { email, password }
       );
 
