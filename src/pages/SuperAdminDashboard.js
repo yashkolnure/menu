@@ -115,7 +115,7 @@ const SuperAdminDashboard = () => {
 const handleRestaurantLogin = async (restaurantId) => {
   try {
     const agencyToken = localStorage.getItem("agencyToken");
-    const superAdminToken = localStorage.getItem("token"); // your superadmin JWT
+    const superAdminToken = localStorage.getItem("agencyToken"); // your superadmin JWT
 
     let endpoint = "";
     let headers = {};
