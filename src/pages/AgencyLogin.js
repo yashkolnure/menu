@@ -18,6 +18,7 @@ const AgencyLogin = () => {
     localStorage.removeItem("agency");
     localStorage.removeItem("agencyId");
     localStorage.removeItem("agencyLevel");
+    localStorage.removeItem("agencyToken");
 
     try {
       const res = await axios.post(
@@ -29,6 +30,7 @@ const AgencyLogin = () => {
       localStorage.setItem("agency", JSON.stringify(res.data.agency));
       localStorage.setItem("agencyId", res.data.agency.id);
       localStorage.setItem("agencyLevel", res.data.agency.agencyLevel);
+      localStorage.setItem("agencyToken", res.data.token);
 
       navigate("/agency-dashboard");
     } catch (err) {
