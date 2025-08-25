@@ -115,7 +115,7 @@ const SuperAdminDashboard = () => {
     try {
       const agencyToken = localStorage.getItem("agencyToken");
       if (!agencyToken) {
-        toast.error("You must be logged in as agency to impersonate");
+        toast.error("This Page is Not For You....!");
         return;
       }
 

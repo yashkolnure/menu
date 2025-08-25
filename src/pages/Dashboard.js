@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import UpgradePopup from "../components/UpgradePopup";
 import QRCodeTemplates from "../components/QRCodeTemplates";
 import OfferBannerManager from "../components/OfferBannerManager";
+
 
 function Dashboard() {
   const [restaurant, setRestaurant] = useState({ name: "", logo: "", address: "", contact: "" });
@@ -25,6 +27,8 @@ function Dashboard() {
   const [isSaving, setIsSaving] = useState(false);
   const imagePasteRef = useRef(null);
   const [customEditCategories, setCustomEditCategories] = useState({});
+  const [showUpgrade, setShowUpgrade] = useState(false);
+
 
   useEffect(() => {
     if (!restaurantId || !token) return;
@@ -250,6 +254,26 @@ const addItemToList = () => {
       setError("Upload failed: " + (err.response?.data?.message || err.message));
     } finally {
       setUploading(false);
+    }
+  };
+
+   const handleUpgrade = async (newLevel) => {
+    try {
+      const res = await axios.put(
+        `/api/admin/upgrade-membership/${restaurantId}`,
+        { newLevel },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setRestaurant((prev) => ({
+        ...prev,
+        membership_level: res.data.restaurant.membership_level,
+      }));
+
+      setShowUpgrade(false);
+    } catch (err) {
+      console.error("Upgrade failed:", err.response?.data || err.message);
+      alert(err.response?.data?.message || "Upgrade failed");
     }
   };
 
@@ -569,6 +593,14 @@ return (
     <h2 className="text-3xl font-bold text-gray-800">
       Welcome, <span className="text-blue-600">{restaurant.name}</span>
     </h2>
+      
+
+      <UpgradePopup
+        isOpen={showUpgrade}
+        onClose={() => setShowUpgrade(false)}
+        currentLevel={restaurant?.membership_level || 1}
+        onUpgrade={handleUpgrade}
+      />
 
     {/* Add / Edit Dish */}
     <div
@@ -650,14 +682,12 @@ return (
                 Upgrade to enable uploads and auto image fetch.
               </div>
             </div>
-            <button
-              onClick={() =>
-                (window.location.href = "https://app.avenirya.com/upgrade")
-              }
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow w-full sm:w-auto"
-            >
-              Upgrade to Pro
-            </button>
+        <button
+        onClick={() => setShowUpgrade(true)}
+        className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700"
+      >
+        Upgrade Plan
+      </button>
           </div>
         ) : (
           <input
@@ -1151,6 +1181,13 @@ return (
       restaurantId={restaurantId}
       membership_level={restaurant.membership_level}
     />
+
+    <button
+        onClick={() => setShowUpgrade(true)}
+        className="w-full py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-600 text-white font-semibold shadow-md hover:scale-105 transition-transform"
+      >
+        Upgrade Plan
+      </button>
   </div>
 );
 

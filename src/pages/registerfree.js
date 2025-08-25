@@ -209,14 +209,21 @@ const RegisterFreePage = () => {
           {/** Contact */}
           <div>
             <input
-              type="number"
+              type="text"
               name="contact"
-              placeholder="Contact Number"
-              value={formData.contact}
-              onChange={handleChange}
+              placeholder="Enter 10-digit number (e.g. 9876543210)"
+              value={formData.contact.replace(/^91/, "")} // show only 10 digits
+              onChange={(e) => {
+                const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+                // store with 91 prefix
+                setFormData({ ...formData, contact: digits ? `91${digits}` : "" });
+              }}
+              maxLength={10}
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500"
             />
-            {errors.contact && <p className="text-red-500 text-sm mt-1">{errors.contact}</p>}
+            {errors.contact && (
+              <p className="text-red-500 text-sm mt-1">{errors.contact}</p>
+            )}
           </div>
 
           {/** Address */}

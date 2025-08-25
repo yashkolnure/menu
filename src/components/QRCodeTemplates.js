@@ -176,16 +176,6 @@ const QRCodeTemplates = ({ restaurantId, membership_level }) => {
         </div>
       </div>
 
-      {/* Upgrade Button */}
-      {membership_level < 3 && (
-        <button
-          onClick={() => (window.location.href = "/upgrade")}
-          className="mt-6 px-4 py-2 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700 transition-colors"
-        >
-          Upgrade Your Membership
-        </button>
-      )}
-
       {/* Membership Info */}
       <p className="mt-6 text-sm text-gray-600">
         Your Membership Level:{" "}
