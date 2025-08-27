@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
+import CouponBox from "../components/CouponBox"; // adjust path if needed
 
 const RegisterFreePage = () => {
   const navigate = useNavigate();
@@ -27,6 +28,8 @@ const RegisterFreePage = () => {
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [coupon, setCoupon] = useState("");
+  const [discount, setDiscount] = useState(0);
 
   const WP_USERNAME = "yashkolnure58@gmail.com";
   const WP_APP_PASSWORD = "05mq iTLF UvJU dyaz 7KxQ 8pyc";
@@ -113,7 +116,12 @@ const RegisterFreePage = () => {
       setTimeout(() => navigate("/login"), 1000);
     } else {
       // Paid plan → Razorpay flow (same as before)
-      const amount = formData.membership_level === 2 ? 399 : 599;
+      let amount = formData.membership_level === 2 ? 399 : 599;
+      // apply discount if coupon is valid
+        if (discount > 0) {
+          amount = amount - discount;
+          if (amount < 1) amount = 1; // avoid free or negative payment
+        }
 
       const { data } = await axios.post("/api/create-order", {
         amount,
@@ -280,6 +288,63 @@ const RegisterFreePage = () => {
           </div>
 
           <input type="hidden" name="membership_level" value={formData.membership_level} />
+          <CouponBox
+            onApply={(couponData) => {
+              if (couponData) {
+                const { type, value, code } = couponData;
+                let finalDiscount = 0;
+
+                if (type === "flat") {
+                  finalDiscount = value;
+                } else if (type === "percent") {
+                  // calculate % discount based on plan price
+                  const planPrice = formData.membership_level === 2 ? 399 : 599;
+                  finalDiscount = Math.floor((planPrice * value) / 100);
+                }
+
+                setDiscount(finalDiscount);
+                setCoupon(code);
+              } else {
+                setDiscount(0);
+                setCoupon("");
+              }
+            }}
+          />
+
+{formData.membership_level > 1 && (
+  <div className="mt-6 p-4 rounded-2xl bg-gradient-to-r from-orange-50 to-pink-50 border border-orange-200 shadow-sm">
+    <p className="text-sm text-gray-500 mb-1">
+      Selected Plan:{" "}
+      <span className="font-medium text-gray-700">
+        {formData.membership_level === 2 ? "Premium" : "Pro"}
+      </span>
+    </p>
+    <div className="flex justify-between text-gray-600 text-sm">
+      <span>Actual Price</span>
+      <span className="line-through text-red-400">
+        ₹{formData.membership_level === 2 ? 399 : 599}
+      </span>
+    </div>
+
+    {discount > 0 && (
+      <div className="flex justify-between text-sm text-green-600 mt-1">
+        <span>Discount Applied</span>
+        <span>-₹{discount}</span>
+      </div>
+    )}
+
+    <div className="flex justify-between mt-2 pt-2 border-t text-gray-800">
+      <span className="text-base">Payable Price</span>
+      <span className="text-lg font-semibold text-orange-600">
+        ₹{Math.max(
+          (formData.membership_level === 2 ? 399 : 599) - discount,
+          1
+        )}
+      </span>
+    </div>
+  </div>
+)}
+
 
           <button
             type="submit"

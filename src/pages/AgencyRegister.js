@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useSearchParams } from "react-router-dom";
-
+import CouponBox from "../components/CouponBox"; // ✅ import coupon box
 
 const AgencyRegister = () => {
   const navigate = useNavigate();
@@ -48,6 +48,10 @@ const AgencyRegister = () => {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // ✅ coupon/discount states
+  const [discount, setDiscount] = useState(0);
+  const [coupon, setCoupon] = useState("");
+
   // Update agencyLevel if plan changes
   useEffect(() => {
     setFormData((prev) => ({
@@ -89,9 +93,11 @@ const AgencyRegister = () => {
     const newErrors = {};
 
     // Validations
-    if (!formData.agencyName.trim()) newErrors.agencyName = "Agency Name is required.";
+    if (!formData.agencyName.trim())
+      newErrors.agencyName = "Agency Name is required.";
     if (!formData.email.trim()) newErrors.email = "Email is required.";
-    if (!formData.contactNumber.trim()) newErrors.contactNumber = "Contact No is required.";
+    if (!formData.contactNumber.trim())
+      newErrors.contactNumber = "Contact No is required.";
     if (!formData.address.trim()) newErrors.address = "Address is required.";
     if (!formData.password.trim()) newErrors.password = "Password is required.";
     if (formData.password !== formData.retypePassword)
@@ -103,7 +109,13 @@ const AgencyRegister = () => {
     setLoading(true);
 
     try {
-      const amount = getPlanAmount(selectedPlan);
+      let amount = getPlanAmount(selectedPlan);
+
+      // ✅ apply discount if available
+      if (discount > 0) {
+        amount = amount - discount;
+        if (amount < 1) amount = 1; // avoid free or negative payment
+      }
 
       // Create Razorpay order
       const orderRes = await axios.post("/api/create-order", {
@@ -131,6 +143,8 @@ const AgencyRegister = () => {
               agencyLevel: formData.agencyLevel,
               paymentId: response.razorpay_payment_id,
               orderId: response.razorpay_order_id,
+              couponCode: coupon || null,
+              discountApplied: discount || 0,
             });
 
             setMessage("✅ Registered successfully!");
@@ -157,7 +171,9 @@ const AgencyRegister = () => {
       setLoading(false);
     }
   };
-  
+
+  const actualPrice = getPlanAmount(selectedPlan);
+  const payablePrice = Math.max(actualPrice - discount, 1);
 
   return (
     <div className="relative bg-white py-16">
@@ -166,14 +182,21 @@ const AgencyRegister = () => {
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-gradient-to-r from-green-400 to-blue-500 rounded-full blur-3xl opacity-20"></div>
       <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-gradient-to-r from-blue-300 to-green-300 rounded-full filter blur-3xl opacity-30"></div>
 
-      <h2 className="text-4xl font-bold text-center mb-4">Register Your Agency</h2>
+      <h2 className="text-4xl font-bold text-center mb-4">
+        Register Your Agency
+      </h2>
       <p className="text-center text-gray-600 mb-12">
-        Sign up to manage menus, clients, and dashboards — get your agency started.
+        Sign up to manage menus, clients, and dashboards — get your agency
+        started.
       </p>
 
       <div className="relative z-10 w-full max-w-lg mx-auto bg-white p-8 rounded-3xl shadow-lg">
-        {errors.general && <p className="text-red-600 text-center">{errors.general}</p>}
-        {message && <p className="text-green-600 text-center">{message}</p>}
+        {errors.general && (
+          <p className="text-red-600 text-center">{errors.general}</p>
+        )}
+        {message && (
+          <p className="text-green-600 text-center">{message}</p>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
@@ -184,7 +207,9 @@ const AgencyRegister = () => {
             onChange={handleChange}
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500"
           />
-          {errors.agencyName && <p className="text-red-500 text-sm mt-1">{errors.agencyName}</p>}
+          {errors.agencyName && (
+            <p className="text-red-500 text-sm mt-1">{errors.agencyName}</p>
+          )}
 
           <input
             type="email"
@@ -195,7 +220,9 @@ const AgencyRegister = () => {
             onBlur={checkEmailExists}
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500"
           />
-          {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+          {errors.email && (
+            <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+          )}
 
           <input
             type="number"
@@ -205,7 +232,9 @@ const AgencyRegister = () => {
             onChange={handleChange}
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500"
           />
-          {errors.contactNumber && <p className="text-red-500 text-sm mt-1">{errors.contactNumber}</p>}
+          {errors.contactNumber && (
+            <p className="text-red-500 text-sm mt-1">{errors.contactNumber}</p>
+          )}
 
           <input
             type="text"
@@ -215,7 +244,9 @@ const AgencyRegister = () => {
             onChange={handleChange}
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500"
           />
-          {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address}</p>}
+          {errors.address && (
+            <p className="text-red-500 text-sm mt-1">{errors.address}</p>
+          )}
 
           <input
             type="password"
@@ -225,7 +256,9 @@ const AgencyRegister = () => {
             onChange={handleChange}
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500"
           />
-          {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+          {errors.password && (
+            <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+          )}
 
           <input
             type="password"
@@ -235,14 +268,64 @@ const AgencyRegister = () => {
             onChange={handleChange}
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500"
           />
-          {errors.retypePassword && <p className="text-red-500 text-sm mt-1">{errors.retypePassword}</p>}
+          {errors.retypePassword && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.retypePassword}
+            </p>
+          )}
+
+          {/* ✅ Coupon Box */}
+          <CouponBox
+            onApply={(couponData) => {
+              if (couponData) {
+                const { type, value, code } = couponData;
+                let finalDiscount = 0;
+
+                if (type === "flat") {
+                  finalDiscount = value;
+                } else if (type === "percent") {
+                  finalDiscount = Math.floor((actualPrice * value) / 100);
+                }
+
+                setDiscount(finalDiscount);
+                setCoupon(code);
+              } else {
+                setDiscount(0);
+                setCoupon("");
+              }
+            }}
+          />
+
+          {/* ✅ Price breakdown */}
+          <div className="mt-6 p-4 rounded-2xl bg-gradient-to-r from-orange-50 to-pink-50 border border-orange-200 shadow-sm">
+            <div className="flex justify-between text-gray-600 text-sm">
+              <span>Actual Price</span>
+              <span className="line-through text-red-400">
+                ₹{actualPrice}
+              </span>
+            </div>
+
+            {discount > 0 && (
+              <div className="flex justify-between text-sm text-green-600 mt-1">
+                <span>Discount Applied</span>
+                <span>-₹{discount}</span>
+              </div>
+            )}
+
+            <div className="flex justify-between mt-2 pt-2 border-t text-gray-800">
+              <span className="text-base">Payable Price</span>
+              <span className="text-lg font-semibold text-orange-600">
+                ₹{payablePrice}
+              </span>
+            </div>
+          </div>
 
           <button
             type="submit"
             className="w-full py-3 rounded-full bg-gradient-to-r from-orange-400 to-orange-600 text-white font-semibold shadow-md hover:scale-105 transition-transform"
             disabled={loading}
           >
-            {loading ? "Processing..." : `Register & Pay ₹${getPlanAmount(selectedPlan)}`}
+            {loading ? "Processing..." : `Register & Pay ₹${payablePrice}`}
           </button>
         </form>
       </div>

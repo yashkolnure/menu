@@ -10,6 +10,7 @@
     "@testing-library/react": "^16.2.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.8.4",
+    "canvas-confetti": "^1.9.3",
     "css-loader": "^7.1.2",
     "drei": "^2.2.21",
     "flag-icon-css": "^4.1.7",

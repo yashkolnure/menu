@@ -33,3 +33,33 @@ code {
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.scroll-banner {
+  width: 100%;
+  background: linear-gradient(to right, #ec4899, #f97316);
+  color: white;
+  font-weight: 500;
+  padding: 8px 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.scroll-track {
+  display: flex;
+  width: max-content;
+  animation: scroll-left 15s linear infinite;
+}
+
+.scroll-text {
+  white-space: nowrap;
+  padding-right: 50px; /* space between repetitions */
+}
+
+@keyframes scroll-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}

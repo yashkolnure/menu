@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [timeLeft, setTimeLeft] = useState("");
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -11,11 +12,58 @@ const Header = () => {
     setMenuOpen(false);
   };
 
+   // 🔹 Countdown logic
+  useEffect(() => {
+    const updateTimer = () => {
+      const now = new Date();
+      const endOfDay = new Date();
+      endOfDay.setHours(23, 59, 59, 999); // today end 23:59:59
+      const diff = endOfDay - now;
+
+      if (diff <= 0) {
+        setTimeLeft("Offer Ended!");
+        return;
+      }
+
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setTimeLeft(
+        `${hours}h ${minutes}m ${seconds}s`
+      );
+    };
+
+    updateTimer();
+    const timer = setInterval(updateTimer, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+
   return (
-    <header className="sticky top-0 z-50 bg-transparent py-4">
-      <div className="max-w-[1200px] mx-auto px-4">
+    
+    <header className="sticky top-0 z-50 bg-transparent py-0">
+     {/* 🔹 Scrolling Offer Banner with Timer */}
+      <div className="scroll-banner">
+  <div className="scroll-track">
+    <div className="scroll-text">
+      🎉 Flat 15% OFF ! Use Code FLAT15 !   ⏳ Expires in: {timeLeft}
+    </div>
+    <div className="scroll-text">
+      🎉 Flat 15% OFF ! Use Code FLAT15 !   ⏳ Expires in: {timeLeft}
+    </div>
+    <div className="scroll-text">
+      🎉 Flat 15% OFF ! Use Code FLAT15 !   ⏳ Expires in: {timeLeft}
+    </div>
+  </div>
+</div>
+
+
+      
+      <div className="max-w-[1200px] mx-auto px-4 py-2">
         {/* Main pill container */}
-        <div className="flex items-center justify-between bg-white/60 backdrop-blur-lg rounded-full px-6 py-2 border border-gray-200 shadow-lg">
+        <div className="flex items-center justify-between bg-white/60 backdrop-blur-lg rounded-full px-6 py-0 border border-gray-200 shadow-lg">
           
           {/* Logo */}
           <div className="flex items-center gap-2">
