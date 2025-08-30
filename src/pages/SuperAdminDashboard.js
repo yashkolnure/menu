@@ -1,15 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import {
-  Edit,
-  Trash,
-  LogIn,
-  BookOpen,
-  Loader2,
-  Upload,
-  Plus,
-  Search,
-} from "lucide-react";
+import { Edit, Trash, LogIn, BookOpen, Loader2, Upload, Plus } from "lucide-react";
 import { Toaster, toast } from "react-hot-toast";
 
 const SuperAdminDashboard = () => {
@@ -28,23 +19,12 @@ const SuperAdminDashboard = () => {
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
-
-  // 🔑 Page lock state
-  const [unlocked, setUnlocked] = useState(
-    localStorage.getItem("superAdminUnlocked") === "true"
-  );
-  const [passwordInput, setPasswordInput] = useState("");
-
-  // 🔍 Search + pagination states
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 75;
-
+  const formRef = useRef(null);
   const agencyLevel = parseInt(localStorage.getItem("agencyLevel") || "1", 10);
   const limits = {
-    1: 10,
-    2: 25,
-    3: 50,
+    1: 10,   // Level 1 agency → max 10 restaurants
+    2: 25,   // Level 2 agency → max 25 restaurants
+    3: 50,  // Level 3 agency → max 50 restaurants
   };
 
   const API = "/api/admin";
@@ -52,6 +32,7 @@ const SuperAdminDashboard = () => {
   const WP_APP_PASSWORD = "05mq iTLF UvJU dyaz 7KxQ 8pyc";
   const WP_SITE_URL = "https://website.avenirya.com";
 
+  // Get logged-in agency ID from localStorage
   const agencyId = localStorage.getItem("agencyId");
 
   useEffect(() => {
@@ -62,24 +43,21 @@ const SuperAdminDashboard = () => {
   }, [agencyId]);
 
   const fetchRestaurantsByAgency = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get(`${API}/restaurants`);
-      setRestaurants(res.data);
-    } catch (err) {
-      toast.error("Failed to fetch restaurants");
-    } finally {
-      setLoading(false);
-    }
+
+  try {
+    const res = await axios.get(`${API}/restaurants`);
+    setRestaurants(res.data);  // Directly use the fetched restaurant list
+  } catch (err) {
+    alert("Failed to fetch restaurants");
+  }
   };
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async () => {
     try {
       const payload = { ...form, membership_level: 3 };
-      if (!payload.password) delete payload.password;
+      if (!payload.password) delete payload.password; // Only send password if entered
 
       if (editingId) {
         await axios.put(`${API}/restaurants/${editingId}`, payload);
@@ -151,8 +129,9 @@ const SuperAdminDashboard = () => {
       localStorage.setItem("token", data.token);
       localStorage.setItem("restaurantId", data.restaurant._id);
       localStorage.setItem("impersonatedBy", "agency");
-      window.location.href = "/dashboard";
+      window.location.href = "/dashboard"; // Redirect to dashboard
     } catch (err) {
+      console.error(err);
       toast.error(err.response?.data?.message || "Failed to login as restaurant");
     }
   };
@@ -163,76 +142,23 @@ const SuperAdminDashboard = () => {
     setUploading(true);
 
     try {
-      const response = await axios.post(
-        `${WP_SITE_URL}/wp-json/wp/v2/media`,
-        formDataImage,
-        {
-          headers: {
-            Authorization: "Basic " + btoa(`${WP_USERNAME}:${WP_APP_PASSWORD}`),
-            "Content-Disposition": `attachment; filename="${file.name}"`,
-          },
-        }
-      );
+      const response = await axios.post(`${WP_SITE_URL}/wp-json/wp/v2/media`, formDataImage, {
+        headers: {
+          Authorization: "Basic " + btoa(`${WP_USERNAME}:${WP_APP_PASSWORD}`),
+          "Content-Disposition": `attachment; filename="${file.name}"`,
+        },
+      });
 
       const imageUrl = response.data.source_url;
       setForm((prev) => ({ ...prev, logo: imageUrl }));
       toast.success("Logo uploaded successfully!");
     } catch (err) {
+      console.error(err);
       toast.error("Failed to upload image to WordPress");
     } finally {
       setUploading(false);
     }
   };
-
-  // 🔍 Filtering restaurants
-  const filteredRestaurants = restaurants.filter(
-    (r) =>
-      r.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.contact?.toString().includes(searchQuery)
-  );
-
-  // 📄 Pagination logic
-  const totalPages = Math.ceil(filteredRestaurants.length / itemsPerPage);
-  const paginatedRestaurants = filteredRestaurants.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  // 🔑 Password lock screen
-  if (!unlocked) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
-        <div className="bg-white p-6 rounded-xl shadow w-full max-w-sm">
-          <h2 className="text-xl font-semibold mb-4 text-center">
-            🔒 Enter Password
-          </h2>
-          <input
-            type="password"
-            value={passwordInput}
-            onChange={(e) => setPasswordInput(e.target.value)}
-            placeholder="Enter password"
-            className="w-full p-3 border rounded-lg mb-4"
-          />
-          <button
-            onClick={() => {
-              if (passwordInput === "Yash$5828") {
-                setUnlocked(true);
-                localStorage.setItem("superAdminUnlocked", "true");
-                toast.success("Access granted!");
-              } else {
-                toast.error("Wrong password!");
-              }
-            }}
-            className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Unlock
-          </button>
-        </div>
-        <Toaster position="top-right" />
-      </div>
-    );
-  }
 
   if (!agencyId)
     return (
@@ -242,21 +168,19 @@ const SuperAdminDashboard = () => {
     );
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen  ">
       {/* Background gradients */}
       <div className="absolute -top-32 -left-32 w-96 h-96 bg-gradient-to-r from-pink-300 to-purple-300 rounded-full filter blur-3xl opacity-30"></div>
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-gradient-to-r from-green-400 to-blue-500 rounded-full blur-3xl opacity-20"></div>
-
+      
       <Toaster position="top-right" />
 
       <div className="relative p-6 md:p-10 font-sans max-w-6xl mx-auto">
-        {/* Add button */}
+        {/* Button to open form */}
         <button
           onClick={() => {
             if (restaurants.length >= (limits[agencyLevel] || 0)) {
-              toast.error(
-                `Your agency level allows only ${limits[agencyLevel]} restaurants`
-              );
+              toast.error(`Your agency level allows only ${limits[agencyLevel]} restaurants`);
               return;
             }
             setFormOpen(true);
@@ -266,30 +190,57 @@ const SuperAdminDashboard = () => {
           <Plus size={20} /> Add Restaurant
         </button>
 
-        {/* 🔍 Search */}
-        <div className="mb-6 flex items-center gap-2">
-          <Search size={20} className="text-gray-500" />
-          <input
-            type="text"
-            placeholder="Search restaurants..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="p-2 border rounded-lg flex-1"
-          />
-        </div>
-
         {/* Popup form */}
         {formOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-            {/* ... SAME FORM CODE AS BEFORE ... */}
+            <div className="bg-white w-full max-w-2xl p-6 rounded-2xl shadow relative">
+              <button
+                onClick={() => setFormOpen(false)}
+                className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+              <h2 className="text-2xl font-semibold mb-6 text-gray-800">
+                {editingId ? "Edit Restaurant" : "Add Restaurant"}
+              </h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input name="name" placeholder="Restaurant Name" value={form.name} onChange={handleChange} className="p-3 border rounded-lg focus:ring focus:ring-blue-300" />
+                <input name="email" placeholder="Email" value={form.email} onChange={handleChange} className="p-3 border rounded-lg focus:ring focus:ring-blue-300" />
+                <input name="address" placeholder="Address" value={form.address} onChange={handleChange} className="p-3 border rounded-lg focus:ring focus:ring-blue-300" />
+                <input type="number" name="contact" placeholder="Contact Number" value={form.contact} onChange={handleChange} className="p-3 border rounded-lg focus:ring focus:ring-blue-300" />
+                <input name="password" type="password" placeholder={editingId ? "Change Password (optional)" : "Password"} value={form.password} onChange={handleChange} className="p-3 border rounded-lg focus:ring focus:ring-blue-300" />
+
+                <div className="md:col-span-2">
+                  <label className="block mb-2 text-sm font-medium text-gray-600">
+                    Upload Logo
+                  </label>
+                  <div className="border-dashed border-2 p-6 rounded-lg text-center cursor-pointer hover:bg-gray-50">
+                    <input type="file" accept="image/*" onChange={(e) => uploadImageToWordPress(e.target.files[0])} className="hidden" id="logoUpload" />
+                    <label htmlFor="logoUpload" className="cursor-pointer flex flex-col items-center gap-2 text-gray-500">
+                      <Upload size={24} />
+                      <span>Click or drag to upload</span>
+                    </label>
+                  </div>
+                  {uploading && <p className="text-blue-500 mt-2 flex items-center gap-2"><Loader2 className="animate-spin" size={16}/> Uploading...</p>}
+                  {form.logo && <img src={form.logo} alt="Uploaded" className="mt-3 rounded-md h-20 object-cover border" />}
+                </div>
+              </div>
+
+              <button
+                onClick={handleSubmit}
+                className="mt-6 w-full px-6 py-3 bg-blue-600 text-white rounded-xl shadow hover:bg-blue-700 flex items-center justify-center gap-2"
+                disabled={uploading || loading}
+              >
+                {loading ? <Loader2 className="animate-spin" size={18}/> : editingId ? "Update" : "Create"} Restaurant
+              </button>
+            </div>
           </div>
         )}
 
         {/* Table */}
         <div className="bg-white p-6 rounded-2xl shadow relative z-10">
-          <h2 className="text-2xl font-semibold mb-4 text-gray-800">
-            Registered Restaurants ({restaurants.length})
-          </h2>
+          <h2 className="text-2xl font-semibold mb-4 text-gray-800">Registered Restaurants ({restaurants.length})</h2>
           {loading ? (
             <div className="flex justify-center py-10">
               <Loader2 className="animate-spin text-blue-600" size={32} />
@@ -306,21 +257,10 @@ const SuperAdminDashboard = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y">
-                  {paginatedRestaurants.map((rest, idx) => (
-                    <tr
-                      key={rest._id}
-                      className={idx % 2 === 0 ? "bg-gray-50" : "bg-white"}
-                    >
+                  {restaurants.map((rest, idx) => (
+                    <tr key={rest._id} className={idx % 2 === 0 ? "bg-gray-50" : "bg-white"}>
                       <td className="p-3 border text-center">
-                        {rest.logo ? (
-                          <img
-                            src={rest.logo}
-                            alt="logo"
-                            className="h-10 w-10 object-cover rounded-full mx-auto"
-                          />
-                        ) : (
-                          "-"
-                        )}
+                        {rest.logo ? <img src={rest.logo} alt="logo" className="h-10 w-10 object-cover rounded-full mx-auto" /> : "-"}
                       </td>
                       <td className="p-3 border">{rest.name}</td>
                       <td className="p-3 border">{rest.contact || "-"}</td>
@@ -356,58 +296,19 @@ const SuperAdminDashboard = () => {
                             <LogIn size={18} /> Login
                           </button>
                         </div>
+
                       </td>
                     </tr>
                   ))}
-                  {filteredRestaurants.length === 0 && (
+                  {restaurants.length === 0 && (
                     <tr>
-                      <td
-                        colSpan="6"
-                        className="p-3 text-center text-gray-500"
-                      >
+                      <td colSpan="6" className="p-3 text-center text-gray-500">
                         No restaurants found.
                       </td>
                     </tr>
                   )}
                 </tbody>
               </table>
-            </div>
-          )}
-
-          {/* 📄 Pagination controls */}
-          {totalPages > 1 && (
-            <div className="flex justify-center mt-4 gap-2">
-              <button
-                onClick={() =>
-                  setCurrentPage((prev) => Math.max(prev - 1, 1))
-                }
-                disabled={currentPage === 1}
-                className="px-3 py-1 border rounded disabled:opacity-50"
-              >
-                Prev
-              </button>
-              {[...Array(totalPages)].map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setCurrentPage(i + 1)}
-                  className={`px-3 py-1 border rounded ${
-                    currentPage === i + 1
-                      ? "bg-blue-600 text-white"
-                      : "bg-white"
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
-              <button
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
-                disabled={currentPage === totalPages}
-                className="px-3 py-1 border rounded disabled:opacity-50"
-              >
-                Next
-              </button>
             </div>
           )}
         </div>

@@ -18,8 +18,9 @@ const Kolnure = () => {
     password: "",
     retypePassword: "",
     membership_level: 1,
+    subadmin_id: "68ab17e48b5a09cdf9055c64"
   });
-  
+
 
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
@@ -96,7 +97,7 @@ const Kolnure = () => {
 
       // ✅ Register directly (no Razorpay)
       await axios.post(
-        "/api/admin/restaurants",
+        "/api/admin/restaurant/register",
         formData
       );
 
