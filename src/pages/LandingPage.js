@@ -1,4 +1,5 @@
 import {React, useRef, useState, useEffect } from 'react';
+import { Helmet } from "react-helmet";
 import {
   QrCode,
   MessageCircle,
@@ -155,6 +156,17 @@ const HomePage = () => {
   };
   return (
     <div className="relative">
+            <Helmet>
+        <title>Petoba | Digital QR Menu & Ordering</title>
+        <meta
+          name="description"
+          content="Petoba lets restaurants create digital QR menus. Customers scan, order, and enjoy a contactless dining experience."
+        />
+        <meta property="og:title" content="Petoba - Digital QR Menu" />
+        <meta property="og:description" content="Turn your restaurant’s menu into a digital QR code menu." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://yash.avenirya.com" />
+      </Helmet>
 
       {/* Background Blobs */}
       <div className="fixed inset-0 -z-10">
