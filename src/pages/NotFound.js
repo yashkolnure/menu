@@ -3,6 +3,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Home, MessageCircle } from "lucide-react";
+import { Helmet } from "react-helmet";
 
 const NotFound = () => {
   const navigate = useNavigate();
@@ -17,6 +18,27 @@ const NotFound = () => {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
+              <Helmet>
+        <title>Petoba | Digital QR Menu & Ordering</title>
+        <meta
+          name="description"
+          content="Petoba lets restaurants create digital QR menus. Customers scan, order, and enjoy a contactless dining experience."
+        />
+
+        <link
+          rel="icon"
+          href="https://petoba.avenirya.com/wp-content/uploads/2025/09/download-1.png"
+          type="image/png"
+        />
+        <meta
+          property="og:image"
+          content="https://petoba.avenirya.com/wp-content/uploads/2025/09/Untitled-design-6.png"
+        />
+        <meta property="og:title" content="Petoba - Digital QR Menu" />
+        <meta property="og:description" content="Turn your restaurant’s menu into a digital QR code menu." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://yash.avenirya.com" />
+      </Helmet>
       {/* Background Blobs (same as homepage style) */}
       <div className="fixed inset-0 -z-10">
         <div className="absolute -top-20 -left-20 w-72 h-72 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full blur-3xl opacity-30"></div>

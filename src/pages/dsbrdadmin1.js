@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-
+import { Helmet } from "react-helmet";
 const Dsbrdadmin1 = () => {
   const [restaurants, setRestaurants] = useState([]);
   const [form, setForm] = useState({
@@ -128,6 +128,27 @@ const Dsbrdadmin1 = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+              <Helmet>
+        <title>Petoba | Digital QR Menu & Ordering</title>
+        <meta
+          name="description"
+          content="Petoba lets restaurants create digital QR menus. Customers scan, order, and enjoy a contactless dining experience."
+        />
+
+        <link
+          rel="icon"
+          href="https://petoba.avenirya.com/wp-content/uploads/2025/09/download-1.png"
+          type="image/png"
+        />
+        <meta
+          property="og:image"
+          content="https://petoba.avenirya.com/wp-content/uploads/2025/09/Untitled-design-6.png"
+        />
+        <meta property="og:title" content="Petoba - Digital QR Menu" />
+        <meta property="og:description" content="Turn your restaurant’s menu into a digital QR code menu." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://yash.avenirya.com" />
+      </Helmet>
       <div className="p-6 md:p-10 font-sans max-w-6xl mx-auto">
         {message && <p className="text-green-600 text-center mb-2">{message}</p>}
         {error && <p className="text-red-600 text-center mb-2">{error}</p>}

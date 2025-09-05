@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { Helmet } from "react-helmet";
 import { useNavigate } from "react-router-dom";
 import QRCodeTemplates from "../components/QRCodeTemplates";
 
@@ -556,6 +557,27 @@ async function fetchAllImages() {
 
   return (
     <div className="p-4 max-w-6xl mx-auto">
+              <Helmet>
+        <title>Petoba | Digital QR Menu & Ordering</title>
+        <meta
+          name="description"
+          content="Petoba lets restaurants create digital QR menus. Customers scan, order, and enjoy a contactless dining experience."
+        />
+
+        <link
+          rel="icon"
+          href="https://petoba.avenirya.com/wp-content/uploads/2025/09/download-1.png"
+          type="image/png"
+        />
+        <meta
+          property="og:image"
+          content="https://petoba.avenirya.com/wp-content/uploads/2025/09/Untitled-design-6.png"
+        />
+        <meta property="og:title" content="Petoba - Digital QR Menu" />
+        <meta property="og:description" content="Turn your restaurant’s menu into a digital QR code menu." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://yash.avenirya.com" />
+      </Helmet>
       <h2 className="text-2xl font-bold mb-4">Welcome, {restaurant.name}</h2>
       <div className="border p-4 mb-6 rounded bg-white shadow" ref={imagePasteRef}>
         <h3 className="font-semibold text-lg mb-3">Add / Edit Dish</h3>

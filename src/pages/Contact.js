@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope, FaWhatsapp } from "react-icons/fa";
+import { Helmet } from "react-helmet";
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
@@ -37,6 +38,27 @@ const ContactPage = () => {
 
   return (
     <div className="relative min-h-screen py-16 px-6 lg:px-20 ">
+              <Helmet>
+        <title>Petoba | Digital QR Menu & Ordering</title>
+        <meta
+          name="description"
+          content="Petoba lets restaurants create digital QR menus. Customers scan, order, and enjoy a contactless dining experience."
+        />
+
+        <link
+          rel="icon"
+          href="https://petoba.avenirya.com/wp-content/uploads/2025/09/download-1.png"
+          type="image/png"
+        />
+        <meta
+          property="og:image"
+          content="https://petoba.avenirya.com/wp-content/uploads/2025/09/Untitled-design-6.png"
+        />
+        <meta property="og:title" content="Petoba - Contact Us" />
+        <meta property="og:description" content="Turn your restaurant’s menu into a digital QR code menu." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://yash.avenirya.com" />
+      </Helmet>
       {/* Background Blobs */}
       <div className="absolute top-0 left-0 w-72 h-72 bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
       <div className="absolute top-0 right-0 w-72 h-72 bg-purple-100 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>

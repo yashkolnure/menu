@@ -168,6 +168,10 @@ const HomePage = () => {
           href="https://petoba.avenirya.com/wp-content/uploads/2025/09/download-1.png"
           type="image/png"
         />
+        <meta
+          property="og:image"
+          content="https://petoba.avenirya.com/wp-content/uploads/2025/09/Untitled-design-6.png"
+        />
         <meta property="og:title" content="Petoba - Digital QR Menu" />
         <meta property="og:description" content="Turn your restaurant’s menu into a digital QR code menu." />
         <meta property="og:type" content="website" />

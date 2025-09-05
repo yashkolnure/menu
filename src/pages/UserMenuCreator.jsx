@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import html2canvas from "html2canvas";
 import { QRCodeCanvas } from "qrcode.react";
+import { Helmet } from "react-helmet";
 
 function UserMenuCreator() {
   const [menuItems, setMenuItems] = useState([]);
@@ -157,6 +158,27 @@ function UserMenuCreator() {
 
   return (
     <div className="max-w-3xl mx-auto p-4">
+              <Helmet>
+        <title>Petoba | Digital QR Menu & Ordering</title>
+        <meta
+          name="description"
+          content="Petoba lets restaurants create digital QR menus. Customers scan, order, and enjoy a contactless dining experience."
+        />
+
+        <link
+          rel="icon"
+          href="https://petoba.avenirya.com/wp-content/uploads/2025/09/download-1.png"
+          type="image/png"
+        />
+        <meta
+          property="og:image"
+          content="https://petoba.avenirya.com/wp-content/uploads/2025/09/Untitled-design-6.png"
+        />
+        <meta property="og:title" content="Petoba - Digital QR Menu" />
+        <meta property="og:description" content="Turn your restaurant’s menu into a digital QR code menu." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://yash.avenirya.com" />
+      </Helmet>
       <h1 className="text-2xl font-bold mb-4">📋 Edit Your Menu</h1>
 
       <div className="mb-4 p-3 text-sm bg-blue-50 rounded text-blue-800 border border-blue-200">

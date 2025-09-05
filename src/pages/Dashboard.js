@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import UpgradePopup from "../components/UpgradePopup";
 import QRCodeTemplates from "../components/QRCodeTemplates";
 import OfferBannerManager from "../components/OfferBannerManager";
+import { Helmet } from "react-helmet";
 
 
 function Dashboard() {
@@ -587,6 +588,29 @@ async function fetchAllImages() {
   }));
 return (
   <div className="p-6 max-w-7xl mx-auto space-y-8">
+            <Helmet>
+        <title>Petoba | Digital QR Menu & Ordering</title>
+        <meta
+          name="description"
+          content="Petoba lets restaurants create digital QR menus. Customers scan, order, and enjoy a contactless dining experience."
+        />
+
+        <link
+          rel="icon"
+          href="https://petoba.avenirya.com/wp-content/uploads/2025/09/download-1.png"
+          type="image/png"
+        />
+        <meta
+          property="og:image"
+          content="https://petoba.avenirya.com/wp-content/uploads/2025/09/Untitled-design-6.png"
+        />
+        <meta property="og:title" content="Petoba - Digital QR Menu" />
+        <meta property="og:description" content="Turn your restaurant’s menu into a digital QR code menu." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://yash.avenirya.com" />
+      </Helmet>
+
+      
     <div className="absolute -top-32 -left-32 w-96 h-96 bg-gradient-to-r from-pink-300 to-purple-300 rounded-full filter blur-3xl opacity-30 z-0"></div>
       
     {/* Welcome */}

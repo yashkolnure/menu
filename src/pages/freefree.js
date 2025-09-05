@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import html2canvas from "html2canvas";
+import { Helmet } from "react-helmet";
 import { QRCodeCanvas } from 'qrcode.react';
 
 
@@ -131,6 +132,27 @@ I will now provide the menu card image. Please extract all items and return the 
 
 return (
   <div className="p-4 max-w-5xl mx-auto">
+            <Helmet>
+        <title>Petoba | Digital QR Menu & Ordering</title>
+        <meta
+          name="description"
+          content="Petoba lets restaurants create digital QR menus. Customers scan, order, and enjoy a contactless dining experience."
+        />
+
+        <link
+          rel="icon"
+          href="https://petoba.avenirya.com/wp-content/uploads/2025/09/download-1.png"
+          type="image/png"
+        />
+        <meta
+          property="og:image"
+          content="https://petoba.avenirya.com/wp-content/uploads/2025/09/Untitled-design-6.png"
+        />
+        <meta property="og:title" content="Petoba - Digital QR Menu" />
+        <meta property="og:description" content="Turn your restaurant’s menu into a digital QR code menu." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://yash.avenirya.com" />
+      </Helmet>
 
     {/* Header */}
     <div className="flex justify-between items-center mb-8 bg-gray-100 p-4 rounded shadow">

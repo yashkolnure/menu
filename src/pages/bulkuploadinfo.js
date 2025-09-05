@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Copy, Upload, CheckCircle, FileJson, ClipboardCheck, Info } from "lucide-react";
 import axios from "axios";
+import { Helmet } from "react-helmet";
 import { useNavigate } from "react-router-dom";
 
 function BulkUploadInfo() {
@@ -112,6 +113,27 @@ const handleUpload = async () => {
 
   return (
     <div className="min-h-screen  py-12 px-6">
+              <Helmet>
+        <title>Petoba | Digital QR Menu & Ordering</title>
+        <meta
+          name="description"
+          content="Petoba lets restaurants create digital QR menus. Customers scan, order, and enjoy a contactless dining experience."
+        />
+
+        <link
+          rel="icon"
+          href="https://petoba.avenirya.com/wp-content/uploads/2025/09/download-1.png"
+          type="image/png"
+        />
+        <meta
+          property="og:image"
+          content="https://petoba.avenirya.com/wp-content/uploads/2025/09/Untitled-design-6.png"
+        />
+        <meta property="og:title" content="Petoba - Digital QR Menu" />
+        <meta property="og:description" content="Turn your restaurant’s menu into a digital QR code menu." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://yash.avenirya.com" />
+      </Helmet>
        <div className="absolute -top-20 -left-20 w-72 h-72 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full blur-3xl opacity-30"></div>
         
       <div className="max-w-4xl mx-auto">
