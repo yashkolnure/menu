@@ -60,6 +60,22 @@ const FeaturesPage = () => {
       imageSide: "left",
       imageUrl: "https://petoba.avenirya.com/wp-content/uploads/2025/08/Adobe-Express-file-3-min-scaled.png",
     },
+     {
+    title: "Connect Instagram / Social Accounts",
+    description:
+      "Easily link your Instagram and other social media accounts to your digital menu so customers can follow and engage with you.",
+    icon: <Megaphone size={58} className="text-teal-500" />, // choose a social-related icon
+    imageSide: "right",
+    imageUrl: "https://petoba.avenirya.com/wp-content/uploads/2025/09/5f4ff59c-removebg-preview.png",
+  },{
+  title: "Add Custom Line",
+  description:
+    "Include a custom text line on your digital menu to share messages like 'We take Party Orders', 'Daily Specials', or any special note for your customers.",
+  icon: <MessageCircle size={58} className="text-orange-500" />,
+  imageSide: "left",
+  imageUrl: "https://petoba.avenirya.com/wp-content/uploads/2025/09/person-sitting-at-desk-having-coffee-taking-notes-in-notebook-man-writing-in-notepad-making-plans-or-schedule-time-organization-illustration-vector.jpg",
+}
+,
     {
       title: "Dedicated Support",
       description:
