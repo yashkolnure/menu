@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import { Helmet } from "react-helmet";
 import "react-toastify/dist/ReactToastify.css";
+import CustomFieldsDisplay from "../components/CustomFieldsDisplay";
 import MenuCard from "../components/menuwithoutcart";
 
 function RestaurantMenuPage() {
@@ -245,6 +246,13 @@ function RestaurantMenuPage() {
           ) : (
             <p className="text-gray-500 text-center mb-4">No items match your search.</p>
           )}
+        </div>
+         <div>
+        
+             <CustomFieldsDisplay restaurantId={id} />
+        </div>
+        <div className="flex flex-wrap justify-center">
+          <p className="text-gray-500 text-center mt-4">© {new Date().getFullYear()} Petoba. All rights reserved.</p>
         </div>
       </div>
 

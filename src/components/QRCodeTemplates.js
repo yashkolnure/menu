@@ -50,6 +50,7 @@ const QRCodeTemplates = ({ restaurantId, membership_level }) => {
           key={templateId}
           className="relative flex-shrink-0 border p-3 rounded shadow bg-white w-full md:w-[32%]"
         >
+
           <div
             id={templateId}
             className="relative inline-block w-full h-auto rounded overflow-hidden shadow"
@@ -77,13 +78,13 @@ const QRCodeTemplates = ({ restaurantId, membership_level }) => {
 
             {/* Overlay for locked levels */}
             {isDisabled && (
-              <div className="absolute inset-0 bg-white bg-opacity-75 flex flex-col items-center justify-center text-gray-600 text-sm font-semibold rounded p-2">
+              <div className="absolute inset-0 bg-white  flex flex-col items-center justify-center text-gray-600 text-sm font-semibold rounded p-2">
                 <div>Upgrade to unlock</div>
                 <a
                   href={demoLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-2 px-3 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
+                  className="mt-2 px-3 py-1 text-white rounded text-xs hover:bg-blue-600"
                 >
                   View Demo
                 </a>
@@ -128,7 +129,7 @@ const QRCodeTemplates = ({ restaurantId, membership_level }) => {
     });
 
   return (
-    <div className="mt-10 border p-4 rounded bg-gray-50 text-center">
+    <div className="mt-10 border p-4 rounded bg-white text-center">
       <h3 className="text-xl font-semibold mb-6 text-gray-700">
         Restaurant Menu QR Codes
       </h3>

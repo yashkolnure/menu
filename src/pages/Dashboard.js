@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import UpgradePopup from "../components/UpgradePopup";
 import QRCodeTemplates from "../components/QRCodeTemplates";
+import CustomFields from "../components/CustomFields";
 import OfferBannerManager from "../components/OfferBannerManager";
 import { Helmet } from "react-helmet";
 
@@ -1200,6 +1201,27 @@ return (
       My Menu
     </button>
 
+     {/* Left Column - Offer Banner Manager */}
+  <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[220px]">
+    <div className="absolute -top-20 -right-20 w-72 h-72 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full blur-3xl opacity-20 transform rotate-45"></div>
+
+    <h2 className="text-2xl font-semibold text-gray-800 relative z-10">
+     Connect Social & Add Text
+    </h2>
+
+    <p className="text-gray-600 mt-2 max-w-sm relative z-10">
+      Add your social media, contact details, and a custom line to your digital menu.
+    </p>
+
+    {restaurant.membership_level === 3 ? (
+      <CustomFields />
+    ) : (
+      <p className="mt-5 text-gray-500 italic relative z-10">
+        ⚠ Upgrade to <span className="font-semibold text-purple-600">Pro</span>{" "}
+        to use this feature.
+      </p>
+    )}
+  </div>
     {/* QR Section */}
     <QRCodeTemplates
       restaurantId={restaurantId}

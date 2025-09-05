@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import CustomFieldsDisplay from "../components/CustomFieldsDisplay";
 import { Helmet } from "react-helmet";
 import MenuCard from "../components/MenuCard";
 
@@ -271,7 +272,12 @@ const carouselRef = useRef(null);
           )}
         </div>
       </div>
-
+      <div>
+             <CustomFieldsDisplay restaurantId={id} />
+        </div>
+        <div className="flex flex-wrap justify-center">
+          <p className="text-gray-500 text-center mt-4">© {new Date().getFullYear()} Petoba. All rights reserved.</p>
+        </div>
       {tableNumber && (
         <p className="text-center text-sm text-gray-600 mt-2 mb-5">
           Ordering for <strong>Table {tableNumber}</strong>
