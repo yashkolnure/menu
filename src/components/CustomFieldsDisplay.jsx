@@ -26,8 +26,6 @@ const CustomFieldsDisplay = ({ restaurantId }) => {
           `${API_BASE}/api/admin/custom-fields?restaurantId=${restaurantId}`
         );
 
-        if (!res.ok) throw new Error(`API error: ${res.status}`);
-
         const data = await res.json();
         setFields(data);
       } catch (e) {
