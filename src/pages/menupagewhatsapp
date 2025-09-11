@@ -91,13 +91,17 @@ function RestaurantMenuPage() {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
-  // Filtered menu
-  const filteredMenu = menuData.filter(item => {
-    const matchCategory = category === "All" || item.category === category;
-    const matchSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchCategory && matchSearch;
-  });
 
+const filteredMenu = menuData.filter(item => {
+  // Normalize inStock value
+  const isInStock = item.inStock === true || item.inStock === "true";
+
+  const matchCategory = category === "All" || item.category === category;
+  const matchSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
+
+  // Only include items that are in stock
+  return isInStock && matchCategory && matchSearch;
+});
   // Add to cart
   const addToCart = item => {
     if (cart.find(c => c._id === item._id)) toast.warn("Item already in cart!");
