@@ -446,44 +446,58 @@ async function fetchAllImages() {
   setIsFetching(false); // stop loading
 }
 
+const handleUpdate = async () => {
+  try {
+    setMessage("");
+    setError("");
 
-  const handleUpdate = async () => {
-    try {
-      setMessage("");
-      setError("");
-      
-      let imageUrl = itemForm.image;
-      
-      // If it's a new base64 image, upload to WordPress first
-      if (itemForm.image.startsWith('data:')) {
-        imageUrl = await uploadImageToWordPress(
-          itemForm.image,
-          `${itemForm.name.replace(/\s+/g, '-')}-${Date.now()}.jpg`
-        );
-      }
-      
-      const updatedItem = { ...itemForm, image: imageUrl };
-      
-      await axios.put(
-        `/api/admin/${restaurantId}/menu/${itemForm._id}`,
-        updatedItem,
-        { headers: { Authorization: `Bearer ${token}` } }
+    let imageUrl = itemForm.image;
+
+    // If it's a new base64 image, upload to WordPress first
+    if (itemForm.image && itemForm.image.startsWith("data:")) {
+      imageUrl = await uploadImageToWordPress(
+        itemForm.image,
+        `${itemForm.name.replace(/\s+/g, "-")}-${Date.now()}.jpg`
       );
-      
-      setItemForm({ name: "", category: "", description: "", price: "", image: "", _id: null });
-      setMessage("Updated successfully");
-      
-      // Refresh the menu
-      const res = await axios.get(
-        `/api/admin/${restaurantId}/menu`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setExistingItems(res.data);
-      
-    } catch (err) {
-      setError("Update failed: " + (err.response?.data?.message || err.message));
     }
-  };
+
+    // Ensure inStock defaults to true if not set
+    const updatedItem = { 
+      ...itemForm, 
+      image: imageUrl, 
+  inStock: itemForm.inStock // keep exact value true/false
+    };
+
+    await axios.put(
+      `/api/admin/${restaurantId}/menu/${itemForm._id}`,
+      updatedItem,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    setItemForm({ 
+      name: "", 
+      category: "", 
+      description: "", 
+      price: "", 
+      image: "", 
+      _id: null,
+      inStock: true // reset default
+    });
+
+    setMessage("Updated successfully");
+    console.log("Update body:", updatedItem);
+    // Refresh the menu
+    const res = await axios.get(
+      `/api/admin/${restaurantId}/menu`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    setExistingItems(res.data);
+
+  } catch (err) {
+    setError("Update failed: " + (err.response?.data?.message || err.message));
+  }
+};
+
 
   const handleDelete = async (id) => {
     try {
@@ -696,7 +710,7 @@ return (
           />
         )}
       </div>
-
+      
       {/* Image Upload (membership gated) */}
       <div className="mt-4">
         {restaurant.membership_level === 1 ? (
@@ -723,6 +737,29 @@ return (
           />
         )}
       </div>
+
+{/* Stock Toggle - only in edit mode */}
+{itemForm._id && (
+  <div className="flex items-center gap-3 border p-3 rounded-lg mt-4">
+    <label className="flex items-center gap-2 cursor-pointer">
+      <input
+        type="checkbox"
+        checked={itemForm.inStock !== false} // default true (In Stock)
+        onChange={(e) =>
+          setItemForm({ ...itemForm, inStock: e.target.checked })
+        }
+        className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+      />
+      <span
+        className={`font-medium ${
+          itemForm.inStock !== false ? "text-green-600" : "text-red-600"
+        }`}
+      >
+        {itemForm.inStock !== false ? "In Stock ✅" : "Out of Stock ❌"}
+      </span>
+    </label>
+  </div>
+)}
 
       {/* Preview */}
       {itemForm.image && (
@@ -1037,7 +1074,7 @@ return (
                       />
                     )}
                   </div>
-
+                  
                   {/* Per-item Save */}
                   <button
                     onClick={async () => {

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { FaPlus } from "react-icons/fa";
 
 function MenuCard({ item, addToCart }) {
+  // Hooks must be called unconditionally
   const [expanded, setExpanded] = useState(false);
   const descRef = useRef(null);
   const [descHeight, setDescHeight] = useState("3rem"); // default height for 2 lines
@@ -13,15 +14,22 @@ function MenuCard({ item, addToCart }) {
     }
   }, [expanded]);
 
+  // normalize inStock value
+  const isInStock = item.inStock === true || item.inStock === "true";
+
+  // Conditionally render nothing if out of stock or description missing
+  if (!isInStock || !item.description || item.description.trim() === "") {
+    return null;
+  }
+
   return (
     <div className="relative bg-white/80 backdrop-blur-lg border border-gray-200 rounded-2xl shadow-md p-3 m-2 w-full max-w-md flex items-center hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full">
       {/* Image */}
-<img
-  src={item.image || "https://via.placeholder.com/100"}
-  alt={item.name}
-  className="w-20 h-20 rounded-xl object-cover shadow-sm border"
-/>
-
+      <img
+        src={item.image || "https://via.placeholder.com/100"}
+        alt={item.name}
+        className="w-20 h-20 rounded-xl object-cover shadow-sm border"
+      />
 
       {/* Info */}
       <div className="ml-4 flex flex-col justify-between flex-grow h-full">
@@ -34,16 +42,15 @@ function MenuCard({ item, addToCart }) {
           onClick={() => setExpanded(!expanded)}
           title="Click to expand"
         >
-          <p
-            ref={descRef}
-            className="text-xs text-gray-600 mt-1 leading-snug"
-          >
+          <p ref={descRef} className="text-xs text-gray-600 mt-1 leading-snug">
             {item.description}
           </p>
         </div>
 
         <div className="flex justify-between items-center mt-2">
-          <span className="text-orange-500 font-semibold text-base">₹ {item.price}</span>
+          <span className="text-orange-500 font-semibold text-base">
+            ₹ {item.price}
+          </span>
           {addToCart && (
             <button
               onClick={() => addToCart(item)}

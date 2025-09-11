@@ -257,6 +257,7 @@ if (!adminPhone) {
         
              <CustomFieldsDisplay restaurantId={id} />
         </div>
+        
         <div className="flex flex-wrap justify-center">
           <p className="text-gray-500 text-center mt-4">© {new Date().getFullYear()} Petoba. All rights reserved.</p>
         </div>
