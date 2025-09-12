@@ -92,10 +92,14 @@ function RestaurantMenuPage() {
   }, [cart]);
 
   const filteredMenu = menuData.filter(item => {
-    const matchCategory = category === "All" || item.category === category;
-    const matchSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchCategory && matchSearch;
-  });
+  // Hide only if explicitly false
+  const isInStock = !(item.inStock === false || item.inStock === "false");
+
+  const matchCategory = category === "All" || item.category === category;
+  const matchSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
+
+  return isInStock && matchCategory && matchSearch;
+});
 
   const addToCart = item => {
     if (cart.find(c => c._id === item._id)) toast.warn("Item already in cart!");

@@ -106,12 +106,15 @@ function RestaurantMenuPageCloud() {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
-  // ✅ Filtering
-  const filteredMenu = menuData.filter((item) => {
-    const matchCategory = category === "All" || item.category === category;
-    const matchSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchCategory && matchSearch;
-  });
+const filteredMenu = menuData.filter(item => {
+  // Hide only if explicitly false
+  const isInStock = !(item.inStock === false || item.inStock === "false");
+
+  const matchCategory = category === "All" || item.category === category;
+  const matchSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
+
+  return isInStock && matchCategory && matchSearch;
+});
 
   // ✅ Cart operations
   const addToCart = (item) => {
