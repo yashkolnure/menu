@@ -287,6 +287,7 @@ const addItemToList = () => {
       price: item.price.toString(),
       image: item.image,
       _id: item._id,
+      inStock: item.inStock === true,
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -744,7 +745,7 @@ return (
     <label className="flex items-center gap-2 cursor-pointer">
       <input
         type="checkbox"
-        checked={itemForm.inStock !== false} // default true (In Stock)
+        checked={itemForm.inStock ?? true} // default to true if undefined
         onChange={(e) =>
           setItemForm({ ...itemForm, inStock: e.target.checked })
         }
@@ -752,14 +753,15 @@ return (
       />
       <span
         className={`font-medium ${
-          itemForm.inStock !== false ? "text-green-600" : "text-red-600"
+          itemForm.inStock ?? true ? "text-green-600" : "text-red-600"
         }`}
       >
-        {itemForm.inStock !== false ? "In Stock ✅" : "Out of Stock ❌"}
+        {itemForm.inStock ?? true ? "In Stock ✅" : "Out of Stock ❌"}
       </span>
     </label>
   </div>
 )}
+
 
       {/* Preview */}
       {itemForm.image && (
