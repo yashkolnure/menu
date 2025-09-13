@@ -1167,52 +1167,69 @@ return (
           <>
             <h3 className="text-xl font-semibold mb-6">📖 Your Menu</h3>
             {groupedItems
-              .sort((a, b) => a.category.localeCompare(b.category))
-              .map((group, index) => (
-                <div key={index} className="mb-8">
-                  <h4 className="text-lg font-bold mb-4 text-blue-700 border-b pb-1">
-                    {group.category}
-                  </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {group.items.map((item, i) => (
-                      <div
-                        key={i}
-                        className="p-4 border rounded-lg bg-white shadow hover:shadow-md transition"
-                      >
-                        {item.image && (
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className="h-20 w-20 object-cover rounded-lg mb-2 border"
-                          />
-                        )}
-                        <h4 className="font-semibold">{item.name}</h4>
-                        <p className="text-sm text-gray-600">
-                          {item.description}
-                        </p>
-                        <p className="text-green-700 font-semibold mt-1">
-                          ₹{item.price}
-                        </p>
+  .sort((a, b) => a.category.localeCompare(b.category))
+  .map((group, index) => (
+    <div key={index} className="mb-8">
+      <h4 className="text-lg font-bold mb-4 text-blue-700 border-b pb-1">
+        {group.category}
+      </h4>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {group.items.map((item, i) => {
+          const isOutOfStock = item.inStock === false;
 
-                        <div className="flex gap-2 mt-3">
-                          <button
-                            onClick={() => handleEditItem(item)}
-                            className="flex-1 text-xs px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDelete(item._id)}
-                            className="flex-1 text-xs px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
+          return (
+            <div
+              key={i}
+              className={`p-4 border rounded-lg bg-white shadow hover:shadow-md transition relative ${
+                isOutOfStock ? "opacity-" : ""
+              }`}
+            >
+              {item.image && (
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="h-20 w-20 object-cover rounded-lg mb-2 border"
+                />
+              )}
+
+              <h4 className="font-semibold">{item.name}</h4>
+              <p className="text-sm text-gray-600">{item.description}</p>
+              <p className="text-green-700 font-semibold mt-1">
+                ₹{item.price}
+              </p>
+
+              {/* Stock Status */}
+              <p
+                className={`text-xs font-semibold mt-1 ${
+                  isOutOfStock ? "text-red-600" : "text-green-600"
+                }`}
+              >
+                {isOutOfStock ? "Out of Stock ❌" : "In Stock ✅"}
+              </p>
+
+              {/* Action Buttons */}
+              <div className="flex gap-2 mt-3">
+                <button
+                  onClick={() => handleEditItem(item)}
+                  className="flex-1 text-xs px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(item._id)}
+                  className="flex-1 text-xs px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded"
+                >
+                  Delete
+                </button>
+              </div>
+
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  ))}
+
           </>
         )}
       </div>

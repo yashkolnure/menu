@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const WP_USERNAME = "yashkolnure58@gmail.com";
 const WP_APP_PASSWORD = "05mq iTLF UvJU dyaz 7KxQ 8pyc";
@@ -11,6 +11,30 @@ const OfferBannerModal = ({ restaurantId, token, offers, setOffers }) => {
   const [deletingId, setDeletingId] = useState(null);
   const [message, setMessage] = useState("");
 
+
+    useEffect(() => {
+    if (isOpen) {
+      const fetchOffers = async () => {
+        try {
+          const res = await fetch(
+            `/api/admin/${restaurantId}/offers`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          const data = await res.json();
+          if (res.ok) {
+            setOffers(data); // backend must return array of offers
+          } else {
+            console.error("Failed to load offers:", data.message);
+          }
+        } catch (err) {
+          console.error("Error fetching offers:", err);
+        }
+      };
+      fetchOffers();
+    }
+  }, [isOpen, restaurantId, token, setOffers]);
   // File select handler
   const handleOfferImageUpload = (e) => {
     const file = e.target.files[0];
