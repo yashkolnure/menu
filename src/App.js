@@ -36,6 +36,7 @@ import FeaturesPage from "./pages/FeaturesPage";
 import Kolnure from "./pages/Kolnure";
 import Kolnuree from "./pages/kolnureyash";
 import MembershipUpgrade from "./pages/MembershipUpgrade";
+import UploadMenuPage from "./pages/uploadmenu";
 
 // Wrapper to handle conditional Header/Footer
 function AppWrapper() {
@@ -94,6 +95,7 @@ function AppWrapper() {
         <Route path="/kolnure" element={<Kolnure />} />
         <Route path="/kolnure1" element={<Kolnuree />} />
         <Route path="/MembershipUpgrade" element={<MembershipUpgrade />} />
+        <Route path="/upload-menu" element={<UploadMenuPage />} />
       </Routes>
       {!hideHeaderFooter && <Footer />}
     </>

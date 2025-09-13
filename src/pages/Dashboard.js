@@ -18,6 +18,7 @@ function Dashboard() {
   const [customCategory, setCustomCategory] = useState("");
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState("");
+  const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [isEditMode, setIsEditMode] = useState(false);
@@ -511,6 +512,12 @@ const handleUpdate = async () => {
     }
   };
 
+    const handleOptionClick = (path, allowed) => {
+    if (!allowed) return; // prevent navigation if not allowed
+    navigate(path);
+    setShowModal(false);
+  };
+
   const updateEditedItem = (index, field, value) => {
     const updated = [...editedItems];
     updated[index][field] = value;
@@ -836,36 +843,85 @@ return (
   </div>
 
   {/* Right Column - Bulk Upload Section */}
-  <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[220px]">
-    <div className="absolute -top-20 -right-20 w-72 h-72 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full blur-3xl opacity-20"></div>
+ <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[220px]">
+      {/* Background Circle */}
+      <div className="absolute -top-20 -right-20 w-72 h-72 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full blur-3xl opacity-20"></div>
 
-    <h2 className="text-2xl font-semibold text-gray-800 relative z-10">
-      Bulk Upload Your Menu ( AI )
-    </h2>
+      {/* Heading */}
+      <h2 className="text-2xl font-semibold text-gray-800 relative z-10">
+        Bulk Upload Your Menu ( AI )
+      </h2>
 
-    <p className="text-gray-600 mt-2 max-w-sm relative z-10">
-      Upload your full menu using{" "}
-      <span className="font-medium">Images, PDF, or Excel</span> — our AI will
-      process it automatically.
-    </p>
-
-    {restaurant.membership_level === 3 || restaurant.membership_level === 2 ? (
-      <a
-        href="/bulk-upload"
-        className="mt-5 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-lg shadow hover:opacity-90 relative z-10"
-      >
-        Upload Menu
-      </a>
-    ) : (
-      <p className="mt-5 text-gray-500 italic relative z-10">
-        ⚠ Upgrade to <span className="font-semibold text-purple-600">Premium</span>{" "}
-        or <span className="font-semibold text-blue-600">Pro</span> to use this
-        feature.
+      {/* Description */}
+      <p className="text-gray-600 mt-2 max-w-sm relative z-10">
+        Upload your full menu using{" "}
+        <span className="font-medium">Images, PDF, or Excel</span> — our AI will
+        process it automatically.
       </p>
-    )}
-  </div>
-</div>
 
+      {/* Upload Button */}
+      {restaurant.membership_level >= 2 ? (
+        <button
+          onClick={() => setShowModal(true)}
+          className="mt-5 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-lg shadow hover:opacity-90 relative z-10"
+        >
+          Upload Menu
+        </button>
+      ) : (
+        <p className="mt-5 text-gray-500 italic relative z-10">
+          ⚠ Upgrade to{" "}
+          <span className="font-semibold text-purple-600">Premium</span> or{" "}
+          <span className="font-semibold text-blue-600">Pro</span> to use this
+          feature.
+        </p>
+      )}
+
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-80 relative">
+            <h3 className="text-lg font-semibold mb-4">Choose Upload Option</h3>
+
+            <div className="flex flex-col space-y-3">
+              {/* Manual with AI */}
+              <button
+                onClick={() => handleOptionClick("/bulk-upload", true)}
+                className="w-full px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+              >
+                Manual with AI
+              </button>
+
+              {/* Automatic with AI */}
+              <button
+                onClick={() =>
+                  handleOptionClick(
+                    "/upload-menu",
+                    restaurant.membership_level === 3
+                  )
+                }
+                className={`w-full px-4 py-2 rounded-lg ${
+                  restaurant.membership_level === 3
+                    ? "bg-blue-500 text-white hover:bg-blue-600"
+                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                }`}
+              >
+                Automatic with AI{" "}
+                {restaurant.membership_level !== 3 && "(Premium Only)"}
+              </button>
+            </div>
+
+            {/* Close Button */}
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+    </div>  
+</div>
 
 
 
