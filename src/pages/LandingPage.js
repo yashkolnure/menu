@@ -146,6 +146,51 @@ const HomePage = () => {
 
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
+const [formData, setFormData] = useState({ phone: '' });
+
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState("");
+  
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setStatus('');
+
+  // Validate: not empty
+  if (!formData.name) {
+    setStatus("❌ Please enter your phone number.");
+    setLoading(false);
+    return;
+  }
+
+  // Validate: Indian mobile number (10 digits, starts with 6-9)
+  const phoneRegex = /^[6-9]\d{9}$/;
+  if (!phoneRegex.test(formData.name)) {
+    setStatus("❌ Please enter a valid 10-digit mobile number.");
+    setLoading(false);
+    return;
+  }
+
+  try {
+    const res = await fetch("https://petoba.avenirya.com/wp-json/contact-form/v1/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      setStatus("✅ Thanks for your submission! We will call you shortly.");
+      setFormData({ name: "" });
+    } else {
+      setStatus("❌ Something went wrong. Please try again.");
+    }
+  } catch (error) {
+    setStatus("❌ Error connecting to the server.");
+  }
+  setLoading(false);
+};
+  
 
   const sendMessage = () => {
     if (!message.trim()) return;
@@ -225,6 +270,74 @@ const HomePage = () => {
           }
         `}</style>
       </section>
+
+<section className="py-10 ">
+  <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-10">
+    <div className="rounded-3xl shadow-2xl bg-white/90 backdrop-blur-xl p-10 md:p-16 flex flex-col items-center border border-orange-100 relative overflow-hidden">
+      {/* Decorative Gradient Blobs */}
+      <div className="absolute -top-14 -right-14 w-48 h-48 bg-gradient-to-br from-orange-300 to-pink-400 opacity-30 rounded-full blur-3xl z-0"></div>
+      <div className="absolute -bottom-14 -left-14 w-40 h-40 bg-gradient-to-br from-blue-300 to-green-300 opacity-30 rounded-full blur-3xl z-0"></div>
+
+      {/* Icon */}
+      <div className="relative z-10 mb-6 flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 shadow-xl ring-4 ring-white/70">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+</svg>
+
+      </div>
+
+      {/* Heading */}
+      <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl mb-4 text-center relative z-10">
+        Start Now – Get a Free Call
+      </h2>
+
+      {/* Description */}
+      <p className="text-lg text-gray-600 mb-10 max-w-xl mx-auto text-center relative z-10 leading-relaxed">
+        Share your number and our team will call you back to answer your
+        questions and help you get started right away.
+      </p>
+
+      {/* Form */}
+      <form
+        onSubmit={handleSubmit}
+        method="POST"
+        className="flex flex-col sm:flex-row justify-center items-center gap-5 w-full relative z-10"
+      >
+        <input
+          type="tel"
+          id="name"
+          name="name"
+          placeholder="Enter your phone number"
+          required
+          value={formData.name}
+          onChange={e => setFormData({ ...formData, name: e.target.value })}
+          className="w-full sm:w-80 px-6 py-3 border-2 border-orange-200 rounded-full shadow-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all duration-300 bg-white/95"
+        />
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full sm:w-auto px-10 py-3 border border-transparent text-lg font-semibold rounded-full shadow-md text-white bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-400 transition-all duration-300"
+        >
+          {loading ? "Submitting..." : "Get a Call Now"}
+        </button>
+      </form>
+
+      {/* Status Message */}
+      {status && (
+        <div
+          className={`mt-6 text-lg font-semibold ${
+            status.startsWith("✅") ? "text-green-600" : "text-red-600"
+          }`}
+        >
+          {status === "success"
+            ? "✅ Thanks! Our team will reach out to you soon."
+            : status}
+        </div>
+      )}
+    </div>
+  </div>
+</section>
+
 
 {/* Key Features - Multi-Info Professional Style */}
 <section className="py-16 items-center">
