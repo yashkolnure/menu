@@ -9,7 +9,7 @@ const MembershipPage = () => {
     price: "₹0",
     period: "/forever",
     features: [
-      { name: "Upto 30 Menu Items", available: true },
+      { name: "Upto 15 Menu Items", available: true },
       { name: "Free Dashboard - Manage Anytime", available: true },
       { name: "Basic QR Code Design", available: true },
       { name: "Premium Menu Design", available: true },
@@ -26,8 +26,8 @@ const MembershipPage = () => {
   },
   {
     name: "Premium",
-    price: "₹599",
-    discountedPrice: "₹399",   // 🔹 Added discounted price
+    price: "₹699",
+    discountedPrice: "₹549",   // 🔹 Added discounted price
     period: "/forever",
     features: [
       { name: "100 Menu Items", available: true },
@@ -49,8 +49,8 @@ const MembershipPage = () => {
   },
   {
     name: "Pro",
-    price: "₹799",
-    discountedPrice: "₹599",   // 🔹 Added discounted price
+    price: "₹999",
+    discountedPrice: "₹699",   // 🔹 Added discounted price
     period: "/forever",
     features: [
       { name: "All Features in Premium", available: true },

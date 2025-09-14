@@ -117,7 +117,7 @@ const RegisterFreePage = () => {
       setTimeout(() => navigate("/login"), 1000);
     } else {
       // Paid plan → Razorpay flow (same as before)
-      let amount = formData.membership_level === 2 ? 399 : 599;
+      let amount = formData.membership_level === 2 ? 549 : 699;
       // apply discount if coupon is valid
         if (discount > 0) {
           amount = amount - discount;
@@ -321,7 +321,7 @@ const RegisterFreePage = () => {
                   finalDiscount = value;
                 } else if (type === "percent") {
                   // calculate % discount based on plan price
-                  const planPrice = formData.membership_level === 2 ? 399 : 599;
+                  const planPrice = formData.membership_level === 2 ? 549 : 699;
                   finalDiscount = Math.floor((planPrice * value) / 100);
                 }
 
@@ -345,7 +345,7 @@ const RegisterFreePage = () => {
     <div className="flex justify-between text-gray-600 text-sm">
       <span>Actual Price</span>
       <span className="line-through text-red-400">
-        ₹{formData.membership_level === 2 ? 399 : 599}
+        ₹{formData.membership_level === 2 ? 549 : 699}
       </span>
     </div>
 
@@ -360,7 +360,7 @@ const RegisterFreePage = () => {
       <span className="text-base">Payable Price</span>
       <span className="text-lg font-semibold text-orange-600">
         ₹{Math.max(
-          (formData.membership_level === 2 ? 399 : 599) - discount,
+          (formData.membership_level === 2 ? 549 : 699) - discount,
           1
         )}
       </span>
