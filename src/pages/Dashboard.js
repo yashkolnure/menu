@@ -111,7 +111,7 @@ function Dashboard() {
 
 // Define limits
 const membershipLimits = {
-  1: 30,
+  1: 15,
   2: 100,
   3: Infinity
 };
