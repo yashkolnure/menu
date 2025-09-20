@@ -50,12 +50,6 @@ const CustomFieldsModal = ({ token }) => {
       newErrors.instagram = "Enter a valid Instagram link (https://instagram.com/username)";
     }
 
-    if (
-      formData.facebook &&
-      !/^https?:\/\/(www\.)?facebook\.com\/[A-Za-z0-9._-]+$/.test(formData.facebook)
-    ) {
-      newErrors.facebook = "Enter a valid Facebook profile link";
-    }
 
     if (formData.website && !/^https?:\/\/[^\s]+$/.test(formData.website)) {
       newErrors.website = "Enter a valid website URL (https://...)";
