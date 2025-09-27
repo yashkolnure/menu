@@ -301,7 +301,7 @@ const handlePlaceOrder = () => {
         onClick={() => setShowCart(true)}
         className="fixed bottom-5 right-5 bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-full shadow-lg text-lg z-50 flex items-center gap-2"
       >
-        𓌉◯𓇋 {cart.length > 0 && <span>{cart.length}</span>}
+        View Cart ({cart.length > 0 && <span>{cart.length}</span>} )
       </button>
 
       {/* ✅ Cart Modal */}

@@ -38,7 +38,7 @@ function Dashboard() {
 
     const fetchRestaurant = async () => {
       try {
-        const res = await axios.get(`/api/admin/${restaurantId}/details`, {
+        const res = await axios.get(`http://localhost:5000/api/admin/${restaurantId}/details`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setRestaurant(res.data);
@@ -52,7 +52,7 @@ function Dashboard() {
 
     const fetchMenu = async () => {
       try {
-        const res = await axios.get(`/api/admin/${restaurantId}/menu`, {
+        const res = await axios.get(`http://localhost:5000/api/admin/${restaurantId}/menu`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setExistingItems(res.data);
@@ -124,7 +124,7 @@ async function batchUpdate(items, batchSize = 5) {
     await Promise.all(
       batch.map(item =>
         axios.put(
-          `/api/admin/${item.restaurantId}/menu/${item._id}`,
+          `http://localhost:5000/api/admin/${item.restaurantId}/menu/${item._id}`,
           item,
           { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
         )
@@ -185,7 +185,9 @@ async function batchUpdate(items, batchSize = 5) {
     }
   }
 
-const addItemToList = () => {
+const addItemToList = async () => {
+  setError("");
+  setMessage("");
   if (!itemForm.name || !itemForm.category || !itemForm.price) {
     setError("All fields are required.");
     return;
@@ -193,21 +195,53 @@ const addItemToList = () => {
 
   // Get current plan's limit
   const limit = membershipLimits[restaurant.membership_level] || 0;
-  const totalItems = existingItems.length + menuItems.length;
+  const totalItems = existingItems.length;
 
-  // Check if limit reached
   if (totalItems >= limit && limit !== Infinity) {
     setError(`You have reached the limit of ${limit} items for your membership plan.`);
     return;
   }
 
-  // Add item
-  const newItem = { ...itemForm, price: parseFloat(itemForm.price), restaurantId };
-  setMenuItems((prev) => [...prev, newItem]);
-  setItemForm({ name: "", category: "", description: "", price: "", image: "", _id: null });
-  setCustomCategory("");
-};
+  let imageUrl = itemForm.image;
+  if (itemForm.image && itemForm.image.startsWith("data:")) {
+    try {
+      imageUrl = await uploadImageToWordPress(
+        itemForm.image,
+        `${itemForm.name.replace(/\s+/g, "-")}_${itemForm.category.replace(/\s+/g, "-")}.jpg`
+      );
+    } catch (error) {
+      setError("Image upload failed.");
+      return;
+    }
+  }
 
+  const newItem = {
+    ...itemForm,
+    price: parseFloat(itemForm.price),
+    restaurantId,
+    image: imageUrl,
+    inStock: itemForm.inStock ?? true,
+  };
+
+  try {
+    await axios.post(
+      `http://localhost:5000/api/admin/${restaurantId}/menu`,
+      newItem,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    setMessage("Item added successfully!");
+    setItemForm({ name: "", category: "", description: "", price: "", image: "", _id: null });
+    setCustomCategory("");
+    // Refresh the menu
+    const res = await axios.get(
+      `http://localhost:5000/api/admin/${restaurantId}/menu`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    setExistingItems(res.data);
+  } catch (err) {
+    setError("Failed to add item: " + (err.response?.data?.message || err.message));
+  }
+};
 
   const handleUpload = async () => {
     if (!menuItems.length) return;
@@ -238,7 +272,7 @@ const addItemToList = () => {
       
       // Then send to your backend
       await axios.post(
-        `/api/admin/bulk`,
+        `http://localhost:5000/api/admin/bulk`,
         itemsWithImageUrls,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -248,7 +282,7 @@ const addItemToList = () => {
       
       // Refresh the existing items
       const res = await axios.get(
-        `/api/admin/${restaurantId}/menu`,
+        `http://localhost:5000/api/admin/${restaurantId}/menu`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setExistingItems(res.data);
@@ -263,7 +297,7 @@ const addItemToList = () => {
    const handleUpgrade = async (newLevel) => {
     try {
       const res = await axios.put(
-        `/api/admin/upgrade-membership/${restaurantId}`,
+        `http://localhost:5000/api/admin/upgrade-membership/${restaurantId}`,
         { newLevel },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -471,7 +505,7 @@ const handleUpdate = async () => {
     };
 
     await axios.put(
-      `/api/admin/${restaurantId}/menu/${itemForm._id}`,
+      `http://localhost:5000/api/admin/${restaurantId}/menu/${itemForm._id}`,
       updatedItem,
       { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -490,7 +524,7 @@ const handleUpdate = async () => {
     console.log("Update body:", updatedItem);
     // Refresh the menu
     const res = await axios.get(
-      `/api/admin/${restaurantId}/menu`,
+      `http://localhost:5000/api/admin/${restaurantId}/menu`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
     setExistingItems(res.data);
@@ -503,7 +537,7 @@ const handleUpdate = async () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`/api/admin/${restaurantId}/menu/${id}`, {
+      await axios.delete(`http://localhost:5000/api/admin/${restaurantId}/menu/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setExistingItems(existingItems.filter(item => item._id !== id));
@@ -576,7 +610,7 @@ const handleUpdate = async () => {
       // Then save all items
       const requests = itemsToSave.map(item =>
         axios.put(
-          `/api/admin/${restaurantId}/menu/${item._id}`,
+          `http://localhost:5000/api/admin/${restaurantId}/menu/${item._id}`,
           item,
           { headers: { Authorization: `Bearer ${token}` } }
         )
@@ -588,7 +622,7 @@ const handleUpdate = async () => {
       
       // Refresh the menu
       const res = await axios.get(
-        `/api/admin/${restaurantId}/menu`,
+        `http://localhost:5000/api/admin/${restaurantId}/menu`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setExistingItems(res.data);
@@ -1156,7 +1190,7 @@ return (
                         const updatedItem = { ...item, image: imageUrl };
 
                         await axios.put(
-                          `/api/admin/${restaurantId}/menu/${item._id}`,
+                          `http://localhost:5000/api/admin/${restaurantId}/menu/${item._id}`,
                           updatedItem,
                           { headers: { Authorization: `Bearer ${token}` } }
                         );
@@ -1340,12 +1374,14 @@ return (
       membership_level={restaurant.membership_level}
     />
 
-    <button
-        onClick={() => setShowUpgrade(true)}
-        className="w-full py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-600 text-white font-semibold shadow-md hover:scale-105 transition-transform"
-      >
-        Upgrade Plan
-      </button>
+      {restaurant.membership_level !== 3 && (
+        <button
+          onClick={() => setShowUpgrade(true)}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700"
+        >
+          Upgrade Plan
+        </button>
+      )}
   </div>
 );
 
