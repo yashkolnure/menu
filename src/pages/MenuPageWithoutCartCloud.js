@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
+import CustomFieldsDisplay from "../components/CustomFieldsDisplay";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import MenuCard from "../components/MenuCard";
@@ -16,7 +17,7 @@ function RestaurantMenuPageCloud() {
   const [showModal, setShowModal] = useState(false);
   const [showCart, setShowCart] = useState(false);
   const [restaurantDetails, setRestaurantDetails] = useState(null);
-  const [setIsCartClosing] = useState(false);
+  const [isCartClosing, setIsCartClosing] = useState(false);
   const [activeOffer, setActiveOffer] = useState(0);
   const carouselRef = useRef(null);
   const [offers, setOffers] = useState([]);
@@ -295,7 +296,13 @@ const handlePlaceOrder = () => {
           )}
         </div>
       </div>
-
+         <div>
+        
+             <CustomFieldsDisplay restaurantId={id} />
+        </div>
+        <div className="flex flex-wrap justify-center">
+          <p className="text-gray-500 text-center mt-4">© {new Date().getFullYear()} Petoba. All rights reserved.</p>
+        </div>
       {/* ✅ Floating Cart Button */}
       <button
         onClick={() => setShowCart(true)}
