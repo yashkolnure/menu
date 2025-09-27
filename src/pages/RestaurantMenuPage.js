@@ -17,6 +17,8 @@ function RestaurantMenuPage() {
   const [menuData, setMenuData] = useState([]);
   const [categories, setCategories] = useState([]);
   const [tableNumber, setTableNumber] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [wpno, setWpno] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [showCart, setShowCart] = useState(false);
   const [restaurantDetails, setRestaurantDetails] = useState(null);
@@ -67,22 +69,23 @@ const carouselRef = useRef(null);
     fetchDetails();
   }, [id]);
 
-  useEffect(() => {
-    const fetchMenu = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(`/api/admin/${id}/menu`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        if (Array.isArray(data)) setMenuData(data);
-        else toast.error("Failed to load menu data.");
-      } catch {
-        toast.error("Failed to load menu");
-      }
-    };
-    fetchMenu();
-  }, [id]);
+useEffect(() => {
+  const fetchMenu = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`/api/admin/${id}/menu`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (Array.isArray(data)) setMenuData(data);
+      else toast.error("Failed to load menu data.");
+    } catch {
+      toast.error("Failed to load menu");
+    }
+    setLoading(false); // <-- set loading to false after fetch
+  };
+  fetchMenu();
+}, [id]);
 
   useEffect(() => {
     const categoryList = ["All", ...new Set(menuData.map((item) => item.category))];
@@ -133,6 +136,9 @@ const filteredMenu = menuData.filter(item => {
 
   const handleTableNumberSubmit = async () => {
     if (!tableNumber) return toast.error("Please enter a valid table number.");
+    if (!/^[6-9]\d{9}$/.test(wpno)) {
+  return toast.error("Please enter a valid 10-digit WhatsApp number.");
+}
 
     try {
       const res = await fetch("/api/order", {
@@ -141,6 +147,7 @@ const filteredMenu = menuData.filter(item => {
         body: JSON.stringify({
           restaurantId: id,
           tableNumber,
+           wpno: "91" + wpno,
           items: cart.map((item) => ({ itemId: item._id, quantity: item.quantity })),
           total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
         }),
@@ -265,17 +272,19 @@ const filteredMenu = menuData.filter(item => {
             ))}
           </div>
         </div>
-
-        <div className="flex flex-wrap justify-center">
-          {filteredMenu.length > 0 ? (
-            filteredMenu.map((item) => (
-              <MenuCard key={item._id} item={item} addToCart={addToCart} />
-            ))
-          ) : (
-            <p className="text-gray-500 text-center mb-4">No items match your search.</p>
-          )}
-        </div>
-      </div>
+<div className="flex flex-wrap justify-center">
+  {loading ? (
+    <p className="text-gray-500 text-center mb-4">Loading menu...</p>
+  ) : filteredMenu.length > 0 ? (
+    filteredMenu.map((item) => (
+      <MenuCard key={item._id} item={item} addToCart={addToCart} />
+    ))
+  ) : (
+    <p className="text-gray-500 text-center mb-4">No items match your search.</p>
+  )}
+</div>
+        
+     
       <div>
              <CustomFieldsDisplay restaurantId={id} />
         </div>
@@ -287,6 +296,7 @@ const filteredMenu = menuData.filter(item => {
           Ordering for <strong>Table {tableNumber}</strong>
         </p>
       )}
+       </div>
 
       <button
         onClick={() => setShowCart(true)}
@@ -342,10 +352,10 @@ const filteredMenu = menuData.filter(item => {
             )}
               <button
                 onClick={() => {
-                  setIsCartClosing(true);
+                  setShowModal(true);
                   setTimeout(() => {
                     setShowCart(false);
-                    setIsCartClosing(false);
+                    setShowModal(false);
                   }, 300); // Match animation duration
                 }}
                 className="absolute top-4 right-4 text-gray-500 hover:text-red-500 text-xl"
@@ -369,6 +379,17 @@ const filteredMenu = menuData.filter(item => {
               onChange={(e) => setTableNumber(e.target.value)}
               placeholder="e.g., 5"
               className="w-full px-4 py-3 border border-gray-300 rounded-xl text-lg focus:outline-none focus:ring-2 focus:ring-orange-500 mb-6"
+            />
+            <input
+              type="text"
+              value={wpno}
+              onChange={e => {
+                // Only allow digits, max 10
+                const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                setWpno(val);
+              }}
+              placeholder="WhatsApp Number (for Bill)"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl text-lg focus:outline-none focus:ring-2 focus:ring-green-500 mb-4"
             />
             <div className="flex justify-between space-x-4">
               <button
