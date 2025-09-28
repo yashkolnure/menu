@@ -37,6 +37,7 @@ import Kolnure from "./pages/Kolnure";
 import Kolnuree from "./pages/kolnureyash";
 import MembershipUpgrade from "./pages/MembershipUpgrade";
 import UploadMenuPage from "./pages/uploadmenu";
+import RedirectManagerPage from "./pages/redirectpage";
 
 // Wrapper to handle conditional Header/Footer
 function AppWrapper() {
@@ -65,6 +66,7 @@ function AppWrapper() {
         <Route path="/cloudkitchen/:id" element={<MenuPageWithoutCartCloud />} />
         <Route path="/menuwp/:id" element={<RestaurantMenuPagewp />} />
         <Route path="/shop/:id" element={<Beautysalon />} />
+        <Route path="/doredirect" element={<RedirectManagerPage />} />
         <Route path="/restaurant/:id" element={<RestaurantMenuPage />} />
         <Route path="/dsbrdadmin1" element={<Dsbrdadmin1 />} />
         <Route path="/membership" element={<MembershipPage />} />

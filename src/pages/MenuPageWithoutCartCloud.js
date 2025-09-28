@@ -145,7 +145,7 @@ const filteredMenu = menuData.filter(item => {
 
   // ✅ Place order (with delivery details)
 const handlePlaceOrder = () => {
-  if (!customer.name || !customer.phone || !customer.address || !customer.pincode) {
+  if (!customer.name || !customer.phone || !customer.address ) {
     return toast.error("Please fill all required fields.");
   }
 
@@ -430,15 +430,6 @@ const handlePlaceOrder = () => {
               onChange={handleInputChange}
               className="w-full mb-2 px-3 py-2 border rounded-lg"
             />
-            <input
-              type="text"
-              name="pincode"
-              placeholder="Pincode"
-              value={customer.pincode}
-              onChange={handleInputChange}
-              className="w-full mb-2 px-3 py-2 border rounded-lg"
-            />
-
             <div className="flex justify-between space-x-4 mt-4">
               <button
                 onClick={() => setShowModal(false)}
