@@ -29,7 +29,7 @@ function RestaurantMenuPagewp() {
       try {
         const token = localStorage.getItem("token");
         const res = await fetch(
-          `/api/admin/${id}/offers`,
+          `http://localhost:5000/api/admin/${id}/offers`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const data = await res.json();
@@ -51,10 +51,10 @@ function RestaurantMenuPagewp() {
         const token = localStorage.getItem("token");
 
         const [menuRes, detailsRes] = await Promise.all([
-          fetch(`/api/admin/${id}/menu`, {
+          fetch(`http://localhost:5000/api/admin/${id}/menu`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          fetch(`/api/admin/${id}/details`, {
+          fetch(`http://localhost:5000/api/admin/${id}/details`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -125,6 +125,9 @@ const filteredMenu = menuData.filter(item => {
     if (cart.length === 0) return toast.error("Your cart is empty!");
 
 const adminPhone = restaurantDetails?.contact?.replace(/\D/g, ""); // Remove non-digit chars, just in case
+
+
+
 if (!adminPhone) {
   return toast.error("Restaurant contact number not available.");
 }
@@ -142,6 +145,20 @@ if (!adminPhone) {
     localStorage.removeItem("cart");
     window.location.href = whatsappURL;
   };
+  // Place this check just before your return statement:
+  if (restaurantDetails && restaurantDetails.active === false) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+        <div className="bg-white p-8 rounded-xl shadow text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">Restaurant Inactive</h2>
+          <p className="text-gray-700 mb-2">
+            This restaurant is Disabled Connect to Petoba Team to Reactivate your Menu.
+          </p>
+          <p className="text-gray-400 text-sm">Powered By Petoba Digital QR Menu</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

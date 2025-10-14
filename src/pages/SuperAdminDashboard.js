@@ -15,6 +15,7 @@ const SuperAdminDashboard = () => {
     subadmin_id: "",
     membership_level: "",
     homeImage: "",  
+    active: true,
   });
   const [editingId, setEditingId] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -28,7 +29,7 @@ const SuperAdminDashboard = () => {
     3: 50,  // Level 3 agency → max 50 restaurants
   };
 
-  const API = "/api/admin";
+  const API = "http://localhost:5000/api/admin";
   const WP_USERNAME = "yashkolnure58@gmail.com";
   const WP_APP_PASSWORD = "05mq iTLF UvJU dyaz 7KxQ 8pyc";
   const WP_SITE_URL = "https://website.avenirya.com";
@@ -124,6 +125,7 @@ const uploadHomeImageToWordPress = async (file) => {
       password: "",
       subadmin_id: restaurant.subadmin_id || agencyId,
       homeImage: restaurant.homeImage || "", // <-- add this
+      active: typeof restaurant.active === "boolean" ? restaurant.active : true, // <-- add this
 
     });
     setFormOpen(true);
@@ -302,6 +304,7 @@ const uploadHomeImageToWordPress = async (file) => {
                     <th className="p-3 border">Logo</th>
                     <th className="p-3 border">Name</th>
                     <th className="p-3 border">Contact</th>
+                    <th className="p-3 border">Status</th>
                     <th className="p-3 border text-center">Actions</th>
                   </tr>
                 </thead>
@@ -313,6 +316,30 @@ const uploadHomeImageToWordPress = async (file) => {
                       </td>
                       <td className="p-3 border">{rest.name}</td>
                       <td className="p-3 border">{rest.contact || "-"}</td>
+                      <td className="p-3 border text-center">
+                        <button
+                          onClick={async () => {
+                            const confirmMsg = rest.active
+                              ? `Are you sure you want to deactivate "${rest.name}"?`
+                              : `Are you sure you want to activate "${rest.name}"?`;
+                            if (!window.confirm(confirmMsg)) return;
+                            try {
+                              await axios.put(`${API}/restaurants/${rest._id}`, { active: !rest.active });
+                              toast.success(`Restaurant ${rest.active ? "deactivated" : "activated"}!`);
+                              fetchRestaurantsByAgency(agencyId);
+                            } catch (err) {
+                              toast.error("Failed to update status");
+                            }
+                          }}
+                          className={`px-3 py-1 rounded-full font-semibold text-xs ${
+                            rest.active
+                              ? "bg-green-100 text-green-700 border border-green-300"
+                              : "bg-gray-200 text-gray-600 border border-gray-300"
+                          }`}
+                        >
+                          {rest.active ? "Active" : "Inactive"}
+                        </button>
+                      </td>
                       <td className="p-3 border text-center">
                         <div className="flex justify-center gap-3">
                           <button
