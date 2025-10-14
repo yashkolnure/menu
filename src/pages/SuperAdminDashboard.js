@@ -14,6 +14,7 @@ const SuperAdminDashboard = () => {
     password: "",
     subadmin_id: "",
     membership_level: "",
+    homeImage: "",  
   });
   const [editingId, setEditingId] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -32,6 +33,33 @@ const SuperAdminDashboard = () => {
   const WP_APP_PASSWORD = "05mq iTLF UvJU dyaz 7KxQ 8pyc";
   const WP_SITE_URL = "https://website.avenirya.com";
 
+
+
+  const [uploadingHome, setUploadingHome] = useState(false);
+
+const uploadHomeImageToWordPress = async (file) => {
+  const formDataImage = new FormData();
+  formDataImage.append("file", file);
+  setUploadingHome(true);
+
+  try {
+    const response = await axios.post(`${WP_SITE_URL}/wp-json/wp/v2/media`, formDataImage, {
+      headers: {
+        Authorization: "Basic " + btoa(`${WP_USERNAME}:${WP_APP_PASSWORD}`),
+        "Content-Disposition": `attachment; filename="${file.name}"`,
+      },
+    });
+
+    const imageUrl = response.data.source_url;
+    setForm((prev) => ({ ...prev, homeImage: imageUrl }));
+    toast.success("Home image uploaded successfully!");
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to upload home image to WordPress");
+  } finally {
+    setUploadingHome(false);
+  }
+};
   // Get logged-in agency ID from localStorage
   const agencyId = localStorage.getItem("agencyId");
 
@@ -95,6 +123,8 @@ const SuperAdminDashboard = () => {
       contact: restaurant.contact || "",
       password: "",
       subadmin_id: restaurant.subadmin_id || agencyId,
+      homeImage: restaurant.homeImage || "", // <-- add this
+
     });
     setFormOpen(true);
   };
@@ -210,7 +240,26 @@ const SuperAdminDashboard = () => {
                 <input name="address" placeholder="Address" value={form.address} onChange={handleChange} className="p-3 border rounded-lg focus:ring focus:ring-blue-300" />
                 <input type="number" name="contact" placeholder="Contact Number" value={form.contact} onChange={handleChange} className="p-3 border rounded-lg focus:ring focus:ring-blue-300" />
                 <input name="password" type="password" placeholder={editingId ? "Change Password (optional)" : "Password"} value={form.password} onChange={handleChange} className="p-3 border rounded-lg focus:ring focus:ring-blue-300" />
-
+                <div className="md:col-span-2 mt-4">
+                  <label className="block mb-2 text-sm font-medium text-gray-600">
+                    Upload Home Image
+                  </label>
+                  <div className="border-dashed border-2 p-6 rounded-lg text-center cursor-pointer hover:bg-gray-50">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => uploadHomeImageToWordPress(e.target.files[0])}
+                      className="hidden"
+                      id="homeImageUpload"
+                    />
+                    <label htmlFor="homeImageUpload" className="cursor-pointer flex flex-col items-center gap-2 text-gray-500">
+                      <Upload size={24} />
+                      <span>Click or drag to upload</span>
+                    </label>
+                  </div>
+                  {uploadingHome && <p className="text-blue-500 mt-2 flex items-center gap-2"><Loader2 className="animate-spin" size={16}/> Uploading...</p>}
+                  {form.homeImage && <img src={form.homeImage} alt="Home" className="mt-3 rounded-md h-20 object-cover border" />}
+                </div>
                 <div className="md:col-span-2">
                   <label className="block mb-2 text-sm font-medium text-gray-600">
                     Upload Logo

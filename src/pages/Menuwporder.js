@@ -168,7 +168,11 @@ if (!adminPhone) {
       </Helmet>
       <header className="relative h-56 w-full mb-0 overflow-hidden rounded-b-xl shadow-lg">
         <img
-          src="https://t3.ftcdn.net/jpg/02/97/67/70/360_F_297677001_zX7ZzRq8DObUV5IWTHAIhAae6DuiEQh4.jpg"
+          src={
+            restaurantDetails?.homeImage
+              ? restaurantDetails.homeImage
+              : "https://t3.ftcdn.net/jpg/02/97/67/70/360_F_297677001_zX7ZzRq8DObUV5IWTHAIhAae6DuiEQh4.jpg"
+          }
           alt="Food Background"
           className="absolute inset-0 w-full h-full object-cover z-0"
         />

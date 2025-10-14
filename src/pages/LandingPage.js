@@ -271,14 +271,14 @@ const [formData, setFormData] = useState({ phone: '' });
         `}</style>
       </section>
 
-<section className="py-10 ">
-  <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-10">
+{/* <section className="py-10 ">
+ <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-10">
     <div className="rounded-3xl shadow-2xl bg-white/90 backdrop-blur-xl p-10 md:p-16 flex flex-col items-center border border-orange-100 relative overflow-hidden">
-      {/* Decorative Gradient Blobs */}
+
       <div className="absolute -top-14 -right-14 w-48 h-48 bg-gradient-to-br from-orange-300 to-pink-400 opacity-30 rounded-full blur-3xl z-0"></div>
       <div className="absolute -bottom-14 -left-14 w-40 h-40 bg-gradient-to-br from-blue-300 to-green-300 opacity-30 rounded-full blur-3xl z-0"></div>
 
-      {/* Icon */}
+
       <div className="relative z-10 mb-6 flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 shadow-xl ring-4 ring-white/70">
         <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
@@ -286,18 +286,14 @@ const [formData, setFormData] = useState({ phone: '' });
 
       </div>
 
-      {/* Heading */}
       <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl mb-4 text-center relative z-10">
         Start Now – Get a Free Call
       </h2>
 
-      {/* Description */}
       <p className="text-lg text-gray-600 mb-10 max-w-xl mx-auto text-center relative z-10 leading-relaxed">
         Share your number and our team will call you back to answer your
         questions and help you get started right away.
       </p>
-
-      {/* Form */}
       <form
         onSubmit={handleSubmit}
         method="POST"
@@ -322,7 +318,6 @@ const [formData, setFormData] = useState({ phone: '' });
         </button>
       </form>
 
-      {/* Status Message */}
       {status && (
         <div
           className={`mt-6 text-lg font-semibold ${
@@ -336,7 +331,7 @@ const [formData, setFormData] = useState({ phone: '' });
       )}
     </div>
   </div>
-</section>
+</section> */}
 
 
 {/* Key Features - Multi-Info Professional Style */}
