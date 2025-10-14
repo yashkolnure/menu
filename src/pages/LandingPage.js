@@ -8,6 +8,8 @@ import {
   Bot,
   Image,
   Headphones,
+  Link,
+  Star
 } from "lucide-react";
 
 import { BsQrCodeScan } from 'react-icons/bs';
@@ -16,10 +18,12 @@ import { IoDocumentTextOutline, IoRestaurantOutline } from 'react-icons/io5';
 // --- All the CSS for the new creative design is here ---
 const cssStyles = `
   .how-it-works-section-creative {
-    padding: 100px 20px;
+    padding: 4rem 20px;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     position: relative;
     overflow: hidden;
+    width: 1300px;
+    place-self: center;
   }
 
   .how-it-works-section-creative .container {
@@ -143,7 +147,6 @@ const cssStyles = `
     }
   }
 `;
-
 // Data for the steps
 const stepsData = [
   { 
@@ -175,6 +178,18 @@ const features = [
       description:
         "Turn conversations into sales. Customers can scan, browse, and place orders directly through WhatsApp, and you receive them instantly.",
       icon: <MessageCircle size={48} className="text-green-500" />,
+    },
+    {
+      title: "Social Media Integration",
+      description:
+        "Link your Instagram, Facebook, and other social profiles directly to your menu. Let customers explore your brand and boost engagement.",
+      icon: <Link size={48} className="text-teal-500" />,
+    },
+    {
+      title: "Boost Google Reviews",
+      description:
+        "Encourage happy customers to leave feedback with a direct link to your Google review page. Improve your online reputation and attract new business.",
+      icon: <Star size={48} className="text-yellow-500" />,
     },
     {
       title: "Promote Daily Offers",
@@ -342,6 +357,109 @@ const [formData, setFormData] = useState({ phone: '' });
   setLoading(false);
 };
   
+const QrCodeIcon = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <rect x="3" y="3" width="7" height="7" />
+    <rect x="14" y="3" width="7" height="7" />
+    <rect x="3" y="14" width="7" height="7" />
+    <line x1="14" y1="14" x2="14.01" y2="14" />
+    <line x1="17.5" y1="14" x2="17.51" y2="14" />
+    <line x1="14" y1="17.5" x2="14.01" y2="17.5" />
+  </svg>
+);
+
+const WhatsappIcon = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+  </svg>
+);
+
+const SocialIcon = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72" />
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72" />
+  </svg>
+);
+
+const GoogleIcon = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+  </svg>
+);
+
+
+const faqData = [
+  {
+    q: "What is an All-in-One QR Code?",
+    a: "It’s a single smart QR code that lets customers view your menu, order on WhatsApp, visit your social media, and leave Google reviews.",
+  },
+  {
+    q: "Do my customers need an app?",
+    a: "No. It opens instantly in any smartphone's web browser. No downloads are needed, making it fast and easy for everyone.",
+  },
+  {
+    q: "How do I create my digital menu?",
+    a: "Simply upload a photo of your current menu, and our AI will digitize it for you in minutes.",
+  },
+  {
+    q: "How does a customer order on WhatsApp?",
+    a: "Customers build their order from the menu, and it automatically creates a pre-filled WhatsApp message for them to send directly to you.",
+  },
+  {
+    q: "How do I update my menu?",
+    a: "Log in to your dashboard from any device to instantly change prices, add items, or mark something as 'sold out'.",
+  },
+  {
+    q: "Can I add my restaurant's logo?",
+    a: "Yes, you can fully customize your menu with your own logo, colors, and professional layouts to match your brand.",
+  },
+  {
+    q: "Is this just for menus?",
+    a: "No, it's a growth tool. It helps you get more orders, increase your Instagram followers, and easily collect 5-star Google reviews.",
+  },
+  {
+    q: "Is it difficult to get started?",
+    a: "Not at all. The setup is designed to be fast and easy, taking only a few minutes. No technical skills are required.",
+  },
+  {
+    q: "How much does the service cost?",
+    a: "We offer affordable monthly and yearly plans with no hidden fees. Check our 'Pricing' page for details.",
+  },
+  {
+    q: "Do you take any commission on my sales?",
+    a: "No, never. You keep 100% of your sales. We only charge a flat subscription fee.",
+  },
+];
+const [openFaq, setOpenFaq] = useState(null);
+
+const FaqItem = ({ question, answer, isOpen, onClick }) => (
+  <div className="border-b border-gray-200 py-4">
+    <button
+      className="w-full flex justify-between items-center text-left focus:outline-none"
+      onClick={onClick}
+    >
+      <span className="text-lg font-medium text-gray-800">{question}</span>
+      <span className="transition-transform duration-300">
+        <svg
+          className={`w-5 h-5 text-gray-500 transform ${isOpen ? 'rotate-180' : 'rotate-0'}`}
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </span>
+    </button>
+    <div
+      className={`overflow-hidden transition-[max-height] duration-500 ease-in-out ${
+        isOpen ? 'max-h-96' : 'max-h-0'
+      }`}
+    >
+      <p className="pt-4 text-gray-600">{answer}</p>
+    </div>
+  </div>
+);
 
   const sendMessage = () => {
     if (!message.trim()) return;
@@ -387,10 +505,10 @@ const [formData, setFormData] = useState({ phone: '' });
           {/* Left: Text */}
           <div className="md:w-1/2 text-center md:text-left">
             <h1 className="text-5xl md:text-6xl font-extrabold mb-6 text-gray-900">
-             From Paper Menus to Digital QR in Minutes
+             All-in-One QR Code for Your Restaurant.
             </h1>
             <p className="text-xl md:text-2xl mb-8 text-gray-700">
-             Give your customers a modern, easy-to-use digital menu. Scan the QR code to view instantly, with fast setup and professional design.
+             Instantly create a digital menu, take orders via WhatsApp, grow your social media, and boost your Google ratings—all from a single scan.
             </p>
             <a href="/membership">
               <button className="px-10 py-4 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 font-bold shadow-lg hover:scale-105 transition-transform">
@@ -518,58 +636,58 @@ const [formData, setFormData] = useState({ phone: '' });
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {[
         {
-          icon: "AI",
-          title: "AI-Powered Menu Upload",
-          subtitle: "Save hours of manual work",
-          points: [
-            "Extract items, prices, and descriptions automatically",
-            "AI Image uploading",
-            "Edit multiple items at once"
-          ]
-        },
-        {
-          icon: "W",
-          title: "WhatsApp Order Integration",
-          subtitle: "Direct orders to your WhatsApp",
-          points: [
-            "Receive orders instantly",
-            "Get customer numbers data",
-            "Easy to track & manage orders"
-          ]
-        },
-        {
-          icon: "QR",
-          title: "Premium UI & Menu Layouts",
-          subtitle: "Beautiful and intuitive",
-          points: [
-            "Professionally designed layouts",
-            "User-friendly interfaces",
-            "With your brand Logo"
-          ]
-        },
-        {
-          icon: "M",
-          title: "Real-Time Menu Management",
-          subtitle: "Instant updates everywhere",
-          points: [
-            "Change items, prices, categories instantly",
-            "Sync across all devices",
-            "Easy to manage even large menus"
-          ]
-        }
+    icon: QrCodeIcon,
+    title: "QR Scan Menu Access",
+    subtitle: "Menu from any device",
+    points: [
+      "Instant menu access via a single QR scan",
+      "No app download required for customers",
+      "Fully responsive and works on any smartphone",
+    ],
+  },
+  {
+    icon: WhatsappIcon,
+    title: "Simple WhatsApp Ordering",
+    subtitle: "Streamline your order process",
+    points: [
+      "Customers place orders directly on WhatsApp",
+      "Receive instant order notifications",
+      "Manage orders and customer communication easily",
+    ],
+  },
+  {
+    icon: SocialIcon,
+    title: "Social Media Integration",
+    subtitle: "Connect with your customers",
+    points: [
+      "Link your Instagram, Facebook, and more",
+      "Let customers explore your social profiles",
+      "Grow your online following effortlessly",
+    ],
+  },
+  {
+    icon: GoogleIcon,
+    title: "Get Google Reviews",
+    subtitle: "Boost your online reputation",
+    points: [
+      "Prompt happy customers to leave a review",
+      "Use the same QR to increase Google ratings",
+      "Improve visibility on Google and Google Maps",
+    ],
+  }
       ].map((feature, idx) => (
-        <div key={idx} className="bg-white rounded-3xl shadow-lg p-6 flex flex-col items-start hover:scale-105 transition-transform duration-300">
-          <div className="w-16 h-16 flex items-center justify-center rounded-full bg-orange-500 text-white text-4xl mb-4">
-            {feature.icon}
-          </div>
-          <h3 className="text-2xl font-bold mb-1">{feature.title}</h3>
-          <p className="text-orange-600 font-semibold mb-4">{feature.subtitle}</p>
-          <ul className="list-disc pl-5 text-gray-700 space-y-2">
-            {feature.points.map((point, i) => (
-              <li key={i}>{point}</li>
-            ))}
-          </ul>
-        </div>
+<div className="bg-white rounded-3xl shadow-lg p-6 flex flex-col items-start hover:scale-105 transition-transform duration-300">
+      <div className="w-16 h-16 flex items-center justify-center rounded-full bg-orange-500 text-white mb-4">
+        <feature.icon Icon className="w-8 h-8" />
+      </div>
+      <h3 className="text-2xl font-bold mb-1">{feature.title}</h3>
+      <p className="text-orange-600 font-semibold mb-4">{feature.subtitle}</p>
+      <ul className="list-disc pl-5 text-gray-700 space-y-2">
+        {feature.points.map((point) => (
+          <li key={point}>{point}</li>
+        ))}
+      </ul>
+    </div>
         
       ))}
     </div>
@@ -692,6 +810,29 @@ const [formData, setFormData] = useState({ phone: '' });
         </div>
       </div>
     </section>
+<section className=" py-16 sm:py-24">
+  <div className="max-w-6xl mx-auto px-6">
+    <div className="text-center">
+      <h2 className="text-4xl font-extrabold text-gray-900">
+        Frequently Asked Questions
+      </h2>
+      <p className="mt-4 text-lg text-gray-600">
+        Have questions? We have answers. If you need more help, feel free to contact us.
+      </p>
+    </div>
+    <div className="mt-12 rounded-2xl shadow-lg bg-white/80 p-6">
+      {faqData.map((faq, index) => (
+        <FaqItem
+          key={index}
+          question={faq.q}
+          answer={faq.a}
+          isOpen={openFaq === index}
+          onClick={() => setOpenFaq(openFaq === index ? null : index)}
+        />
+      ))}
+    </div>
+  </div>
+</section>
 
  <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
       {/* Chat Box */}
