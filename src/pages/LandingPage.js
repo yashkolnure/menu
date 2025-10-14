@@ -22,7 +22,7 @@ const cssStyles = `
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     position: relative;
     overflow: hidden;
-    width: 1300px;
+    max-width: 1300px;
     place-self: center;
   }
 
