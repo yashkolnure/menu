@@ -1356,7 +1356,7 @@ return (
     <div className="absolute -top-20 -right-20 w-72 h-72 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full blur-3xl opacity-20 transform rotate-45"></div>
 
     <h2 className="text-2xl font-semibold text-gray-800 relative z-10">
-     Connect Social & Add Text
+     Connect Social & Google Review
     </h2>
 
     <p className="text-gray-600 mt-2 max-w-sm relative z-10">

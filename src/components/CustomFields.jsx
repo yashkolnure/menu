@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaInstagram, FaFacebook, FaGlobe, FaPhone, FaPen } from "react-icons/fa";
+import { FaInstagram, FaFacebook, FaGlobe, FaPhone, FaPen, FaGoogle  } from "react-icons/fa";
 import { MdClose } from "react-icons/md";
 
 const CustomFieldsModal = ({ token }) => {
@@ -9,7 +9,9 @@ const CustomFieldsModal = ({ token }) => {
     facebook: "",
     website: "",
     contact: "",
+    googleReview: "",
     customLine: "",
+    
   });
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
@@ -127,11 +129,6 @@ const CustomFieldsModal = ({ token }) => {
               </button>
             </div>
 
-            <p className="text-sm text-gray-600 mb-4">
-              Fill these fields — they will be displayed to customers in your{" "}
-              <span className="font-medium">digital menu </span>.
-            </p>
-
             {/* Status */}
             {message && (
               <div className="mb-4 text-center text-sm font-medium text-gray-700">{message}</div>
@@ -159,6 +156,11 @@ const CustomFieldsModal = ({ token }) => {
                   name: "contact",
                   label: "Contact Number",
                   icon: <FaPhone className="text-purple-600 text-lg mr-3" />,
+                },
+                {
+                  name: "googleReview",
+                  label: "Google Review Link",
+                  icon: <FaGoogle className="text-yellow-600 text-lg mr-3" />,
                 },
                 {
                   name: "customLine",

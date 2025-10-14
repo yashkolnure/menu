@@ -10,6 +10,157 @@ import {
   Headphones,
 } from "lucide-react";
 
+import { BsQrCodeScan } from 'react-icons/bs';
+import { IoDocumentTextOutline, IoRestaurantOutline } from 'react-icons/io5';
+
+// --- All the CSS for the new creative design is here ---
+const cssStyles = `
+  .how-it-works-section-creative {
+    padding: 100px 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .how-it-works-section-creative .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .how-it-works-section-creative .section-header {
+    text-align: center;
+    margin-bottom: 80px; /* More space for the layout to breathe */
+  }
+
+  .how-it-works-section-creative .section-header h2 {
+    font-size: 2.8rem;
+    color: #2c3e50; /* A darker, softer black */
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .how-it-works-section-creative .section-header p {
+    font-size: 1.2rem;
+    color: #7f8c8d;
+  }
+
+  .how-it-works-section-creative .steps-container-creative {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+  }
+
+  /* The dashed connecting line */
+  .how-it-works-section-creative .steps-container-creative::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background-image: linear-gradient(to right, #bdc3c7 60%, transparent 40%);
+    background-size: 15px 2px;
+    background-repeat: repeat-x;
+    transform: translateY(-50%);
+    z-index: 0;
+  }
+
+  .how-it-works-section-creative .step-card-creative {
+    background: linear-gradient(145deg, #ffffff, #e6eef5);
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    width: 30%;
+    box-shadow: 0 10px 30px rgba(44, 62, 80, 0.1);
+    position: relative;
+    z-index: 1;
+    border: 1px solid #ffffff;
+  }
+
+  /* Creating the ZIG-ZAG effect */
+  .how-it-works-section-creative .step-card-creative:nth-child(1) {
+    transform: translateY(-40px);
+  }
+  .how-it-works-section-creative .step-card-creative:nth-child(2) {
+    transform: translateY(40px);
+  }
+  .how-it-works-section-creative .step-card-creative:nth-child(3) {
+    transform: translateY(-40px);
+  }
+
+  .how-it-works-section-creative .step-icon-creative {
+    background: linear-gradient(45deg, #3498db, #2980b9);
+    color: white;
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: -70px auto 20px auto; /* Pulls the icon up to sit on the card's edge */
+    border: 5px solid #f8f9fa; /* Creates a border effect matching the background */
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+  }
+
+  .how-it-works-section-creative .step-title-creative {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #2c3e50;
+  }
+
+  .how-it-works-section-creative .step-description-creative {
+    font-size: 1rem;
+    color: #7f8c8d;
+    line-height: 1.6;
+    font-weight: 500;
+  }
+
+  /* Responsive adjustments for mobile */
+  @media (max-width: 900px) {
+    .how-it-works-section-creative .steps-container-creative {
+      flex-direction: column;
+      gap: 60px; /* Increased gap for vertical rhythm */
+    }
+    
+    .how-it-works-section-creative .step-card-creative {
+      width: 80%;
+      max-width: 320px;
+    }
+    
+    /* Reset zig-zag transforms */
+    .how-it-works-section-creative .step-card-creative:nth-child(1),
+    .how-it-works-section-creative .step-card-creative:nth-child(2),
+    .how-it-works-section-creative .step-card-creative:nth-child(3) {
+      transform: translateY(0);
+    }
+    
+    /* Hide the horizontal line on mobile */
+    .how-it-works-section-creative .steps-container-creative::before {
+      display: none;
+    }
+  }
+`;
+
+// Data for the steps
+const stepsData = [
+  { 
+    icon: <BsQrCodeScan size={36} />, 
+    title: '1. Scan QR', 
+    description: 'Use your phone camera to scan the QR code on your table and instantly view the menu.' 
+  },
+  { 
+    icon: <IoDocumentTextOutline size={36} />, 
+    title: '2. Place Order', 
+    description: 'Select your favorite items and place your order directly from WhatsApp.' 
+  },
+  { 
+    icon: <IoRestaurantOutline size={36} />, 
+    title: '3. Enjoy Your Meal', 
+    description: 'Your order is sent to the kitchen. We’ll bring the food to your table as soon as it\'s ready.' 
+  }];
 
 
 const features = [
@@ -251,8 +402,8 @@ const [formData, setFormData] = useState({ phone: '' });
           {/* Right: Illustration */}
           <div className="md:w-1/2 flex justify-center md:justify-end md:flex">
             <img
-              src="https://petoba.avenirya.com/wp-content/uploads/2025/08/Blue-Purple-Modern-Gradient-Mobile-App-Development-Facebook-Cover-700-x-800-px.png"
-              alt="Digital Menu Illustration"
+              src="https://data.avenirya.com/wp-content/uploads/2025/10/Untitled-design-8.png"
+              alt="Digital Menu With QR Stand by Petoba QR"
               className="w-86 md:w-96 drop-shadow-lg animate-float"
             />
           </div>
@@ -334,6 +485,29 @@ const [formData, setFormData] = useState({ phone: '' });
 </section> */}
 
 
+
+<style>{cssStyles}</style>
+
+        <section className="how-it-works-section-creative">
+          
+            <div className="text-4xl font-extrabold text-center  mb-10 text-gray-900 ">
+              <h2 className="mb-20">How It Works</h2>
+            
+            <div className="steps-container-creative">
+              {stepsData.map((step, index) => (
+                <div key={index} className="step-card-creative">
+                  <div className="step-icon-creative">{step.icon}</div>
+                  <h3 className="step-title-creative">{step.title}</h3>
+                  <p className="step-description-creative">{step.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+        {/* HOW IT WORKS SECTION END */}
+
+
+
 {/* Key Features - Multi-Info Professional Style */}
 <section className="py-16 items-center">
   <div className="max-w-7xl mx-auto px-6 items-center ">
@@ -401,7 +575,6 @@ const [formData, setFormData] = useState({ phone: '' });
     </div>
   </div>
 </section>
-
 {/* How It Works Section */}
 <section className="relative py-10 bg-transparent">
   <div className="max-w-7xl mx-auto px-6 text-center">
@@ -447,7 +620,7 @@ const [formData, setFormData] = useState({ phone: '' });
 <section className="py-10 bg-transparent">
   <div className="max-w-6xl mx-auto text-center">
     <h2 className="text-4xl md:text-4xl font-bold mb-8 text-gray-900">
-      600+ Menus Delivered
+      1,000+ Menus Delivered
     </h2>
 
     {/* 👇 Mobile: horizontal scroll */}

@@ -45,7 +45,7 @@ const Header = () => {
     
     <header className="sticky top-0 z-50 bg-transparent py-0">
      {/* 🔹 Scrolling Offer Banner with Timer */}
-      <div className="scroll-banner">
+      {/* <div className="scroll-banner">
   <div className="scroll-track">
     <div className="scroll-text">
       🎉 Flat 15% OFF ! Use Code FLAT15 !   ⏳ Expires in: {timeLeft}
@@ -57,7 +57,7 @@ const Header = () => {
       🎉 Flat 15% OFF ! Use Code FLAT15 !   ⏳ Expires in: {timeLeft}
     </div>
   </div>
-</div>
+</div> */}
 
 
       

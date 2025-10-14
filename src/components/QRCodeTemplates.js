@@ -139,6 +139,7 @@ const QRCodeTemplates = ({ restaurantId, membership_level }) => {
       </h3>
 
       {/* Free level dropdown */}
+      {openFree && membership_level === 1 && (
       <div className="mb-4 text-left">
         <button
           className="w-full flex justify-between items-center px-4 py-3 text-lg font-semibold focus:outline-none border-b"
@@ -147,7 +148,7 @@ const QRCodeTemplates = ({ restaurantId, membership_level }) => {
           <span>Free QR</span>
           <span>{openFree ? "▲" : "▼"}</span>
         </button>
-        {openFree && membership_level === 1 && (
+        
           <div className="flex flex-col items-center py-4">
             <div id="free-qr" className="relative">
               <QRCodeCanvas
@@ -166,12 +167,11 @@ const QRCodeTemplates = ({ restaurantId, membership_level }) => {
               onClick={() => handleDownload("free-qr")}
               className="mt-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded shadow"
             >
-              Download Menu
+              Download QR
             </button>
           </div>
-        )}
       </div>
-
+        )}
       {/* Premium dropdown */}
       <div className="mb-4 text-left">
         <button
