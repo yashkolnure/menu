@@ -179,6 +179,20 @@ const handlePlaceOrder = () => {
   toast.success("Redirecting to WhatsApp...");
 };
 
+  // Place this check just before your return statement:
+  if (restaurantDetails && restaurantDetails.active === false) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+        <div className="bg-white p-8 rounded-xl shadow text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">Restaurant Inactive</h2>
+          <p className="text-gray-700 mb-2">
+            This restaurant is Disabled Connect to Petoba Team to Reactivate your Menu.
+          </p>
+          <p className="text-gray-400 text-sm">Powered By Petoba Digital QR Menu</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

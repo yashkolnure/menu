@@ -312,35 +312,37 @@ if (!adminPhone) {
 
                 <h2 className="text-xl font-bold text-center mb-3">Your Cart</h2>
 
-                {cart.map(item => (
+                <div style={{ maxHeight: 320, overflowY: "auto" }}>
+                  {cart.map(item => (
                     <div key={item._id} className="flex justify-between items-center border-b py-2">
-                    <div>
+                      <div>
                         <p className="font-semibold">{item.name}</p>
                         <p className="text-sm text-gray-500">₹{item.price}</p>
-                    </div>
-                    <div className="flex items-center space-x-2">
+                      </div>
+                      <div className="flex items-center space-x-2">
                         <button
-                        onClick={() => updateQty(item._id, item.quantity - 1)}
-                        className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                          onClick={() => updateQty(item._id, item.quantity - 1)}
+                          className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
                         >
-                        -
+                          -
                         </button>
                         <span>{item.quantity}</span>
                         <button
-                        onClick={() => updateQty(item._id, item.quantity + 1)}
-                        className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                          onClick={() => updateQty(item._id, item.quantity + 1)}
+                          className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
                         >
-                        +
+                          +
                         </button>
                         <button
-                        onClick={() => removeFromCart(item._id)}
-                        className="ml-2 text-red-500 hover:text-red-700 text-sm"
+                          onClick={() => removeFromCart(item._id)}
+                          className="ml-2 text-red-500 hover:text-red-700 text-xl"
                         >
-                        🗑
+                          🗑
                         </button>
+                      </div>
                     </div>
-                    </div>
-                ))}
+                  ))}
+                </div>
 
                 <div className="pt-3">
                     <p className="text-right font-semibold">

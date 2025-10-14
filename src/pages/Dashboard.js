@@ -26,6 +26,7 @@ function Dashboard() {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const [savingItems, setSavingItems] = useState({});
+  const [openCategory, setOpenCategory] = useState(null);
   const [isFetching, setIsFetching] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const imagePasteRef = useRef(null);
@@ -672,7 +673,7 @@ return (
       
     {/* Welcome */}
     <h2 className="text-3xl font-bold text-gray-800">
-      Welcome, <span className="text-blue-600">{restaurant.name}</span>
+      Welcome, <span className="text-orange-600">{restaurant.name}</span>
     </h2>
       
 
@@ -847,119 +848,7 @@ return (
     {error && (
       <div className="p-3 bg-red-100 text-red-700 rounded">{error}</div>
     )}
-<div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-  {/* Left Column - Offer Banner Manager */}
-  <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[220px]">
-    <div className="absolute -top-20 -right-20 w-72 h-72 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full blur-3xl opacity-20"></div>
-
-    <h2 className="text-2xl font-semibold text-gray-800 relative z-10">
-      Offer Banner Manager
-    </h2>
-
-    <p className="text-gray-600 mt-2 max-w-sm relative z-10">
-      Add offer banner images to instantly highlight promotions and discounts.
-    </p>
-
-    {restaurant.membership_level === 3 ? (
-      <OfferBannerManager
-        className="mt-5"
-        restaurantId={restaurantId}
-        token={token}
-        offers={offers}
-        setOffers={setOffers}
-      />
-    ) : (
-      <p className="mt-5 text-gray-500 italic relative z-10">
-        ⚠ Upgrade to <span className="font-semibold text-purple-600">Pro</span>{" "}
-        to use this feature.
-      </p>
-    )}
-  </div>
-
-  {/* Right Column - Bulk Upload Section */}
- <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[220px]">
-      {/* Background Circle */}
-      <div className="absolute -top-20 -right-20 w-72 h-72 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full blur-3xl opacity-20"></div>
-
-      {/* Heading */}
-      <h2 className="text-2xl font-semibold text-gray-800 relative z-10">
-        Bulk Upload Your Menu ( AI )
-      </h2>
-
-      {/* Description */}
-      <p className="text-gray-600 mt-2 max-w-sm relative z-10">
-        Upload your full menu using{" "}
-        <span className="font-medium">Images, PDF, or Excel</span> — our AI will
-        process it automatically.
-      </p>
-
-      {/* Upload Button */}
-      {restaurant.membership_level >= 2 ? (
-        <button
-          onClick={() => setShowModal(true)}
-          className="mt-5 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-lg shadow hover:opacity-90 relative z-10"
-        >
-          Upload Menu
-        </button>
-      ) : (
-        <p className="mt-5 text-gray-500 italic relative z-10">
-          ⚠ Upgrade to{" "}
-          <span className="font-semibold text-purple-600">Premium</span> or{" "}
-          <span className="font-semibold text-blue-600">Pro</span> to use this
-          feature.
-        </p>
-      )}
-
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-lg p-6 w-80 relative">
-            <h3 className="text-lg font-semibold mb-4">Choose Upload Option</h3>
-
-            <div className="flex flex-col space-y-3">
-              {/* Manual with AI */}
-              <button
-                onClick={() => handleOptionClick("/bulk-upload", true)}
-                className="w-full px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
-              >
-                Manual with AI
-              </button>
-
-              {/* Automatic with AI */}
-              <button
-                onClick={() =>
-                  handleOptionClick(
-                    "/upload-menu",
-                    restaurant.membership_level === 3
-                  )
-                }
-                className={`w-full px-4 py-2 rounded-lg ${
-                  restaurant.membership_level === 3
-                    ? "bg-blue-500 text-white hover:bg-blue-600"
-                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                }`}
-              >
-                Automatic with AI{" "}
-                {restaurant.membership_level !== 3 && "(Premium Only)"}
-              </button>
-            </div>
-
-            {/* Close Button */}
-            <button
-              onClick={() => setShowModal(false)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
-    </div>  
-</div>
-
-
-
-
+    
 
 
     {/* Items to Upload */}
@@ -1001,7 +890,7 @@ return (
 
     {/* Existing Menu */}
     {existingItems.length > 0 && (
-      <div className="bg-white rounded-2xl shadow p-6">
+      <div className="bg-white p-0">
         {/* Edit Mode Toggle */}
         {!isEditMode && (
           <button
@@ -1045,7 +934,7 @@ return (
 ) : (
   "Fetch All Images ( AI )"
 )}
-                <span className="relative group ml-1 w-5 h-5 flex items-center justify-center rounded-full bg-white text-blue-700 font-bold text-xs cursor-pointer shadow border border-blue-300">
+                <span className="relative group ml-1 w-5 h-5 flex items-center justify-center rounded-full bg-white text-orange-700 font-bold text-xs cursor-pointer shadow border border-blue-300">
                   i
                   <span className="absolute bottom-full mb-2 w-56 text-xs text-white bg-gray-900 rounded-lg py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow z-10 left-1/2 -translate-x-1/2 sm:left-auto sm:right-0">
                     <strong>Pro Feature:</strong> Automatically fetch images for
@@ -1257,68 +1146,71 @@ return (
           <>
             <h3 className="text-xl font-semibold mb-6">📖 Your Menu</h3>
             {groupedItems
-  .sort((a, b) => a.category.localeCompare(b.category))
-  .map((group, index) => (
-    <div key={index} className="mb-8">
-      <h4 className="text-lg font-bold mb-4 text-blue-700 border-b pb-1">
-        {group.category}
-      </h4>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {group.items.map((item, i) => {
-          const isOutOfStock = item.inStock === false;
-
-          return (
-            <div
-              key={i}
-              className={`p-4 border rounded-lg bg-white shadow hover:shadow-md transition relative ${
-                isOutOfStock ? "opacity-" : ""
-              }`}
-            >
-              {item.image && (
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="h-20 w-20 object-cover rounded-lg mb-2 border"
-                />
-              )}
-
-              <h4 className="font-semibold">{item.name}</h4>
-              <p className="text-sm text-gray-600">{item.description}</p>
-              <p className="text-green-700 font-semibold mt-1">
-                ₹{item.price}
-              </p>
-
-              {/* Stock Status */}
-              <p
-                className={`text-xs font-semibold mt-1 ${
-                  isOutOfStock ? "text-red-600" : "text-green-600"
-                }`}
-              >
-                {isOutOfStock ? "Out of Stock ❌" : "In Stock ✅"}
-              </p>
-
-              {/* Action Buttons */}
-              <div className="flex gap-2 mt-3">
-                <button
-                  onClick={() => handleEditItem(item)}
-                  className="flex-1 text-xs px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(item._id)}
-                  className="flex-1 text-xs px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded"
-                >
-                  Delete
-                </button>
-              </div>
-
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  ))}
+              .sort((a, b) => a.category.localeCompare(b.category))
+              .map((group, index) => (
+                <div key={index} className="mb-4 border rounded-lg bg-white shadow">
+                  <button
+                    className="w-full flex justify-between items-center px-4 py-3 text-lg font-semibold text-black-500 focus:outline-none"
+                    onClick={() => setOpenCategory(openCategory === group.category ? null : group.category)}
+                  >
+                    <span>{group.category}</span>
+                    <span className="ml-2">
+                      {openCategory === group.category ? "▲" : "▼"}
+                    </span>
+                  </button>
+                  {openCategory === group.category && (
+                    <div className="p-2 border-t">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {group.items.map((item, i) => {
+                          const isOutOfStock = item.inStock === false;
+                          return (
+                            <div
+                              key={i}
+                              className={`p-4 border rounded-lg bg-white shadow hover:shadow-md transition relative ${
+                                isOutOfStock ? "opacity-60" : ""
+                              }`}
+                            >
+                              {item.image && (
+                                <img
+                                  src={item.image}
+                                  alt={item.name}
+                                  className="h-20 w-20 object-cover rounded-lg mb-2 border"
+                                />
+                              )}
+                              <h4 className="font-semibold">{item.name}</h4>
+                              <p className="text-sm text-gray-600">{item.description}</p>
+                              <p className="text-green-700 font-semibold mt-1">
+                                ₹{item.price}
+                              </p>
+                              <p
+                                className={`text-xs font-semibold mt-1 ${
+                                  isOutOfStock ? "text-red-600" : "text-green-600"
+                                }`}
+                              >
+                                {isOutOfStock ? "Out of Stock ❌" : "In Stock ✅"}
+                              </p>
+                              <div className="flex gap-2 mt-3">
+                                <button
+                                  onClick={() => handleEditItem(item)}
+                                  className="flex-1 text-xs px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(item._id)}
+                                  className="flex-1 text-xs px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
 
           </>
         )}
@@ -1346,6 +1238,118 @@ return (
       </svg>
       My Menu
     </button>
+
+
+<div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+  {/* Left Column - Offer Banner Manager */}
+  <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[220px]">
+    <div className="absolute -top-20 -right-20 w-72 h-72 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full blur-3xl opacity-20"></div>
+
+    <h2 className="text-2xl font-semibold text-gray-800 relative z-10">
+      Offer Banner Manager
+    </h2>
+
+    <p className="text-gray-600 mt-2 max-w-sm relative z-10">
+      Add offer banner images to instantly highlight promotions and discounts.
+    </p>
+
+    {restaurant.membership_level === 3 ? (
+      <OfferBannerManager
+        className="mt-5"
+        restaurantId={restaurantId}
+        token={token}
+        offers={offers}
+        setOffers={setOffers}
+      />
+    ) : (
+      <p className="mt-5 text-gray-500 italic relative z-10">
+        ⚠ Upgrade to <span className="font-semibold text-purple-600">Pro</span>{" "}
+        to use this feature.
+      </p>
+    )}
+  </div>
+
+  {/* Right Column - Bulk Upload Section */}
+    <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[220px]">
+      {/* Background Circle */}
+      <div className="absolute -top-20 -right-20 w-72 h-72 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full blur-3xl opacity-20"></div>
+
+      {/* Heading */}
+      <h2 className="text-2xl font-semibold text-gray-800 relative z-10">
+        Bulk Upload Your Menu ( AI )
+      </h2>
+
+      {/* Description */}
+      <p className="text-gray-600 mt-2 max-w-sm relative z-10">
+        Upload your full menu using{" "}
+        <span className="font-medium">Images, PDF, or Excel</span> — our AI will
+        process it automatically.
+      </p>
+
+      {/* Upload Button */}
+      {restaurant.membership_level >= 2 ? (
+        <button
+          onClick={() => setShowModal(true)}
+          className="mt-5 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-lg shadow hover:opacity-90 relative z-10"
+        >
+          Upload Menu
+        </button>
+      ) : (
+        <p className="mt-5 text-gray-500 italic relative z-10">
+          ⚠ Upgrade to{" "}
+          <span className="font-semibold text-purple-600">Premium</span> or{" "}
+          <span className="font-semibold text-blue-600">Pro</span> to use this
+          feature.
+        </p>
+      )}
+
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-80 relative">
+            <h3 className="text-lg font-semibold mb-4">Choose Upload Option</h3>
+
+            <div className="flex flex-col space-y-3">
+              {/* Manual with AI */}
+              <button
+                onClick={() => handleOptionClick("/bulk-upload", true)}
+                className="w-full px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+              >
+                Manual with AI
+              </button>
+
+              {/* Automatic with AI */}
+              <button
+                onClick={() =>
+                  handleOptionClick(
+                    "/upload-menu",
+                    restaurant.membership_level === 3
+                  )
+                }
+                className={`w-full px-4 py-2 rounded-lg ${
+                  restaurant.membership_level === 3
+                    ? "bg-blue-500 text-white hover:bg-blue-600"
+                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                }`}
+              >
+                Automatic with AI{" "}
+                {restaurant.membership_level !== 3 && "(Premium Only)"}
+              </button>
+            </div>
+
+            {/* Close Button */}
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+    </div>  
+</div>
+
 
      {/* Left Column - Offer Banner Manager */}
   <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[220px]">

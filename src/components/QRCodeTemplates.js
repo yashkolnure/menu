@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import html2canvas from "html2canvas";
 import { QRCodeCanvas } from "qrcode.react";
 
@@ -6,6 +6,10 @@ const QRCodeTemplates = ({ restaurantId, membership_level }) => {
   // Dynamic links
   const basicLink = `https://app.avenirya.com/menu/${restaurantId}`;
   const wpLink = `https://app.avenirya.com/menuwp/${restaurantId}`;
+
+  const [openFree, setOpenFree] = useState(true);
+  const [openPremium, setOpenPremium] = useState(false);
+  const [openPro, setOpenPro] = useState(false);
 
   // Example demo links
   const demoLinks = {
@@ -129,52 +133,85 @@ const QRCodeTemplates = ({ restaurantId, membership_level }) => {
     });
 
   return (
-    <div className="mt-10 border p-4 rounded bg-white text-center">
+  <div className="mt-10 border p-4 rounded bg-white text-center">
       <h3 className="text-xl font-semibold mb-6 text-gray-700">
         Restaurant Menu QR Codes
       </h3>
 
-      {/* Free level */}
-      {membership_level === 1 && (
-        <div className="mb-6 flex flex-col items-center">
-          <div id="free-qr" className="relative">
-            <QRCodeCanvas
-              value={basicLink}
-              size={180}
-              bgColor="transparent"
-              fgColor="#000000"
-              level="H"
-              includeMargin={false}
-            />
+      {/* Free level dropdown */}
+      <div className="mb-4 text-left">
+        <button
+          className="w-full flex justify-between items-center px-4 py-3 text-lg font-semibold focus:outline-none border-b"
+          onClick={() => setOpenFree((v) => !v)}
+        >
+          <span>Free QR</span>
+          <span>{openFree ? "▲" : "▼"}</span>
+        </button>
+        {openFree && membership_level === 1 && (
+          <div className="flex flex-col items-center py-4">
+            <div id="free-qr" className="relative">
+              <QRCodeCanvas
+                value={basicLink}
+                size={180}
+                bgColor="transparent"
+                fgColor="#000000"
+                level="H"
+                includeMargin={false}
+              />
+            </div>
+            <p className="mt-2 text-sm text-gray-600">
+              Free: Scan to <span className="font-semibold">view menu</span>
+            </p>
+            <button
+              onClick={() => handleDownload("free-qr")}
+              className="mt-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded shadow"
+            >
+              Download Menu
+            </button>
           </div>
-          <p className="mt-2 text-sm text-gray-600">
-            Free: Scan to <span className="font-semibold">view menu</span>
-          </p>
-          <button
-            onClick={() => handleDownload("free-qr")}
-            className="mt-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded shadow"
-          >
-            Download Menu
-          </button>
-        </div>
-      )}
-
-      {/* Premium templates */}
-      <h4 className="text-lg font-medium mb-2 text-gray-600 mt-4">Premium QR</h4>
-      <div className="overflow-x-auto">
-        <div className="flex gap-4 py-2">
-          {renderTemplates(basicLink, "premium-", 2, demoLinks.premium)}
-        </div>
+        )}
       </div>
 
-      {/* Pro templates */}
-      <h4 className="text-lg font-medium mb-2 text-gray-600 mt-4">
-        Pro QR (Take Orders on WhatsApp)
-      </h4>
-      <div className="overflow-x-auto">
-        <div className="flex gap-4 py-2">
-          {renderTemplates(wpLink, "pro-", 3, demoLinks.premiumWP)}
-        </div>
+      {/* Premium dropdown */}
+      <div className="mb-4 text-left">
+        <button
+          className="w-full flex justify-between items-center px-4 py-3 text-lg font-semibold focus:outline-none border-b"
+          onClick={() => setOpenPremium((v) => !v)}
+        >
+          <span>Premium QR</span>
+          <span>{openPremium ? "▲" : "▼"}</span>
+        </button>
+        {openPremium && (
+          <>
+            <h4 className="text-lg font-medium mb-2 text-gray-600 mt-4"></h4>
+            <div className="overflow-x-auto py-4">
+              <div className="flex gap-4">
+                {renderTemplates(basicLink, "premium-", 2, demoLinks.premium)}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Pro dropdown */}
+      <div className="mb-4 text-left">
+        <button
+          className="w-full flex justify-between items-center px-4 py-3 text-lg font-semibold focus:outline-none border-b"
+          onClick={() => setOpenPro((v) => !v)}
+        >
+          <span>Pro QR (Take Orders on WhatsApp)</span>
+          <span>{openPro ? "▲" : "▼"}</span>
+        </button>
+        {openPro && (
+          <>
+            <h4 className="text-lg font-medium mb-2 text-gray-600 mt-4"></h4>
+            <div className="overflow-x-auto py-4">
+              <div className="flex gap-4">
+                {renderTemplates(wpLink, "pro-", 3, demoLinks.premiumWP)}
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Membership Info */}
@@ -191,5 +228,4 @@ const QRCodeTemplates = ({ restaurantId, membership_level }) => {
     </div>
   );
 };
-
 export default QRCodeTemplates;
