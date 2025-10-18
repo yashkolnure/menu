@@ -402,19 +402,29 @@ async function fetchAllMediaItems() {
 // Fetch and attach best match image using cached media
 async function fetchImageForItemCached(index) {
   const item = editedItems[index];
-  const rawName = item?.name;
+  if (!item) {
+    console.warn(`fetchImageForItemCached: no editedItems[${index}]`);
+    return;
+  }
 
+  const rawName = item?.name || "";
+  const rawCategory = item?.category || "";
   if (!rawName) {
     setError("Dish name required to fetch image.");
     return;
   }
 
-  const cleanedDishName = cleanName(rawName);
+  // Use combined name + category for matching
+  const combined = `${rawName} ${rawCategory}`.trim();
+  const cleanedTarget = cleanName(combined);
+
   setSavingItems((prev) => ({ ...prev, [item._id]: "fetching" }));
+  console.log(`🔎 fetchImageForItemCached: id=${item._id} target="${combined}"`);
 
   try {
     if (!mediaCache || mediaCache.length === 0) {
-      setError("Media cache is empty.");
+      setError("Media cache is empty. Please fetch media first.");
+      setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
       return;
     }
 
@@ -422,33 +432,66 @@ async function fetchImageForItemCached(index) {
     let bestScore = 0;
 
     for (const media of mediaCache) {
-      if (!media.title?.rendered) continue;
+      if (!media) continue;
 
-      const mediaTitle = cleanName(media.title.rendered);
-      const sim = levenshteinSimilarity(cleanedDishName, mediaTitle);
+      // media title
+      const mediaTitle = media.title?.rendered ? cleanName(media.title.rendered) : "";
+      // media slug (filename-like)
+      const mediaSlug = media.slug ? cleanName(media.slug.replace(/-/g, " ")) : "";
+      // try source filename if available
+      const mediaFilename = media.meta?.file ? cleanName(media.meta.file) : "";
 
-      if (sim > bestScore) {
-        bestScore = sim;
+      const scoreTitle = mediaTitle ? levenshteinSimilarity(cleanedTarget, mediaTitle) : 0;
+      const scoreSlug = mediaSlug ? levenshteinSimilarity(cleanedTarget, mediaSlug) : 0;
+      const scoreFile = mediaFilename ? levenshteinSimilarity(cleanedTarget, mediaFilename) : 0;
+
+      // choose best of the three for this media
+      const score = Math.max(scoreTitle, scoreSlug, scoreFile);
+
+      if (score > bestScore) {
+        bestScore = score;
         bestMatch = media;
       }
     }
 
-    if (bestMatch && bestScore >= 0.3) {
-      const imageUrl = bestMatch.source_url;
-      const imgBlob = await fetch(imageUrl).then((r) => r.blob());
+    console.log(`→ bestScore=${bestScore.toFixed(3)} for "${combined}" (id=${item._id})`);
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        updateEditedItem(index, "image", reader.result);
-        setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
-      };
-      reader.readAsDataURL(imgBlob);
-    } else {
-      setError(`No image matched for "${rawName}"`);
+    const MIN_SCORE = 0.5; // tune threshold (0..1)
+    if (!bestMatch || bestScore < MIN_SCORE) {
+      setError(`No image matched for "${combined}" (score ${bestScore.toFixed(2)})`);
       setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
+      return;
+    }
+
+    const imageUrl = bestMatch.source_url;
+    // Try fetching image blob and convert to data URL (may fail due to CORS)
+    try {
+      const resp = await fetch(imageUrl);
+      if (!resp.ok) throw new Error(`Image fetch failed ${resp.status}`);
+      const blob = await resp.blob();
+
+      // Convert blob -> dataURL
+      await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          updateEditedItem(index, "image", reader.result);
+          setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
+          console.log(`✅ Attached image (dataURL) for ${item.name}`);
+          resolve();
+        };
+        reader.onerror = (err) => reject(err);
+        reader.readAsDataURL(blob);
+      });
+    } catch (fetchErr) {
+      // If fetch fails (CORS or network), fallback: store remote URL instead of dataURI
+      console.warn("Image fetch -> dataURL failed, falling back to storing URL:", fetchErr);
+      updateEditedItem(index, "image", imageUrl);
+      setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
+      setMessage(`Attached image URL for "${item.name}" (couldn't convert to dataURI)`);
     }
   } catch (err) {
-    setError("Failed to fetch image: " + err.message);
+    console.error("❌ fetchImageForItemCached error:", err);
+    setError("Failed to fetch image: " + (err.message || err));
     setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
   }
 }
