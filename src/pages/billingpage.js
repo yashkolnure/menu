@@ -27,7 +27,7 @@ function BillingApp() {
           content="A complete restaurant billing system with KOT printing, order tracking, and instant reporting."
         />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://yash.avenirya.com/billing" />
+        <meta property="og:url" content="https://yash.avenirya.com/petoba-billing" />
       </Helmet>
       <section className="relative py-6 ">
   {/* Background Blobs */}
@@ -66,7 +66,7 @@ function BillingApp() {
     {/* Right Side - Image */}
     <div className="flex justify-center md:justify-end">
       <img
-        src="https://petoba.avenirya.com/wp-content/uploads/2025/09/Untitled-design-8.png" // replace with your app preview
+        src="https://avenirya.com/wp-content/uploads/2025/10/Blue-Modern-Money-Managing-Mobile-App-Promotion-Facebook-Ad-700-x-1120-px-700-x-900-px-1.png" // replace with your app preview
         alt="Petoba Billing App Preview"
         className="rounded-3xl shadow-lg w-[90%] max-w-md object-contain"
       />
