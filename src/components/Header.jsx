@@ -1,12 +1,23 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [timeLeft, setTimeLeft] = useState("");
+  const [token, setToken] = useState(localStorage.getItem("token") || null);
+
+   const navigate = useNavigate();
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
+   const handleLogout = () => {
+    localStorage.removeItem("token");
+    setToken(null);
+    navigate("/login");
+  };
+
 
   const closeMenu = () => {
     setMenuOpen(false);
@@ -77,30 +88,53 @@ const Header = () => {
 
           {/* Desktop Nav links */}
           <nav className="hidden md:flex items-center gap-10">
-            <a href="/" className="text-black font-medium  text-xl hover:text-blue-600 transition">
+            <a href="/" className="hover:text-blue-600 font-medium">
               Home
             </a>
-            <a href="/features" className="text-black text-xl  font-medium hover:text-blue-600 transition">
+            <a href="/features" className="hover:text-blue-600 font-medium">
               Features
             </a>
-            <a href="/agency" className="text-black text-xl  font-medium hover:text-blue-600 transition">
+            <a href="/agency" className="hover:text-blue-600 font-medium">
               Agency
             </a>
-            <a href="/membership" className="text-black text-xl font-medium hover:text-blue-600 transition">
+            <a href="/membership" className="hover:text-blue-600 font-medium">
               Pricing
             </a>
-            <a href="/contact" className="text-black  text-xl font-medium hover:text-blue-600 transition">
+            <a href="/contact" className="hover:text-blue-600 font-medium">
               Contact Us
             </a>
+            {token ? (
+              <>
+                <a
+                  href="/admin/dashboard"
+                  className="hover:text-blue-600 font-medium"
+                >
+                  Manage Orders 
+                </a>
+                <a
+                  href="/dashboard"
+                  className="hover:text-blue-600 font-medium"
+                >
+                  Dashboard 
+                </a>
+                <button
+                  onClick={handleLogout}
+                  className="px-5 py-2 rounded-full text-xl bg-gradient-to-r from-red-600 via-black to-orange-600 text-white font-semibold shadow-md hover:scale-105 transition-transform"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <a
+                href="/login"
+                className="px-5 py-2 rounded-full text-xl bg-gradient-to-r from-orange-500 via-black to-blue-600 text-white font-semibold shadow-md hover:scale-105 transition-transform"
+              >
+                Login →
+              </a>
+            )}
           </nav>
 
-          {/* Login Button (desktop) */}
-          <a
-            href="/login"
-            className="hidden md:flex px-5 py-2 rounded-full text-xl bg-gradient-to-r from-orange-500 via-black to-blue-600 text-white font-semibold shadow-md hover:scale-105 transition-transform"
-          >
-            Login →
-          </a>
+           
 
           {/* Hamburger Menu Button */}
           <button
@@ -136,13 +170,41 @@ const Header = () => {
           <a href="/membership" onClick={closeMenu} className="hover:text-blue-600">Pricing</a>
           <a href="/agency" onClick={closeMenu} className="hover:text-blue-600">Agency</a>
           <a href="/contact" onClick={closeMenu} className="hover:text-blue-600">Contact Us</a>
-          <a
-            href="/login"
-            onClick={closeMenu}
-            className="mt-4 px-4 py-2 rounded-full bg-gradient-to-r from-orange-500 via-black to-blue-600 text-white text-center shadow-md hover:scale-105 transition-transform"
-          >
-            Login →
-          </a>
+          {token ? (
+              <>
+                <a
+                  href="/admin/dashboard"
+                  className="hover:text-blue-600 font-medium"
+                >
+                  Manage Orders 
+                </a>
+                <a
+                  href="/dashboard"
+                  className="hover:text-blue-600 font-medium"
+                >
+                  Dashboard 
+                </a>
+                <a
+                  href="/petoba-billing"
+                  className="hover:text-blue-600 font-medium"
+                >
+                  Download Billing App 
+                </a>
+                <button
+                  onClick={handleLogout}
+                  className="px-5 py-2 rounded-full text-xl bg-gradient-to-r from-red-600 via-black to-orange-600 text-white font-semibold shadow-md hover:scale-105 transition-transform"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <a
+                href="/login"
+                className="px-5 py-2 rounded-full text-xl bg-gradient-to-r from-orange-500 via-black to-blue-600 text-white font-semibold shadow-md hover:scale-105 transition-transform"
+              >
+                Login →
+              </a>
+            )}
         </nav>
       </div>
     </header>
