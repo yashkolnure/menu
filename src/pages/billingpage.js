@@ -1,6 +1,9 @@
 import React from "react";
 import { Helmet } from "react-helmet";
 import { Link } from "react-router-dom";
+const WHATSAPP_LINK =
+  "https://wa.me/917499835687?text=Hello%20Petoba%20Team%2C%20I%20want%20to%20subscribe%20to%20Petoba%20Billing%20App.";
+
 
 function BillingApp() {
   return (
