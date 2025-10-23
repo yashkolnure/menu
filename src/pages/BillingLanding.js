@@ -172,6 +172,38 @@ export default function PetobaBillingLanding() {
         </div>
       </section>
 
+<section className="relative  py-6">
+  {/* Background Blobs */}
+  <div className="absolute top-0 left-0 w-72 h-72 bg-gradient-to-r from-orange-300 to-pink-400 rounded-full blur-3xl opacity-20 -z-10"></div>
+  <div className="absolute bottom-0 right-0 w-72 h-72 bg-gradient-to-r from-green-400 to-blue-500 rounded-full blur-3xl opacity-20 -z-10"></div>
+
+
+  {/* Single Feature Card */}
+  <div className="max-w-6xl mx-auto bg-white rounded-3xl shadow-lg p-4">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+      {/* Feature Item */}
+      {[
+        { icon: "🧾", title: "Instant KOT Printing", desc: "Generate kitchen order tickets immediately for faster service." },
+        { icon: "💳", title: "Print Bills Quickly", desc: "Create and print customer bills in just a few clicks." },
+        { icon: "📲", title: "Send Bills via WhatsApp", desc: "Share bills directly with customers instantly." },
+        { icon: "📡", title: "Real-Time Order Updates", desc: "Track all orders live across multiple devices." },
+        { icon: "📊", title: "Smart Dashboard & Analytics", desc: "Monitor sales, performance, and order stats easily." },
+        { icon: "🗂️", title: "Daily/Weekly/Monthly Reports", desc: "Access organized sales reports anytime for better decision making." },
+        { icon: "📱", title: "Multi-Device Support", desc: "Use the app seamlessly across multiple devices." },
+        { icon: "🔔", title: "Instant Alerts for New Orders", desc: "Receive immediate notifications whenever a new order comes in." },
+        { icon: "🔗", title: "Easy Integration with Petoba Menu", desc: "Connect your digital menu directly for smooth billing." },
+      ].map((feature, index) => (
+        <div key={index} className="flex items-start gap-2 p-2 bg-gray-50 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+          <div className="text-2xl">{feature.icon}</div>
+          <div>
+            <h3 className="font-semibold text-gray-800">{feature.title}</h3>
+            <p className="text-gray-600 text-sm mt-1">{feature.desc}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
       {/* FEATURES - alternating layout */}
       <section className="max-w-7xl mx-auto px-6 py-6 space-y-6">
         <h2 className="text-3xl font-bold text-gray-900 text-center">Core Features</h2>
