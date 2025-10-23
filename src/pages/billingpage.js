@@ -55,10 +55,10 @@ function BillingApp() {
           Download App
         </a>
         <a
-          href="/admin/dashboard"
+          href="https://wa.me/7499835687?text=Hello%20Petoba%20Team%2C%20I%20am%20interested%20in%20subscribing%20to%20the%20Petoba%20Billing%20App.%20Could%20you%20please%20share%20the%20process%20and%20pricing%20details%3F%20Thank%20you!"
           className="px-8 py-4 rounded-full bg-gray-100 text-gray-800 text-lg font-semibold shadow hover:bg-gray-200 transition"
         >
-          Manage Online
+         Subscribe App
         </a>
       </div>
     </div>

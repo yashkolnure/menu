@@ -40,6 +40,7 @@ import MembershipUpgrade from "./pages/MembershipUpgrade";
 import UploadMenuPage from "./pages/uploadmenu";
 import RedirectManagerPage from "./pages/redirectpage";
 import BillingApp from "./pages/billingpage";
+import PetobaBillingLanding from "./pages/BillingLanding";
 
 // Wrapper to handle conditional Header/Footer
 function AppWrapper() {
@@ -102,6 +103,7 @@ function AppWrapper() {
         <Route path="/MembershipUpgrade" element={<MembershipUpgrade />} />
         <Route path="/upload-menu" element={<UploadMenuPage />} />
         <Route path="/petoba-billing" element={<BillingApp />} />
+        <Route path="/petoba-billing-landing" element={<PetobaBillingLanding />} />
       </Routes>
       {!hideHeaderFooter && <Footer />}
     </>
