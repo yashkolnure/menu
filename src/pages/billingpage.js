@@ -198,6 +198,96 @@ function BillingApp() {
   </div>
 </section>
 
+{/* Pricing Section */}
+<section id="pricing" className="max-w-7xl mx-auto px-6 py-12 bg-white">
+  <h2 className="text-3xl font-bold text-gray-900 text-center mb-6">Pricing</h2>
+  <p className="text-gray-600 text-center max-w-2xl mx-auto mb-12">
+    Simple plans designed for small restaurants and growing chains. No hidden fees.
+  </p>
+
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    {/* Monthly Plan */}
+    <div className="border border-gray-200 rounded-3xl p-8 text-center hover:shadow-xl transition-all duration-300">
+      <h3 className="text-xl font-semibold text-gray-900 mb-2">Monthly</h3>
+      <p className="text-gray-500 mb-4">For restaurants starting small</p>
+      <div className="text-3xl font-bold text-gray-900 mb-2">₹250</div>
+      <div className="text-sm text-gray-500 mb-6">/month</div>
+      <ul className="text-gray-700 mb-6 space-y-4 text-left">
+        <li>🧾 Instant KOT Printing</li>
+        <li>💳 Print Bills Quickly</li>
+        <li>📲 Send Bills via WhatsApp</li>
+        <li>📡 Real-Time Order Updates</li>
+        <li>📊 Smart Dashboard & Analytics</li>
+        <li>🗂️ Daily/Weekly/Monthly Reports</li>
+         <li>📱 Multi-Device Support</li>
+        <li>🔔 Instant Alerts for New Orders</li>
+        <li>🔗 Easy Integration with Petoba Menu</li>
+      </ul>
+      <a
+        href={WHATSAPP_LINK}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-block px-6 py-3 rounded-full bg-orange-500 text-gray-900 font-semibold hover:brightness-105 transition"
+      >
+        Subscribe via WhatsApp
+      </a>
+    </div>
+
+    {/* Half-Yearly Plan */}
+    <div className="border-2 border-yellow-500 rounded-3xl p-8 text-center hover:shadow-xl transition-all duration-300">
+      <h3 className="text-xl font-semibold text-gray-900 mb-2">Half-Yearly</h3>
+      <p className="text-gray-500 mb-4">Save by subscribing for 6 months</p>
+      <div className="text-3xl font-bold text-gray-900 mb-2">₹850</div>
+      <div className="text-sm text-gray-500 mb-6">/6 months</div>
+      <ul className="text-gray-700 mb-6 space-y-4 text-left">
+                <li>🧾 Instant KOT Printing</li>
+        <li>💳 Print Bills Quickly</li>
+        <li>📲 Send Bills via WhatsApp</li>
+        <li>📡 Real-Time Order Updates</li>
+        <li>📊 Smart Dashboard & Analytics</li>
+        <li>🗂️ Daily/Weekly/Monthly Reports</li>
+         <li>📱 Multi-Device Support</li>
+        <li>🔔 Instant Alerts for New Orders</li>
+        <li>🔗 Easy Integration with Petoba Menu</li>
+      </ul>
+      <a
+        href={WHATSAPP_LINK}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-block px-6 py-3 rounded-full bg-yellow-500 text-gray-900 font-semibold hover:brightness-105 transition"
+      >
+        Subscribe via WhatsApp
+      </a>
+    </div>
+
+    {/* Yearly Plan */}
+    <div className="border-2 border-green-500 rounded-3xl p-8 text-center hover:shadow-xl transition-all duration-300">
+      <h3 className="text-xl font-semibold text-gray-900 mb-2">Yearly</h3>
+      <p className="text-gray-500 mb-4">Best value for growing restaurants</p>
+      <div className="text-3xl font-bold text-gray-900 mb-2">₹1500</div>
+      <div className="text-sm text-gray-500 mb-6">/year</div>
+      <ul className="text-gray-700 mb-6 space-y-4 text-left">
+                <li>🧾 Instant KOT Printing</li>
+        <li>💳 Print Bills Quickly</li>
+        <li>📲 Send Bills via WhatsApp</li>
+        <li>📡 Real-Time Order Updates</li>
+        <li>📊 Smart Dashboard & Analytics</li>
+        <li>🗂️ Daily/Weekly/Monthly Reports</li>
+         <li>📱 Multi-Device Support</li>
+        <li>🔔 Instant Alerts for New Orders</li>
+        <li>🔗 Easy Integration with Petoba Menu</li>
+      </ul>
+      <a
+        href={WHATSAPP_LINK}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-block px-6 py-3 rounded-full bg-green-500 text-white font-semibold hover:brightness-105 transition"
+      >
+        Subscribe via WhatsApp
+      </a>
+    </div>
+  </div>
+</section>
 <section class="py-6">
   <div class="max-w-6xl mx-auto px-4">
     <h2 class="text-3xl font-bold text-gray-800 text-center mb-10">Frequently Asked Questions</h2>
