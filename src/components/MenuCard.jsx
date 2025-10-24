@@ -4,6 +4,7 @@ import { FaPlus } from "react-icons/fa";
 function MenuCard({ item, addToCart }) {
   const [expanded, setExpanded] = useState(false);
   const descRef = useRef(null);
+  const [imageError, setImageError] = useState(false);
   const [descHeight, setDescHeight] = useState("3rem"); // default height for 2 lines
 
   useEffect(() => {
