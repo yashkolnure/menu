@@ -122,6 +122,7 @@ const filteredMenu = menuData.filter(item => {
 const handleTableNumberSubmit = () => {
   if (!tableNumber) {
     toast.error("To place an order, please scan the QR code from the restaurant table.");
+    setCart([]);
     return;
   }
 
@@ -134,7 +135,7 @@ const handleTableNumberSubmit = () => {
 
   // Clear the cart after processing the order
   setCart([]); // assuming you have `const [cart, setCart] = useState([])`
-  toast.success("Order placed successfully! Your cart has been cleared.");
+  toast.error("To place an order, please scan the QR code from the restaurant table.");
 };
 
   // Place this check just before your return statement:
