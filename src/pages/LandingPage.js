@@ -1,5 +1,6 @@
 import {React, useRef, useState, useEffect } from 'react';
 import { Helmet } from "react-helmet";
+import HomePagePortfolioSection from "../components/HomePagePortfolioSection";
 import {
   QrCode,
   MessageCircle,
@@ -224,91 +225,9 @@ const features = [
   ];
 
 const HomePage = () => {
-  const screenshots = [
-        "https://petoba.avenirya.com/wp-content/uploads/2025/08/1.jpg",
-        "https://petoba.avenirya.com/wp-content/uploads/2025/08/2.jpg",
-        "https://petoba.avenirya.com/wp-content/uploads/2025/08/3.jpg",
-        "https://petoba.avenirya.com/wp-content/uploads/2025/08/4.jpg",
-        "https://petoba.avenirya.com/wp-content/uploads/2025/08/5.jpg",
-        "https://petoba.avenirya.com/wp-content/uploads/2025/08/6.jpg",
-        "https://petoba.avenirya.com/wp-content/uploads/2025/08/8.jpg",
-        "https://petoba.avenirya.com/wp-content/uploads/2025/08/9.jpg",
-        "https://petoba.avenirya.com/wp-content/uploads/2025/08/10.jpg",
-        "https://petoba.avenirya.com/wp-content/uploads/2025/08/11.jpg",
-        "https://petoba.avenirya.com/wp-content/uploads/2025/08/12.jpg",
-        "https://petoba.avenirya.com/wp-content/uploads/2025/08/13.jpg",
-        "https://petoba.avenirya.com/wp-content/uploads/2025/08/14.jpg",
-        "https://petoba.avenirya.com/wp-content/uploads/2025/08/15.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/16.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/17.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/18.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/19.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/20.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/21.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/22.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/23.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/24.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/25.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/26.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/27.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/28.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/29.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/30.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/31.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/32.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/33.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/34.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/35.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/36.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/37.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/38.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/39.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/40.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/41.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/42.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/43.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/44.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/45.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/46.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/47.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/48.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/49.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/50.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/51.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/52.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/53.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/54.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/55.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/56.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/57.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/58.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/59.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/60.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/61.jpg",
-    "https://petoba.avenirya.com/wp-content/uploads/2025/08/62.jpg",
-    // Add all 60+ screenshot URLs here
-  ];
-
      const [currentIndices, setCurrentIndices] = useState([0, 1, 2]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const newIndices = [];
-      const used = new Set();
-      while (newIndices.length < 3) {
-        const randomIndex = Math.floor(Math.random() * screenshots.length);
-        if (!used.has(randomIndex)) {
-          newIndices.push(randomIndex);
-          used.add(randomIndex);
-        }
-      }
-      setCurrentIndices(newIndices);
-    }, 2000); // change images every 2 seconds
 
-    return () => clearInterval(interval);
-
-
-  }, [screenshots.length]);
 
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
@@ -736,39 +655,10 @@ const FaqItem = ({ question, answer, isOpen, onClick }) => (
   </div>
 </section>
 
-<section className="py-16 bg-transparent">
-  <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-10">
-    {/* Left Text Section */}
-    <div className="flex-1 text-center md:text-left">
-      <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-        See Our Work in Action
-      </h2>
-      <p className="text-gray-600 text-lg mb-8 max-w-md">
-        Explore the digital menus we’ve created for restaurants across India.
-        Discover how we’re helping them go contactless and modern.
-      </p>
 
-      <a
-        href="/portfolio"
-        className="inline-block px-6 py-3 rounded-full bg-gradient-to-r from-orange-400 to-orange-600 text-white font-semibold shadow-md hover:scale-105 transition-transform"
-      >
-        View Portfolio
-      </a>
-    </div>
+<HomePagePortfolioSection />
 
-    {/* Right Image Section */}
-    <div className="flex-1 flex justify-center md:justify-end">
-      <img
-        src="https://petoba.avenirya.com/wp-content/uploads/2025/08/image-removebg-preview-11.png"
-        alt="Our Work Showcase"
-        className="w-full max-w-md"
-      />
-    </div>
-  </div>
-</section>
-
-
- <section className="relative py-16">
+<section className="relative py-16">
       <div className="max-w-6xl mx-auto px-6 text-center">
         {/* Page Header */}
         <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 text-center mb-4">All Features</h2>
