@@ -100,7 +100,7 @@ function AppWrapper() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dashboard1" element={<Dashboard1 />} />
         <Route path="/bulk-upload" element={<BulkUploadInfo />} />
-        <Route path="/features" element={<FeaturesPage />} />
+        <Route path="/portfolio" element={<FeaturesPage />} />
         <Route path="/kolnure" element={<Kolnure />} />
         <Route path="/kolnure1" element={<Kolnuree />} />
         <Route path="/MembershipUpgrade" element={<MembershipUpgrade />} />

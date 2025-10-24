@@ -91,8 +91,8 @@ const Header = () => {
             <a href="/" className="hover:text-blue-600 font-medium">
               Home
             </a>
-            <a href="/features" className="hover:text-blue-600 font-medium">
-              Features
+            <a href="/portfolio" className="hover:text-blue-600 font-medium">
+              Portfolio
             </a>
             <a href="/agency" className="hover:text-blue-600 font-medium">
               Agency
@@ -174,7 +174,7 @@ const Header = () => {
       >
         <nav className="flex flex-col p-6 gap-4 text-black font-medium">
           <a href="/" onClick={closeMenu} className="hover:text-blue-600">Home</a>
-          <a href="/features" onClick={closeMenu} className="hover:text-blue-600">Features</a>
+          <a href="/portfolio" onClick={closeMenu} className="hover:text-blue-600">Portfolio</a>
           <a href="/membership" onClick={closeMenu} className="hover:text-blue-600">Pricing</a>
           <a href="/agency" onClick={closeMenu} className="hover:text-blue-600">Agency</a>
           <a href="/contact" onClick={closeMenu} className="hover:text-blue-600">Contact Us</a>

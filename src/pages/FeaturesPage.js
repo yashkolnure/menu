@@ -1,164 +1,99 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
-import {
-  QrCode,
-  MessageCircle,
-  Megaphone,
-  LayoutDashboard,
-  Bot,
-  Image,
-  Headphones,
-} from "lucide-react";
 
 const FeaturesPage = () => {
-  const features = [
-    {
-      title: "Scannable QR Menus",
-      description:
-        "Generate modern QR codes that customers can scan from any device. Fast, simple, and user-friendly access to your digital menu.",
-      icon: <QrCode size={58} className="text-blue-500" />,
-      imageSide: "right",
-      imageUrl: "https://petoba.avenirya.com/wp-content/uploads/2025/08/Adobe-Express-file-min-scaled.png",
-    },
-    {
-      title: "WhatsApp Ordering",
-      description:
-        "Turn conversations into sales. Customers can scan, browse, and place orders directly through WhatsApp, and you receive them instantly.",
-      icon: <MessageCircle size={58} className="text-green-500" />,
-      imageSide: "left",
-      imageUrl: "https://petoba.avenirya.com/wp-content/uploads/2025/08/Adobe-Express-file-5-min-scaled.png",
-    },
-    {
-      title: "Promote Daily Offers",
-      description:
-        "Highlight your latest deals and discounts with attractive offer banners inside your menu. Keep customers engaged and coming back.",
-      icon: <Megaphone size={58} className="text-orange-500" />,
-      imageSide: "right",
-      imageUrl: "https://petoba.avenirya.com/wp-content/uploads/2025/08/Adobe-Express-file-1-min-scaled.png",
-    },
-    {
-      title: "Powerful Admin Dashboard",
-      description:
-        "Stay in control with an easy-to-use dashboard. Add or update items, adjust prices, and manage categories anytime, anywhere.",
-      icon: <LayoutDashboard size={58} className="text-purple-500" />,
-      imageSide: "left",
-      imageUrl: "https://petoba.avenirya.com/wp-content/uploads/2025/08/people-analyzing-growth-charts-min.png",
-    },
-    {
-      title: "AI Menu Upload",
-      description:
-        "No more manual entry. Upload photos or PDFs of your menu, and let our AI instantly digitize everything for you.",
-      icon: <Bot size={58} className="text-pink-500" />,
-      imageSide: "right",
-      imageUrl: "https://petoba.avenirya.com/wp-content/uploads/2025/08/Adobe-Express-file-6-min-scaled.png",
-    },
-    {
-      title: "Food Items with Images",
-      description:
-        "Enhance your menu effortlessly. Our AI automatically pairs food items with high-quality images to make dishes irresistible.",
-      icon: <Image size={58} className="text-indigo-500" />,
-      imageSide: "left",
-      imageUrl: "https://petoba.avenirya.com/wp-content/uploads/2025/08/Adobe-Express-file-3-min-scaled.png",
-    },
-     {
-    title: "Connect Instagram / Social Accounts",
-    description:
-      "Easily link your Instagram and other social media accounts to your digital menu so customers can follow and engage with you.",
-    icon: <Megaphone size={58} className="text-teal-500" />, // choose a social-related icon
-    imageSide: "right",
-    imageUrl: "https://petoba.avenirya.com/wp-content/uploads/2025/09/5f4ff59c-removebg-preview.png",
-  },{
-  title: "Add Custom Line",
-  description:
-    "Include a custom text line on your digital menu to share messages like 'We take Party Orders', 'Daily Specials', or any special note for your customers.",
-  icon: <MessageCircle size={58} className="text-orange-500" />,
-  imageSide: "left",
-  imageUrl: "https://petoba.avenirya.com/wp-content/uploads/2025/09/person-sitting-at-desk-having-coffee-taking-notes-in-notebook-man-writing-in-notepad-making-plans-or-schedule-time-organization-illustration-vector.jpg",
-}
-,
-    {
-      title: "Dedicated Support",
-      description:
-        "Get help when you need it. Our support team is always available via WhatsApp and email to keep your restaurant running smoothly.",
-      icon: <Headphones size={58} className="text-red-500" />,
-      imageSide: "right",
-      imageUrl: "https://petoba.avenirya.com/wp-content/uploads/2025/08/Adobe-Express-file-4-min-scaled.png",
-    },
-  ];
+  const [restaurants, setRestaurants] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+ useEffect(() => {
+    const fetchRestaurants = async () => {
+      try {
+        const res = await fetch(
+          "/api/admin/restaurants-with-many-menus"
+        );
+        if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+        const data = await res.json();
+
+        if (data.success && data.restaurants.length > 0) {
+          setRestaurants(data.restaurants.reverse());
+        } else {
+          setRestaurants([]);
+        }
+      } catch (err) {
+        console.error(err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRestaurants();
+  }, []);
 
   return (
-    
-    <section className="relative py-16 bg-white">
-            <Helmet>
-        <title>Petoba | Digital QR Menu & Ordering</title>
-        <meta
-          name="description"
-          content="Petoba lets restaurants create digital QR menus. Customers scan, order, and enjoy a contactless dining experience."
-        />
-
-        <link
-          rel="icon"
-          href="https://petoba.avenirya.com/wp-content/uploads/2025/09/download-1.png"
-          type="image/png"
-        />
-        <meta
-          property="og:image"
-          content="https://petoba.avenirya.com/wp-content/uploads/2025/09/Untitled-design-6.png"
-        />
-        <meta property="og:title" content="Petoba - Digital QR Menu" />
-        <meta property="og:description" content="Turn your restaurant’s menu into a digital QR code menu." />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://yash.avenirya.com" />
+    <div className="relative bg-white py-16 min-h-screen">
+      <Helmet>
+        <title>Petoba | Restaurants Demo</title>
       </Helmet>
-      <div className="max-w-7xl mx-auto px-6">
-        {/* Page Header */}
-        <h2 className="text-4xl font-bold text-center mb-4">Key Features</h2>
-        <p className="text-center text-gray-600 mb-16">
-          Everything you need to modernize your restaurant and delight customers.
-        </p>
 
-        {/* Features List */}
-        <div className="space-y-10">
-          {features.map((feature, index) => (
+      {/* Decorative blobs */}
+      <div className="absolute -top-32 -left-32 w-96 h-96 bg-gradient-to-r from-pink-300 to-purple-300 rounded-full filter blur-3xl opacity-30"></div>
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-gradient-to-r from-green-400 to-blue-500 rounded-full blur-3xl opacity-20"></div>
+
+      <h2 className="text-4xl font-bold text-center mb-4">Our Digital Menu Portfolio</h2>
+      <p className="text-center text-gray-600 mb-12 max-w-xl mx-auto">
+        Take a look at the restaurants we’ve transformed with digital menus. Click “View Menu” to explore live demos.
+      </p>
+
+      <div className="relative z-10 max-w-6xl mx-auto px-4 grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
+        {loading && (
+          <p className="col-span-full text-center text-gray-500">Loading restaurants...</p>
+        )}
+        {error && (
+          <p className="col-span-full text-center text-red-500">Error: {error}</p>
+        )}
+        {!loading && !error && restaurants.length === 0 && (
+          <p className="col-span-full text-center text-gray-500">No restaurants found.</p>
+        )}
+
+        {!loading &&
+          !error &&
+          restaurants.map((restaurant) => (
             <div
-              key={index}
-              className={`flex flex-col md:flex-row items-center gap-10 ${
-                feature.imageSide === "left" ? "md:flex-row-reverse" : ""
-              }`}
+              key={restaurant._id}
+              className="flex flex-col justify-between bg-white rounded-3xl shadow-lg p-4 border border-gray-200 hover:shadow-xl transition-shadow"
             >
-              {/* Text + Icon */}
-              <div className="flex-1">
-                <div className="mb-4">{feature.icon}</div>
-                <h3 className="text-2xl font-semibold mb-4">{feature.title}</h3>
-                <p className="text-gray-600 text-lg leading-relaxed">
-                  {feature.description}
-                </p>
-              </div>
-
-              {/* Feature Image */}
-              <div className="flex-1">
+              <div className="flex items-center gap-4 mb-4">
                 <img
-                  src={feature.imageUrl}
-                  alt={feature.title}
-                  className="w-50   hover:scale-105 transition-transform duration-300"
+                  src={
+                    restaurant.logo ||
+                    "https://via.placeholder.com/50/cccccc/888888?text=No+Logo"
+                  }
+                  alt={restaurant.name}
+                  className="w-16 h-16 rounded-full object-cover flex-shrink-0"
                 />
+                <div className="flex flex-col overflow-hidden">
+                  <p className="text-gray-800 font-semibold text-lg truncate">
+                    {restaurant.name}
+                  </p>
+                  <p className="text-gray-500 text-sm truncate">{restaurant.address || ""}</p>
+                </div>
               </div>
+              <a
+                href={`https://yash.avenirya.com/demo/${restaurant._id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-auto inline-block text-center py-2 px-4 rounded-full bg-gradient-to-r from-orange-400 to-orange-600 text-white font-semibold shadow-md hover:scale-105 transition-transform"
+              >
+                View Menu
+              </a>
             </div>
           ))}
-        </div>
-
-        {/* CTA */}
-        <div className="text-center mt-20">
-          <a
-            href="/membership"
-            className="inline-block px-8 py-4 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold shadow-md hover:scale-105 transition-transform"
-          >
-            Explore Plans
-          </a>
-        </div>
       </div>
-    </section>
+    </div>
   );
 };
+
 
 export default FeaturesPage;

@@ -130,8 +130,8 @@ const cssStyles = `
     }
     
     .how-it-works-section-creative .step-card-creative {
-      width: 80%;
-      max-width: 320px;
+      width: 90%;
+      max-width: 420px;
     }
     
     /* Reset zig-zag transforms */
@@ -501,7 +501,7 @@ const FaqItem = ({ question, answer, isOpen, onClick }) => (
 
       {/* Hero Section */}
       <section className="relative py-10">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center gap-12">
+        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center ">
           {/* Left: Text */}
           <div className="md:w-1/2 text-center md:text-left">
             <h1 className="text-5xl md:text-6xl font-extrabold mb-6 text-gray-900">
@@ -607,8 +607,8 @@ const FaqItem = ({ question, answer, isOpen, onClick }) => (
 <style>{cssStyles}</style>
 
         <section className="how-it-works-section-creative">
-          
-            <div className="text-4xl font-extrabold text-center  mb-10 text-gray-900 ">
+
+            <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 text-center ">
               <h2 className="mb-20">How It Works</h2>
             
             <div className="steps-container-creative">
@@ -629,7 +629,7 @@ const FaqItem = ({ question, answer, isOpen, onClick }) => (
 {/* Key Features - Multi-Info Professional Style */}
 <section className="py-16 items-center">
   <div className="max-w-7xl mx-auto px-6 items-center ">
-    <h2 className="text-4xl font-extrabold text-center  mb-10 text-gray-900">
+    <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 text-center pb-10">
       Key Features You’ll Get
     </h2>
 
@@ -696,7 +696,7 @@ const FaqItem = ({ question, answer, isOpen, onClick }) => (
 {/* How It Works Section */}
 <section className="relative py-10 bg-transparent">
   <div className="max-w-7xl mx-auto px-6 text-center">
-    <h2 className="text-4xl font-extrabold mb-4 text-gray-900">
+    <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
       How It Works: Your Menu, Online
     </h2>
     <p className="text-lg text-gray-700 mb-10 max-w-2xl mx-auto">
@@ -735,58 +735,43 @@ const FaqItem = ({ question, answer, isOpen, onClick }) => (
     </div>
   </div>
 </section>
-<section className="py-10 bg-transparent">
-  <div className="max-w-6xl mx-auto text-center">
-    <h2 className="text-4xl md:text-4xl font-bold mb-8 text-gray-900">
-      1,000+ Menus Delivered
-    </h2>
 
-    {/* 👇 Mobile: horizontal scroll */}
-    <div className="flex md:hidden gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide">
-      {screenshots.map((src, idx) => (
-        <div
-          key={idx}
-          className="flex-shrink-0 w-72 snap-center relative rounded-3xl shadow-lg overflow-hidden border-4 border-gray-200"
-        >
-          <img
-            src={src}
-            alt={`Menu Screenshot ${idx + 1}`}
-            className="w-full h-full object-cover rounded-2xl"
-          />
-        </div>
-      ))}
+<section className="py-16 bg-transparent">
+  <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-10">
+    {/* Left Text Section */}
+    <div className="flex-1 text-center md:text-left">
+      <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+        See Our Work in Action
+      </h2>
+      <p className="text-gray-600 text-lg mb-8 max-w-md">
+        Explore the digital menus we’ve created for restaurants across India.
+        Discover how we’re helping them go contactless and modern.
+      </p>
+
+      <a
+        href="/portfolio"
+        className="inline-block px-6 py-3 rounded-full bg-gradient-to-r from-orange-400 to-orange-600 text-white font-semibold shadow-md hover:scale-105 transition-transform"
+      >
+        View Portfolio
+      </a>
     </div>
 
-    {/* 👇 Desktop: your existing animated 3-cards layout */}
-    <div className="hidden md:flex gap-4 justify-center items-end">
-      {currentIndices.map((idx, index) => {
-        const isMiddle = index === 1; // middle slide
-        return (
-          <div
-            key={idx}
-            className={`relative rounded-3xl shadow-xl overflow-hidden border-8 border-gray-200 transition-transform duration-500 hover:scale-[1.02] ${
-              isMiddle ? "w-80 md:w-94 md:h-[580px]" : "w-72 md:w-80 md:h-[550px]"
-            }`}
-          >
-            <img
-              src={screenshots[idx]}
-              alt={`Menu Screenshot ${idx + 1}`}
-              className="w-full h-full object-cover rounded-2xl"
-            />
-          </div>
-        );
-      })}
+    {/* Right Image Section */}
+    <div className="flex-1 flex justify-center md:justify-end">
+      <img
+        src="https://petoba.avenirya.com/wp-content/uploads/2025/08/image-removebg-preview-11.png"
+        alt="Our Work Showcase"
+        className="w-full max-w-md"
+      />
     </div>
   </div>
-
 </section>
-
 
 
  <section className="relative py-16">
       <div className="max-w-6xl mx-auto px-6 text-center">
         {/* Page Header */}
-        <h2 className="text-4xl font-bold mb-4">All Features</h2>
+        <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 text-center mb-4">All Features</h2>
         <p className="text-gray-600 mb-12">
           Everything you need to modernize your restaurant and delight customers.
         </p>
@@ -813,7 +798,7 @@ const FaqItem = ({ question, answer, isOpen, onClick }) => (
 <section className=" py-16 sm:py-24">
   <div className="max-w-6xl mx-auto px-6">
     <div className="text-center">
-      <h2 className="text-4xl font-extrabold text-gray-900">
+      <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 text-center">
         Frequently Asked Questions
       </h2>
       <p className="mt-4 text-lg text-gray-600">
