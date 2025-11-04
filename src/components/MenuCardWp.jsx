@@ -114,11 +114,15 @@ function MenuCard({
         className="relative bg-white/80 backdrop-blur-lg border border-gray-200 rounded-2xl shadow-md p-3 m-2 w-full max-w-md flex items-center hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
         onClick={() => setShowPopup(true)}
       >
-        <img
-          src={item.image || "https://via.placeholder.com/100"}
-          alt={item.name}
-          className="w-20 h-20 rounded-xl object-cover shadow-sm border"
-        />
+        {item.image && (
+  <img
+    src={item.image}
+    alt={item.name}
+    className="w-20 h-20 rounded-xl object-cover shadow-sm border"
+    onError={(e) => (e.target.style.display = "none")}
+  />
+)}
+
 
         <div className="ml-4 flex flex-col justify-between flex-grow h-full">
           <h3 className="text-lg font-semibold text-gray-800">{item.name}</h3>
