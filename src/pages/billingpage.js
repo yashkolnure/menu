@@ -2,7 +2,7 @@ import React from "react";
 import { Helmet } from "react-helmet";
 import { Link } from "react-router-dom";
 const WHATSAPP_LINK =
-  "https://wa.me/917499835687?text=Hello%20Petoba%20Team%2C%20I%20want%20to%20subscribe%20to%20Petoba%20Billing%20App.";
+  "https://wa.me/919270361329?text=Hello%20Petoba%20Team%2C%20I%20want%20to%20subscribe%20to%20Petoba%20Billing%20App.";
 
 
 function BillingApp() {
@@ -58,7 +58,7 @@ function BillingApp() {
           Download App
         </a>
         <a
-          href="https://wa.me/7499835687?text=Hello%20Petoba%20Team%2C%20I%20am%20interested%20in%20subscribing%20to%20the%20Petoba%20Billing%20App.%20Could%20you%20please%20share%20the%20process%20and%20pricing%20details%3F%20Thank%20you!"
+          href="https://wa.me/9270361329?text=Hello%20Petoba%20Team%2C%20I%20am%20interested%20in%20subscribing%20to%20the%20Petoba%20Billing%20App.%20Could%20you%20please%20share%20the%20process%20and%20pricing%20details%3F%20Thank%20you!"
           className="px-8 py-4 rounded-full bg-gray-100 text-gray-800 text-lg font-semibold shadow hover:bg-gray-200 transition"
         >
          Subscribe App
@@ -366,7 +366,7 @@ function BillingApp() {
 
       {/* WhatsApp Help Floating Button */}
       <a
-        href="https://wa.me/917499835687?text=Hello%2C%20I%20want%20to%20know%20more%20about%20Petoba%20Billing%20App."
+        href="https://wa.me/919270361329?text=Hello%2C%20I%20want%20to%20know%20more%20about%20Petoba%20Billing%20App."
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-5 right-5 z-50 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2"

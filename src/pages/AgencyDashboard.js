@@ -14,6 +14,7 @@ const AgencyDashboard = () => {
     contact: "",
     password: "",
     subadmin_id: "",
+    currency: "INR", // 🆕 Default to INR
     membership_level: 3,
   });
   const [editingId, setEditingId] = useState(null);
@@ -27,6 +28,19 @@ const AgencyDashboard = () => {
     2: 25,   // Level 2 agency → max 25 restaurants
     3: 50,  // Level 3 agency → max 50 restaurants
   };
+
+  const currencies = [
+  { code: "INR", name: "Indian Rupee", symbol: "₹" },
+  { code: "USD", name: "US Dollar", symbol: "$" },
+  { code: "EUR", name: "Euro", symbol: "€" },
+  { code: "GBP", name: "British Pound", symbol: "£" },
+  { code: "AED", name: "UAE Dirham", symbol: "د.إ" },
+  { code: "AUD", name: "Australian Dollar", symbol: "A$" },
+  { code: "CAD", name: "Canadian Dollar", symbol: "CA$" },
+  { code: "SGD", name: "Singapore Dollar", symbol: "S$" },
+  { code: "JPY", name: "Japanese Yen", symbol: "¥" },
+  { code: "CNY", name: "Chinese Yuan", symbol: "¥" },
+];
 
   const API = "/api/admin";
   const WP_USERNAME = "yashkolnure58@gmail.com";
@@ -99,6 +113,7 @@ const AgencyDashboard = () => {
       contact: restaurant.contact || "",
       password: "",
       subadmin_id: restaurant.subadmin_id || agencyId,
+      currency: restaurant.currency || "INR",
     });
     setFormOpen(true);
   };
@@ -251,6 +266,23 @@ const AgencyDashboard = () => {
                   {form.logo && <img src={form.logo} alt="Uploaded" className="mt-3 rounded-md h-20 object-cover border" />}
                 </div>
               </div>
+              <div>
+  <label className="block mb-2 mt-4 text-sm font-medium text-gray-600">
+    Select Currency
+  </label>
+  <select
+    name="currency"
+    value={form.currency}
+    onChange={handleChange}
+    className="p-3 border rounded-lg focus:ring focus:ring-blue-300 w-full"
+  >
+    {currencies.map((cur) => (
+      <option key={cur.code} value={cur.code}>
+        {cur.symbol} {cur.name} ({cur.code})
+      </option>
+    ))}
+  </select>
+</div>
 
               <button
                 onClick={handleSubmit}

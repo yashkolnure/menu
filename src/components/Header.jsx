@@ -87,7 +87,7 @@ const Header = () => {
           </div>
 
           {/* Desktop Nav links */}
-          <nav className="hidden md:flex items-center gap-10">
+          <nav className="hidden md:flex items-center gap-8">
             <a href="/" className="hover:text-blue-600 font-medium">
               Home
             </a>
@@ -113,6 +113,12 @@ const Header = () => {
             ) : null}
             {token ? (
               <>
+              <a
+                href="/petoba-billing-landing"
+                className="hover:text-blue-600 font-medium"
+              >
+               Billing App
+              </a>
                 <a
                   href="/admin/dashboard"
                   className="hover:text-blue-600 font-medium"

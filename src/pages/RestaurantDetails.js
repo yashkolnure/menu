@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 
 function RestaurantDetails() {
-  const [restaurant, setRestaurant] = useState({ name: "", logo: "", address: "", contact: "" });
+  const [restaurant, setRestaurant] = useState({ name: "", logo: "", address: "", contact: "", membership_level: "", currency: "" });
 
   const restaurantId = localStorage.getItem("restaurantId");
   const token = localStorage.getItem("token");
@@ -30,6 +30,7 @@ function RestaurantDetails() {
       <p className="text-lg"><strong>Contact:</strong> {restaurant.contact}</p>
       <p className="text-lg"><strong>ID:</strong> {restaurant.id || restaurantId}</p>
       <p className="text-lg"><strong>Membership Level:</strong> {restaurant.membership_level }</p>
+      <p className="text-lg"><strong>Currency:</strong> {restaurant.currency}</p>
     </div>
   );
 }

@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 
 const APK_LINK = "https://avenirya.com/wp-content/uploads/2025/10/Petoba-Billing.apk";
 const WHATSAPP_LINK =
-  "https://wa.me/917499835687?text=Hello%20Petoba%20Team%2C%20I%20want%20to%20subscribe%20to%20Petoba%20Billing%20App.";
+  "https://wa.me/919270361329?text=Hello%20Petoba%20Team%2C%20I%20want%20to%20subscribe%20to%20Petoba%20Billing%20App.";
 
 const screenshots = [
   "https://avenirya.com/wp-content/uploads/2025/10/1.png",

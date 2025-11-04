@@ -497,7 +497,7 @@ function UserMenuCreator() {
         e.preventDefault();
         const name = e.target.restaurantName.value.trim();
         if (name) {
-          window.open(`https://wa.me/917499835687?text=Hello%2C%20I%20want%20Petoba%20team%20to%20upload%20my%20menu%20for%20Rs249.%20Restaurant%20Name%3A%20${encodeURIComponent(name)}`, "_blank");
+          window.open(`https://wa.me/919270361329?text=Hello%2C%20I%20want%20Petoba%20team%20to%20upload%20my%20menu%20for%20Rs249.%20Restaurant%20Name%3A%20${encodeURIComponent(name)}`, "_blank");
         } else {
           alert("Please enter your restaurant name.");
         }
@@ -523,7 +523,7 @@ function UserMenuCreator() {
   </div>
 </div>
 <a
-  href="https://wa.me/917499835687?text=Hello%2C%20I%20want%20help%20with%20Petoba%20menu%20upload."
+  href="https://wa.me/919270361329?text=Hello%2C%20I%20want%20help%20with%20Petoba%20menu%20upload."
   target="_blank"
   rel="noopener noreferrer"
   className="fixed bottom-5 right-5 z-50 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2"

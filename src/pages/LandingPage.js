@@ -382,7 +382,7 @@ const FaqItem = ({ question, answer, isOpen, onClick }) => (
 
   const sendMessage = () => {
     if (!message.trim()) return;
-    const url = `https://wa.me/917499835687?text=${encodeURIComponent(message)}`;
+    const url = `https://wa.me/919270361329?text=${encodeURIComponent(message)}`;
     window.open(url, "_blank");
     setMessage("");
     setOpen(false);

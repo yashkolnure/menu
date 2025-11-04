@@ -257,7 +257,7 @@ const MembershipPage = () => {
       </section>
       {/* 🔹 WhatsApp Help Floating Button */}
       <a
-        href="https://wa.me/917499835687?text=Hi! is there anyone to chat?"
+        href="https://wa.me/919270361329?text=Hi! is there anyone to chat?"
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold px-5 py-3 rounded-full shadow-lg transition-transform transform hover:scale-105"

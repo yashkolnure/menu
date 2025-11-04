@@ -36,7 +36,7 @@ const Footer = () => {
             <div>
               <h3 className="font-semibold text-gray-800 mb-3 text-lg">Contact</h3>
               <ul className="space-y-2 text-gray-600 text-sm">
-                <li>📞 +91 7499835687</li>
+                <li>📞 +91 9270361329</li>
                 <li>📧 admin@avenirya.com</li>
               </ul>
             </div>

@@ -94,11 +94,14 @@ function Dashboard() {
     }
   }, [existingItems]);
 
-  const handleItemChange = (e) => {
-    const { name, value } = e.target;
-    if (name === "price" && !/^[0-9]*$/.test(value)) return;
-    setItemForm((prev) => ({ ...prev, [name]: value }));
-  };
+const handleItemChange = (e) => {
+  const { name, value } = e.target;
+
+  // Allow numbers with optional one decimal point
+  if (name === "price" && !/^\d*\.?\d*$/.test(value)) return;
+
+  setItemForm((prev) => ({ ...prev, [name]: value }));
+};
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -749,11 +752,19 @@ return (
         />
         <input
           name="price"
+          type="text"
           value={itemForm.price}
-          onChange={handleItemChange}
-          placeholder="Price"
+          onChange={(e) => {
+            const value = e.target.value;
+            // Allow only numbers and up to one decimal point
+            if (/^\d*\.?\d*$/.test(value)) {
+              handleItemChange(e);
+            }
+          }}
+          placeholder={`${restaurant?.currency || "₹"} Price`}
           className="border p-3 rounded-lg focus:ring focus:ring-blue-300"
         />
+
         <input
           name="description"
           value={itemForm.description}
@@ -1044,12 +1055,13 @@ return (
                   <input
                     value={item.price}
                     onChange={(e) =>
-                      /^[0-9]*$/.test(e.target.value) &&
+                      /^\d*\.?\d{0,2}$/.test(e.target.value) &&
                       updateEditedItem(index, "price", e.target.value)
                     }
                     className="border p-3 rounded text-sm w-full sm:w-24 text-center"
-                    placeholder="₹"
+                    placeholder={`${restaurant?.currency || "₹"} Price`}
                   />
+
 
                   {/* Category with custom option */}
                   <div className="flex flex-col w-full sm:w-48">

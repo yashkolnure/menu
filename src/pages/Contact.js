@@ -140,7 +140,7 @@ const ContactPage = () => {
                 <div className="p-4 bg-green-100 rounded-full text-green-600">
                   <FaPhoneAlt size={20} />
                 </div>
-                <p className="text-gray-700">+91 7499835687</p>
+                <p className="text-gray-700">+91 9270361329</p>
             </div>
 
             {/* WhatsApp */}
@@ -149,7 +149,7 @@ const ContactPage = () => {
                   <FaWhatsapp size={20} />
                 </div>
                 <a
-                  href="https://wa.me/917499835687"
+                  href="https://wa.me/919270361329"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-700 hover:text-green-600 transition-colors"

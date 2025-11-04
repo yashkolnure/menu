@@ -24,6 +24,7 @@ const RegisterFreePage = () => {
     password: "",
     retypePassword: "",
     membership_level: getMembershipLevel(selectedPlan),
+    currency: "INR",
   });
 
   const [errors, setErrors] = useState({});
@@ -32,6 +33,19 @@ const RegisterFreePage = () => {
   const [coupon, setCoupon] = useState("");
   const [discount, setDiscount] = useState(0);
 
+const currencies = [
+  { code: "INR", name: "Indian Rupee", symbol: "₹" },
+  { code: "USD", name: "US Dollar", symbol: "$" },
+  { code: "EUR", name: "Euro", symbol: "€" },
+  { code: "GBP", name: "British Pound", symbol: "£" },
+  { code: "AED", name: "UAE Dirham", symbol: "د.إ" },
+  { code: "AUD", name: "Australian Dollar", symbol: "A$" },
+  { code: "CAD", name: "Canadian Dollar", symbol: "CA$" },
+  { code: "SGD", name: "Singapore Dollar", symbol: "S$" },
+  { code: "JPY", name: "Japanese Yen", symbol: "¥" },
+  { code: "CNY", name: "Chinese Yuan", symbol: "¥" },
+];
+  
   const WP_USERNAME = "yashkolnure58@gmail.com";
   const WP_APP_PASSWORD = "05mq iTLF UvJU dyaz 7KxQ 8pyc";
   const WP_SITE_URL = "https://website.avenirya.com";
@@ -295,6 +309,22 @@ const RegisterFreePage = () => {
             />
             {errors.retypePassword && <p className="text-red-500 text-sm mt-1">{errors.retypePassword}</p>}
           </div>
+          {/** Currency */}
+          <div>
+            <select
+              name="currency"
+              value={formData.currency}
+              onChange={handleChange}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500"
+            >
+              {currencies.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.symbol} {c.name} ({c.code})
+                </option>
+              ))}
+            </select>
+            {errors.currency && <p className="text-red-500 text-sm mt-1">{errors.currency}</p>}
+          </div>
 
           {/** Logo Upload */}
           <div>
@@ -309,6 +339,8 @@ const RegisterFreePage = () => {
             {formData.logo && <img src={formData.logo} alt="Logo" className="mt-2 h-20 rounded" />}
             {errors.logo && <p className="text-red-500 text-sm mt-1">{errors.logo}</p>}
           </div>
+
+          
 
           <input type="hidden" name="membership_level" value={formData.membership_level} />
           <CouponBox
@@ -387,7 +419,7 @@ const RegisterFreePage = () => {
 
       {/** WhatsApp Help Button */}
       <a
-        href="https://wa.me/917499835687?text=Hello%2C%20I%20need%20help%20with%20Petoba%20menu%20registration."
+        href="https://wa.me/919270361329?text=Hello%2C%20I%20need%20help%20with%20Petoba%20menu%20registration."
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-5 right-5 z-50 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2"

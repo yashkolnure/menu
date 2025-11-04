@@ -14,6 +14,7 @@ const SuperAdminDashboard = () => {
     password: "",
     subadmin_id: "",
     membership_level: "",
+    currency: "INR", // 🆕 Default to INR
     homeImage: "",  
     active: true,
   });
@@ -26,7 +27,7 @@ const SuperAdminDashboard = () => {
   const limits = {
     1: 10,   // Level 1 agency → max 10 restaurants
     2: 25,   // Level 2 agency → max 25 restaurants
-    3: 50,  // Level 3 agency → max 50 restaurants
+    3: 500,  // Level 3 agency → max 50 restaurants
   };
 
   const API = "/api/admin";
@@ -34,7 +35,18 @@ const SuperAdminDashboard = () => {
   const WP_APP_PASSWORD = "05mq iTLF UvJU dyaz 7KxQ 8pyc";
   const WP_SITE_URL = "https://website.avenirya.com";
 
-
+const currencies = [
+  { code: "INR", name: "Indian Rupee", symbol: "₹" },
+  { code: "USD", name: "US Dollar", symbol: "$" },
+  { code: "EUR", name: "Euro", symbol: "€" },
+  { code: "GBP", name: "British Pound", symbol: "£" },
+  { code: "AED", name: "UAE Dirham", symbol: "د.إ" },
+  { code: "AUD", name: "Australian Dollar", symbol: "A$" },
+  { code: "CAD", name: "Canadian Dollar", symbol: "CA$" },
+  { code: "SGD", name: "Singapore Dollar", symbol: "S$" },
+  { code: "JPY", name: "Japanese Yen", symbol: "¥" },
+  { code: "CNY", name: "Chinese Yuan", symbol: "¥" },
+];
 
   const [uploadingHome, setUploadingHome] = useState(false);
 
@@ -103,6 +115,7 @@ const uploadHomeImageToWordPress = async (file) => {
         logo: "",
         contact: "",
         password: "",
+        currency: "", // 🆕 Default to INR
         subadmin_id: agencyId,
         membership_level: "",
       });
@@ -126,7 +139,7 @@ const uploadHomeImageToWordPress = async (file) => {
       subadmin_id: restaurant.subadmin_id || agencyId,
       homeImage: restaurant.homeImage || "", // <-- add this
       active: typeof restaurant.active === "boolean" ? restaurant.active : true, // <-- add this
-
+      currency: restaurant.currency || "INR", // 🆕 Add currency field
     });
     setFormOpen(true);
   };
@@ -225,7 +238,7 @@ const uploadHomeImageToWordPress = async (file) => {
         {/* Popup form */}
         {formOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-white w-full max-w-2xl p-6 rounded-2xl shadow relative">
+            <div className="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 rounded-2xl shadow relative">
               <button
                 onClick={() => setFormOpen(false)}
                 className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
@@ -277,6 +290,24 @@ const uploadHomeImageToWordPress = async (file) => {
                   {form.logo && <img src={form.logo} alt="Uploaded" className="mt-3 rounded-md h-20 object-cover border" />}
                 </div>
               </div>
+              <div>
+                <label className="block mb-2 mt-4 text-sm font-medium text-gray-600">
+                  Select Currency
+                </label>
+                <select
+                  name="currency"
+                  value={form.currency}
+                  onChange={handleChange}
+                  className="p-3 border rounded-lg focus:ring focus:ring-blue-300 w-full"
+                >
+                  {currencies.map((cur) => (
+                    <option key={cur.code} value={cur.code}>
+                      {cur.symbol} {cur.name} ({cur.code})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
 
               <button
                 onClick={handleSubmit}

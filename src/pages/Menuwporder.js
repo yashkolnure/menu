@@ -24,6 +24,38 @@ function RestaurantMenuPagewp() {
   const carouselRef = useRef(null);
   const [offers, setOffers] = useState([]);
 
+  // show/hide scroll-to-top button
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  const currencies = [
+  { code: "INR", name: "Indian Rupee", symbol: "₹" },
+  { code: "USD", name: "US Dollar", symbol: "$" },
+  { code: "EUR", name: "Euro", symbol: "€" },
+  { code: "GBP", name: "British Pound", symbol: "£" },
+  { code: "AED", name: "UAE Dirham", symbol: "د.إ" },
+  { code: "AUD", name: "Australian Dollar", symbol: "A$" },
+  { code: "CAD", name: "Canadian Dollar", symbol: "CA$" },
+  { code: "SGD", name: "Singapore Dollar", symbol: "S$" },
+  { code: "JPY", name: "Japanese Yen", symbol: "¥" },
+  { code: "CNY", name: "Chinese Yuan", symbol: "¥" },
+];
+
+const selectedCurrency = currencies.find(
+  (c) => c.code === restaurantDetails?.currency
+);
+const currencySymbol = selectedCurrency ? selectedCurrency.symbol : "₹"; 
+
+  useEffect(() => {
+    const handleScroll = () => setShowScrollTop(window.scrollY > 300);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   useEffect(() => {
     const fetchOffers = async () => {
       try {
@@ -138,7 +170,7 @@ if (!adminPhone) {
 
     const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-    const message = `New Order%0ATable: ${tableNumber}%0A%0A${orderSummary}%0A%0ATotal: ₹${total}`;
+    const message = `New Order%0ATable: ${tableNumber}%0A%0A${orderSummary}%0A%0ATotal: ${currencySymbol}${total}`;
     const whatsappURL = `https://wa.me/${adminPhone}?text=${message}`;
 
     setCart([]);
@@ -183,7 +215,7 @@ if (!adminPhone) {
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://yash.avenirya.com" />
       </Helmet>
-      <header className="relative h-56 w-full mb-0 overflow-hidden rounded-b-xl shadow-lg">
+      <header className="relative h-56 w-full mb-0 overflow-hidden bg-ghostwhite rounded-b-xl shadow-lg">
         <img
           src={
             restaurantDetails?.homeImage
@@ -195,7 +227,7 @@ if (!adminPhone) {
         />
         <div className="relative z-10 bg-black/40 w-full h-full flex flex-col items-center justify-center px-4 py-6 space-y-4">
           {restaurantDetails?.logo && (
-            <img src={restaurantDetails.logo} alt="Logo" className="h-20 sm:h-24 object-contain" />
+            <img src={restaurantDetails.logo} alt="Logo" className="h-24 sm:h-24 object-contain" />
           )}
           <input
             type="text"
@@ -217,7 +249,7 @@ if (!adminPhone) {
               const idx = Math.round(container.scrollLeft / slideWidth);
               setActiveOffer(idx);
             }}
-            className="mt-4 w-full max-w-xl mx-auto mb-3 overflow-x-auto scroll-smooth px-4 cursor-grab"
+            className="pt-4 w-full max-w-xl mx-auto mb-3 overflow-x-auto scroll-smooth px-4 cursor-grab"
             style={{ scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}
           >
             <div className="flex space-x-4">
@@ -234,7 +266,7 @@ if (!adminPhone) {
             </div>
           </div>
 
-          <div className="flex justify-center space-x-2 pb-6 bg-gray-100">
+          <div className="flex justify-center space-x-2 pb-2 bg-gray-100">
             {offers.map((_, idx) => (
               <span
                 key={idx}
@@ -272,7 +304,15 @@ if (!adminPhone) {
             </div>
           ) : filteredMenu.length > 0 ? (
             filteredMenu.map(item => (
-              <MenuCard key={item._id} item={item} addToCart={addToCart} />
+              <MenuCard 
+                key={item._id} 
+                item={item} 
+                cartItem={cart.find(c => c._id === item._id)}
+                addToCart={addToCart}
+                increaseQty={(item) => updateQty(item._id, (cart.find(c => c._id === item._id)?.quantity || 0) + 1)}
+                decreaseQty={(item) => updateQty(item._id, (cart.find(c => c._id === item._id)?.quantity || 0) - 1)}
+                currency={restaurantDetails?.currency }
+              />
             ))
           ) : (
             <p className="text-gray-500 text-center mb-4">No items match your search.</p>
@@ -284,23 +324,46 @@ if (!adminPhone) {
         </div>
         
         <div className="flex flex-wrap justify-center">
-          <p className="text-gray-500 text-center mt-4">© {new Date().getFullYear()} Petoba. All rights reserved.</p>
-        </div>
-      </div>
+          <p className="text-gray-500 text-center mt-4">
+              Made with ❤️ by <a href="https://yash.avenirya.com" className="text-orange-500" target="_blank" rel="noopener noreferrer">Petoba</a> 
+            </p>
+            </div>
+          </div>
 
 
       {cart.length > 0 && (
         <div className="fixed bottom-5 right-5">
-            <button
+          <button
             onClick={() => setShowCart(true)}
             className="bg-orange-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-orange-600 transition-all"
-            >
+          >
             View Cart ({cart.length})
-            </button>
+          </button>
         </div>
-        )}
+      )}
 
-        {showCart && (
+      {/* Scroll to top button (left-bottom) */}
+      {showScrollTop && (
+        <button
+  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+  className="fixed bottom-5 left-5 z-50 bg-orange-500 text-white p-2 rounded-full shadow-lg hover:bg-gray-700 transition-transform transform hover:-translate-y-1"
+  aria-label="Scroll to top"
+>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="w-4 h-4"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={2}
+  >
+    <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+  </svg>
+</button>
+
+      )}
+
+      {showCart && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                 <div className="bg-white rounded-xl max-w-md w-full mx-4 p-5 space-y-4 relative">
                 <button
@@ -317,7 +380,7 @@ if (!adminPhone) {
                     <div key={item._id} className="flex justify-between items-center border-b py-2">
                       <div>
                         <p className="font-semibold">{item.name}</p>
-                        <p className="text-sm text-gray-500">₹{item.price}</p>
+                        <p className="text-sm text-gray-500">{currencySymbol}{item.price}</p>
                       </div>
                       <div className="flex items-center space-x-2">
                         <button
@@ -346,7 +409,7 @@ if (!adminPhone) {
 
                 <div className="pt-3">
                     <p className="text-right font-semibold">
-                    Total: ₹
+                    Total: {currencySymbol}
                     {cart.reduce((sum, item) => sum + item.price * item.quantity, 0)}
                     </p>
                 </div>
@@ -373,7 +436,7 @@ if (!adminPhone) {
 
 
 
-      <ToastContainer position="bottom-left"  toastClassName="!mb-20" autoClose={1000} />
+      <ToastContainer position="bottom-left"  toastClassName="" autoClose={1000} />
     </>
   );
 }

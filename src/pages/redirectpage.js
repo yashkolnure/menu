@@ -12,7 +12,7 @@ function RedirectManagerPage() {
   // Fetch all redirects
   const fetchRedirects = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/admin/redirects");
+      const res = await fetch("/api/admin/redirects");
       const data = await res.json();
       setRedirects(data);
     } catch (err) {
@@ -29,7 +29,7 @@ function RedirectManagerPage() {
     if (!from || !to) return alert("Both fields are required");
 
     try {
-      const res = await fetch("http://localhost:5000/api/admin/redirects", {
+      const res = await fetch("/api/admin/redirects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ from, to }),
@@ -51,7 +51,7 @@ function RedirectManagerPage() {
   // Delete redirect
   const handleDeleteRedirect = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/redirects/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/redirects/${id}`, { method: "DELETE" });
       if (res.ok) {
         fetchRedirects();
       } else {

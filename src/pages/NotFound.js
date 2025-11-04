@@ -11,7 +11,7 @@ const NotFound = () => {
   const handleGoHome = () => navigate("/");
   const handleContactWhatsApp = () => {
     window.open(
-      "https://wa.me/917499835687?text=Hi, I landed on a missing page.",
+      "https://wa.me/919270361329?text=Hi, I landed on a missing page.",
       "_blank"
     );
   };
