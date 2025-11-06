@@ -21,8 +21,10 @@ function RestaurantMenuPagewp() {
   const [restaurantDetails, setRestaurantDetails] = useState(null);
   const [activeOffer, setActiveOffer] = useState(0);
   const [loading, setLoading] = useState(true);
-  const carouselRef = useRef(null);
   const [offers, setOffers] = useState([]);
+  const [fullscreenImage, setFullscreenImage] = useState(null);
+  const carouselRef = useRef(null);
+
 
   // show/hide scroll-to-top button
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -253,13 +255,17 @@ if (!adminPhone) {
             style={{ scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}
           >
             <div className="flex space-x-4">
-              {offers.map(o => (
-                <div key={o._id} className="flex-shrink-0 w-4/5 snap-start first:pl-4 last:pr-4">
+              {offers.map((o) => (
+                <div
+                  key={o._id}
+                  className="flex-shrink-0 w-4/5 snap-start first:pl-4 last:pr-4"
+                  onClick={() => setFullscreenImage(o.image)} // 👈 open full screen
+                >
                   <img
                     loading="lazy"
                     src={o.image}
                     alt=""
-                    className="w-full h-[150px] max-h-[150px] object-cover rounded-lg"
+                    className="w-full h-[150px] max-h-[150px] object-cover rounded-lg hover:scale-105 transition-transform duration-200 cursor-pointer"
                   />
                 </div>
               ))}
@@ -276,6 +282,26 @@ if (!adminPhone) {
               />
             ))}
           </div>
+        </div>
+      )}
+
+      {/* ✅ Fullscreen Modal */}
+      {fullscreenImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50"
+          onClick={() => setFullscreenImage(null)} // close on click
+        >
+          <img
+            src={fullscreenImage}
+            alt="Offer"
+            className="max-w-full max-h-full rounded-lg shadow-lg"
+          />
+          <button
+            onClick={() => setFullscreenImage(null)}
+            className="absolute top-4 right-4 text-white text-3xl font-bold"
+          >
+            &times;
+          </button>
         </div>
       )}
 
