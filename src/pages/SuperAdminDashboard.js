@@ -20,6 +20,7 @@ const SuperAdminDashboard = () => {
   });
   const [editingId, setEditingId] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(null);
   const [loading, setLoading] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const formRef = useRef(null);
@@ -27,7 +28,7 @@ const SuperAdminDashboard = () => {
   const limits = {
     1: 10,   // Level 1 agency → max 10 restaurants
     2: 25,   // Level 2 agency → max 25 restaurants
-    3: 500,  // Level 3 agency → max 50 restaurants
+    3: 10000,  // Level 3 agency → max 50 restaurants
   };
 
   const API = "/api/admin";
@@ -115,7 +116,7 @@ const uploadHomeImageToWordPress = async (file) => {
         logo: "",
         contact: "",
         password: "",
-        currency: "", // 🆕 Default to INR
+        currency: "INR", // 🆕 Default to INR
         subadmin_id: agencyId,
         membership_level: "",
       });
@@ -348,29 +349,115 @@ const uploadHomeImageToWordPress = async (file) => {
                       <td className="p-3 border">{rest.name}</td>
                       <td className="p-3 border">{rest.contact || "-"}</td>
                       <td className="p-3 border text-center">
-                        <button
-                          onClick={async () => {
-                            const confirmMsg = rest.active
-                              ? `Are you sure you want to deactivate "${rest.name}"?`
-                              : `Are you sure you want to activate "${rest.name}"?`;
-                            if (!window.confirm(confirmMsg)) return;
-                            try {
-                              await axios.put(`${API}/restaurants/${rest._id}`, { active: !rest.active });
-                              toast.success(`Restaurant ${rest.active ? "deactivated" : "activated"}!`);
-                              fetchRestaurantsByAgency(agencyId);
-                            } catch (err) {
-                              toast.error("Failed to update status");
-                            }
-                          }}
-                          className={`px-3 py-1 rounded-full font-semibold text-xs ${
-                            rest.active
-                              ? "bg-green-100 text-green-700 border border-green-300"
-                              : "bg-gray-200 text-gray-600 border border-gray-300"
-                          }`}
-                        >
-                          {rest.active ? "Active" : "Inactive"}
-                        </button>
+<div className="relative inline-block">
+  <button
+    onClick={async () => {
+      if (rest.active) {
+        const confirmMsg = `Are you sure you want to deactivate "${rest.name}"?`;
+        if (!window.confirm(confirmMsg)) return;
+
+        try {
+          await axios.put(`${API}/restaurants/${rest._id}`, {
+            active: false,
+            expiresAt: null,
+          });
+          toast.success(`Restaurant deactivated!`);
+          fetchRestaurantsByAgency(agencyId);
+        } catch {
+          toast.error("Failed to deactivate");
+        }
+      } else {
+        // Toggle dropdown visibility
+        setShowDropdown((prev) => (prev === rest._id ? null : rest._id));
+      }
+    }}
+    className={`px-3 py-1 rounded-full font-semibold text-xs ${
+      rest.active
+        ? "bg-green-100 text-green-700 border border-green-300"
+        : "bg-gray-200 text-gray-600 border border-gray-300 hover:bg-gray-300"
+    }`}
+  >
+    {rest.active ? "Active" : "Inactive"}
+  </button>
+
+  {/* dropdown menu for duration */}
+  {showDropdown === rest._id && !rest.active && (
+    <div className="absolute right-0 w-40 mt-2 bg-white border border-gray-200 rounded-lg shadow-md text-sm z-10">
+      <p className="px-3 py-2 text-gray-700 font-semibold border-b">Select Duration</p>
+      {[
+        { label: "7 Days", value: "7d" },
+        { label: "1 Month", value: "1m" },
+        { label: "2 Months", value: "2m" },
+        { label: "6 Months", value: "6m" },
+        { label: "1 Year", value: "1y" },
+        { label: "Lifetime", value: "5y" },
+      ].map((opt) => (
+        <button
+          key={opt.value}
+          onClick={async () => {
+            setShowDropdown(null);
+            const now = new Date();
+            if (opt.value === "7d") now.setDate(now.getDate() + 7);
+            else if (opt.value === "1m") now.setMonth(now.getMonth() + 1);
+            else if (opt.value === "2m") now.setMonth(now.getMonth() + 2);
+            else if (opt.value === "6m") now.setMonth(now.getMonth() + 6);
+            else if (opt.value === "1y") now.setFullYear(now.getFullYear() + 1);
+            else if (opt.value === "5y") now.setFullYear(now.getFullYear() + 5);
+
+            const expiresAt = now;
+            try {
+              await axios.put(`${API}/restaurants/${rest._id}`, {
+                active: true,
+                expiresAt,
+              });
+              toast.success(`"${rest.name}" activated for ${opt.label}!`);
+              fetchRestaurantsByAgency(agencyId);
+            } catch {
+              toast.error("Failed to activate");
+            }
+          }}
+          className="block w-full text-left px-3 py-2 hover:bg-gray-100"
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  )}
+</div>
+                        
+{rest.expiresAt && (() => {
+  const now = new Date();
+  const expiry = new Date(rest.expiresAt);
+  const diffMs = expiry - now;
+
+  if (diffMs <= 0) {
+    return <span className="text-xs text-gray-500"><br />Expired</span>;
+  }
+
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const diffMonths = Math.floor(diffDays / 30);
+  const diffYears = Math.floor(diffDays / 365);
+
+  let timeLeft = "";
+
+  if (diffYears >= 1) {
+    timeLeft = `${diffYears}y left`;
+  } else if (diffMonths >= 1) {
+    timeLeft = `${diffMonths}m left`;
+  } else {
+    timeLeft = `${diffDays}d left`;
+  }
+
+  return (
+    <span className="text-xs text-gray-500">
+      <br />
+      {timeLeft}
+    </span>
+  );
+})()}
+
                       </td>
+                      
                       <td className="p-3 border text-center">
                         <div className="flex justify-center gap-3">
                           <button

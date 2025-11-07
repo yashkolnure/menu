@@ -5,70 +5,63 @@ import { MessageCircle } from "lucide-react"; // nice chat icon
 const MembershipPage = () => {
   const plans = [
   {
-    name: "FREE",
+    name: "Free",
     price: "₹0",
-    period: "/forever",
+    period: "/7 Days",
     features: [
-      { name: "Upto 15 Menu Items", available: true },
-      { name: "Free Dashboard - Manage Anytime", available: true },
-      { name: "Basic QR Code Design", available: true },
-      { name: "Premium Menu Design", available: true },
-      { name: "1 Year Validity", available: true },
-      { name: "AI Menu Upload", available: false },
-      { name: "Upload Item Images", available: false },
-      { name: "AI Image Upload", available: false },
-      { name: "WhatsApp Ordering Feature", available: false },
-      { name: "Take Google Map Reviews", available: false },
-      { name: "Connect Instagram / Social Media  ", available: false },
-      { name: "Add Custom Line (We take Party Orders)", available: false },
+      { name: "Unlimited Menu Items", available: true },
+      { name: "Full Dashboard Access", available: true },
+      { name: "All QR Code & Menu Designs", available: true },
+      { name: "AI Menu Upload & Image Upload", available: true },
+      { name: "WhatsApp Ordering Feature", available: true },
+      { name: "Add Offer Banners", available: true },
+      { name: "Connect Instagram / Social to Menu", available: true },
+      { name: "Take Google Map Reviews", available: true },
+      { name: "Add Custom Line (We take Party Orders)", available: true },
+      { name: "Dedicated Support", available: true },
     ],
-    buttonText: "Get Started Free",
+    buttonText: "Start Free Trial",
     gradient: "from-gray-400 to-gray-600",
   },
   {
-    name: "Premium",
-    price: "₹699",
-    discountedPrice: "₹549",   // 🔹 Added discounted price
-    period: "/forever",
+    name: "Monthly",
+    price: "₹399",
+    discountedPrice: "₹199", 
+    period: "/month",
     features: [
-      { name: "100 Menu Items", available: true },
+      { name: "Unlimited Menu Items", available: true },
       { name: "Full Dashboard Access", available: true },
-      { name: "Premium QR Code & Menu Designs", available: true },
-      { name: "Upload Menu with Images", available: true },
-      { name: "AI Menu Upload ", available: true },
-      { name: "AI Image Upload", available: true },
-      { name: "Lifetime Validity", available: true },
-      { name: "Dedicated WhatsApp Support", available: true },
-      { name: "WhatsApp Ordering Feature", available: false },
-      { name: "Take Google Map Reviews", available: false },
-      { name: "Add Offer Banners", available: false },
-      { name: "Connect Instagram / Social to Menu ", available: false },
-      { name: "Add Custom Line (We take Party Orders)", available: false },
+      { name: "All QR Code & Menu Designs", available: true },
+      { name: "AI Menu Upload & Image Upload", available: true },
+      { name: "WhatsApp Ordering Feature", available: true },
+      { name: "Add Offer Banners", available: true },
+      { name: "Connect Instagram / Social to Menu", available: true },
+      { name: "Take Google Map Reviews", available: true },
+      { name: "Add Custom Line (We take Party Orders)", available: true },
+      { name: "Dedicated Support", available: true },
     ],
-    buttonText: "Choose Premium",
+    buttonText: "Choose Monthly",
     gradient: "from-blue-500 to-indigo-600",
     highlight: true,
   },
   {
-    name: "Pro",
-    price: "₹999",
-    discountedPrice: "₹699",   // 🔹 Added discounted price
-    period: "/forever",
+    name: "Yearly",
+    price: "₹2499",
+    discountedPrice: "₹699", // optional discount
+    period: "/year",
     features: [
-      { name: "All Features in Premium", available: true },
       { name: "Unlimited Menu Items", available: true },
-      { name: "WhatsApp Ordering Feature", available: true },
-      { name: "Add Offer Banners", available: true },
       { name: "Full Dashboard Access", available: true },
       { name: "All QR Code & Menu Designs", available: true },
       { name: "AI Menu Upload & Image Upload", available: true },
-      { name: "Dedicated Support", available: true },
-      { name: "Unlimited Menu Updates", available: true },
-      { name: "Connect Instagram / Social to Menu ", available: true },
+      { name: "WhatsApp Ordering Feature", available: true },
+      { name: "Add Offer Banners", available: true },
+      { name: "Connect Instagram / Social to Menu", available: true },
       { name: "Take Google Map Reviews", available: true },
       { name: "Add Custom Line (We take Party Orders)", available: true },
+      { name: "Dedicated Support", available: true },
     ],
-    buttonText: "Choose Pro",
+    buttonText: "Choose Yearly",
     gradient: "from-purple-500 to-pink-600",
   },
 ];
@@ -239,14 +232,14 @@ const MembershipPage = () => {
         </div>
       </section>
 
-      {/* Business & Agency Plans */}
-      <section id="agency" className="relative py-16 ">
-        {/* Background blobs for second section */}
+ 
+      {/* <section id="agency" className="relative py-16 ">
         <div className="absolute -top-20 right-0 w-72 h-72 bg-gradient-to-r from-teal-400 to-blue-600 rounded-full blur-3xl opacity-30"></div>
         <div className="absolute bottom-20 left-0 w-80 h-80 bg-gradient-to-r from-yellow-400 to-red-500 rounded-full blur-3xl opacity-30"></div>
 
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <h2 className="text-4xl font-bold text-center mb-4">
+
             Business & Agency Plans
           </h2>
           <p className="text-center text-gray-600 mb-12">
@@ -254,8 +247,7 @@ const MembershipPage = () => {
           </p>
           {renderPlans(businessPlans, "business")}
         </div>
-      </section>
-      {/* 🔹 WhatsApp Help Floating Button */}
+      </section> */}
       <a
         href="https://wa.me/919270361329?text=Hi! is there anyone to chat?"
         target="_blank"

@@ -2,18 +2,12 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet";
-import CouponBox from "../components/CouponBox"; // adjust path if needed
+import CouponBox from "../components/CouponBox";
 
 const RegisterFreePage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const selectedPlan = searchParams.get("plan") || "Free";
-
-  const getMembershipLevel = (plan) => {
-    if (plan.toLowerCase() === "premium") return 2;
-    if (plan.toLowerCase() === "pro") return 3;
-    return 1;
-  };
+  const selectedPlan = (searchParams.get("plan") || "Free").toLowerCase();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -23,8 +17,9 @@ const RegisterFreePage = () => {
     logo: "",
     password: "",
     retypePassword: "",
-    membership_level: getMembershipLevel(selectedPlan),
+    membership_level: 3, // always 3
     currency: "INR",
+    planType: selectedPlan, // store planType
   });
 
   const [errors, setErrors] = useState({});
@@ -33,19 +28,19 @@ const RegisterFreePage = () => {
   const [coupon, setCoupon] = useState("");
   const [discount, setDiscount] = useState(0);
 
-const currencies = [
-  { code: "INR", name: "Indian Rupee", symbol: "₹" },
-  { code: "USD", name: "US Dollar", symbol: "$" },
-  { code: "EUR", name: "Euro", symbol: "€" },
-  { code: "GBP", name: "British Pound", symbol: "£" },
-  { code: "AED", name: "UAE Dirham", symbol: "د.إ" },
-  { code: "AUD", name: "Australian Dollar", symbol: "A$" },
-  { code: "CAD", name: "Canadian Dollar", symbol: "CA$" },
-  { code: "SGD", name: "Singapore Dollar", symbol: "S$" },
-  { code: "JPY", name: "Japanese Yen", symbol: "¥" },
-  { code: "CNY", name: "Chinese Yuan", symbol: "¥" },
-];
-  
+  const currencies = [
+    { code: "INR", name: "Indian Rupee", symbol: "₹" },
+    { code: "USD", name: "US Dollar", symbol: "$" },
+    { code: "EUR", name: "Euro", symbol: "€" },
+    { code: "GBP", name: "British Pound", symbol: "£" },
+    { code: "AED", name: "UAE Dirham", symbol: "د.إ" },
+    { code: "AUD", name: "Australian Dollar", symbol: "A$" },
+    { code: "CAD", name: "Canadian Dollar", symbol: "CA$" },
+    { code: "SGD", name: "Singapore Dollar", symbol: "S$" },
+    { code: "JPY", name: "Japanese Yen", symbol: "¥" },
+    { code: "CNY", name: "Chinese Yuan", symbol: "¥" },
+  ];
+
   const WP_USERNAME = "yashkolnure58@gmail.com";
   const WP_APP_PASSWORD = "05mq iTLF UvJU dyaz 7KxQ 8pyc";
   const WP_SITE_URL = "https://website.avenirya.com";
@@ -67,7 +62,6 @@ const currencies = [
   const uploadImageToWordPress = async (file) => {
     const imageData = new FormData();
     imageData.append("file", file);
-
     setUploading(true);
     setMessage("");
     setErrors({});
@@ -96,125 +90,114 @@ const currencies = [
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setMessage("");
-  const newErrors = {};
+    e.preventDefault();
+    setMessage("");
+    const newErrors = {};
 
-  // Field validations
-  if (!formData.name.trim()) newErrors.name = "Restaurant name is required.";
-  if (!formData.email.trim()) newErrors.email = "Email is required.";
-  if (!formData.contact.trim()) newErrors.contact = "Contact number is required.";
-  if (!formData.address.trim()) newErrors.address = "Address is required.";
-  if (!formData.logo.trim()) newErrors.logo = "Logo is required.";
-  if (!formData.password.trim()) newErrors.password = "Password is required.";
-  if (formData.password !== formData.retypePassword)
-    newErrors.retypePassword = "Passwords do not match.";
+    if (!formData.name.trim()) newErrors.name = "Restaurant name is required.";
+    if (!formData.email.trim()) newErrors.email = "Email is required.";
+    if (!formData.contact.trim()) newErrors.contact = "Contact number is required.";
+    if (!formData.address.trim()) newErrors.address = "Address is required.";
+    if (!formData.logo.trim()) newErrors.logo = "Logo is required.";
+    if (!formData.password.trim()) newErrors.password = "Password is required.";
+    if (formData.password !== formData.retypePassword)
+      newErrors.retypePassword = "Passwords do not match.";
 
-  setErrors(newErrors);
-  if (Object.keys(newErrors).length > 0) return;
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
 
-  try {
-    // ✅ Check if email exists first
-    const checkRes = await axios.get(
-      `/api/admin/restaurants/check-email?email=${formData.email}`
-    );
+    try {
+      const checkRes = await axios.get(
+        `/api/admin/restaurants/check-email?email=${formData.email}`
+      );
 
-    if (checkRes.data.exists) {
-      setErrors({ email: "An account with this email already exists." });
-      return; // stop submission
-    }
+      if (checkRes.data.exists) {
+        setErrors({ email: "An account with this email already exists." });
+        return;
+      }
 
-    // ✅ Proceed with free plan or payment
-    if (formData.membership_level === 1) {
-      await axios.post("/api/admin/restaurants", formData);
-      setMessage("✅ Registered successfully with Free Plan!");
-      setTimeout(() => navigate("/login"), 1000);
-    } else {
-      // Paid plan → Razorpay flow (same as before)
-      let amount = formData.membership_level === 2 ? 549 : 699;
-      // apply discount if coupon is valid
+      // ✅ Set expiry based on plan type
+      const expiryDate = new Date();
+      if (formData.planType === "free") expiryDate.setDate(expiryDate.getDate() + 7);
+      else if (formData.planType === "premium") expiryDate.setMonth(expiryDate.getMonth() + 1);
+      else if (formData.planType === "pro") expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+      formData.expiresAt = expiryDate.toISOString();
+
+      // ✅ Always set membership level to 3
+      formData.membership_level = 3;
+
+      // ✅ Free plan
+      if (formData.planType === "free") {
+        await axios.post("/api/admin/restaurants", formData);
+        setMessage("✅ Registered successfully with Free Plan!");
+        setTimeout(() => navigate("/login"), 1000);
+      } else {
+        // ✅ Paid plans
+        let amount = formData.planType === "monthly" ? 199 : 699;
         if (discount > 0) {
           amount = amount - discount;
-          if (amount < 1) amount = 1; // avoid free or negative payment
+          if (amount < 1) amount = 1;
         }
 
-      const { data } = await axios.post("/api/create-order", {
-        amount,
-        currency: "INR",
-      });
+        const { data } = await axios.post("/api/create-order", {
+          amount,
+          currency: "INR",
+        });
 
-      const options = {
-        key: process.env.REACT_APP_RAZORPAY_KEY_ID,
-        amount: data.amount,
-        currency: "INR",
-        name: "Digital Menu",
-        description:
-          formData.membership_level === 2 ? "Premium Plan Payment" : "Pro Plan Payment",
-        order_id: data.id,
-        handler: async function (response) {
-          try {
-            const verifyRes = await axios.post("/api/verify-payment", {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-            });
+        const options = {
+          key: process.env.REACT_APP_RAZORPAY_KEY_ID,
+          amount: data.amount,
+          currency: "INR",
+          name: "Digital Menu",
+          description:
+            formData.planType === "premium" ? "Premium Plan Payment" : "Pro Plan Payment",
+          order_id: data.id,
+          handler: async function (response) {
+            try {
+              const verifyRes = await axios.post("/api/verify-payment", {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              });
 
-            if (verifyRes.data.success) {
-              await axios.post("/api/admin/restaurants", formData);
-              setMessage("✅ Registered successfully with Paid Plan!");
-              setTimeout(() => navigate("/login"), 1000);
-            } else {
-              setErrors({ general: "❌ Payment verification failed!" });
+              if (verifyRes.data.success) {
+                await axios.post("/api/admin/restaurants", formData);
+                setMessage("✅ Registered successfully with Paid Plan!");
+                setTimeout(() => navigate("/login"), 1000);
+              } else {
+                setErrors({ general: "❌ Payment verification failed!" });
+              }
+            } catch (err) {
+              setErrors({ general: "❌ Payment error!" });
+              console.error(err);
             }
-          } catch (err) {
-            setErrors({ general: "❌ Payment error!" });
-            console.error(err);
-          }
-        },
-        prefill: {
-          name: formData.name,
-          email: formData.email,
-          contact: formData.contact,
-        },
-        theme: { color: "#F37254" },
-      };
+          },
+          prefill: {
+            name: formData.name,
+            email: formData.email,
+            contact: formData.contact,
+          },
+          theme: { color: "#F37254" },
+        };
 
-      const rzp1 = new window.Razorpay(options);
-      rzp1.open();
+        const rzp1 = new window.Razorpay(options);
+        rzp1.open();
+      }
+    } catch (err) {
+      setErrors({ general: err.response?.data?.message || "❌ Registration failed." });
     }
-  } catch (err) {
-    setErrors({ general: err.response?.data?.message || "❌ Registration failed." });
-  }
-};
+  };
 
   return (
     <div className="relative bg-white py-16">
-        <Helmet>
+      <Helmet>
         <title>Petoba | Digital QR Menu & Ordering</title>
         <meta
           name="description"
           content="Petoba lets restaurants create digital QR menus. Customers scan, order, and enjoy a contactless dining experience."
         />
-
-        <link
-          rel="icon"
-          href="https://petoba.avenirya.com/wp-content/uploads/2025/09/download-1.png"
-          type="image/png"
-        />
-        <meta
-          property="og:image"
-          content="https://petoba.avenirya.com/wp-content/uploads/2025/09/Untitled-design-6.png"
-        />
-        <meta property="og:title" content="Petoba - Digital QR Menu" />
-        <meta property="og:description" content="Turn your restaurant’s menu into a digital QR code menu." />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://yash.avenirya.com" />
       </Helmet>
 
-      {/* Blobs */}
-      <div className="absolute -top-32 -left-32 w-96 h-96 bg-gradient-to-r from-pink-300 to-purple-300 rounded-full filter blur-3xl opacity-30"></div>
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-gradient-to-r from-green-400 to-blue-500 rounded-full blur-3xl opacity-20"></div>
-      
       <h2 className="text-4xl font-bold text-center mb-4">Register Your Restaurant</h2>
       <p className="text-center text-gray-600 mb-12">
         Create your digital menu account — manage dishes, update offers, and connect with customers.
@@ -342,7 +325,7 @@ const currencies = [
 
           
 
-          <input type="hidden" name="membership_level" value={formData.membership_level} />
+          {/* <input type="hidden" name="membership_level" value={formData.membership_level} />
           <CouponBox
             onApply={(couponData) => {
               if (couponData) {
@@ -364,9 +347,9 @@ const currencies = [
                 setCoupon("");
               }
             }}
-          />
+          /> */}
 
-{formData.membership_level > 1 && (
+{/* {formData.membership_level > 1 && (
   <div className="mt-6 p-4 rounded-2xl bg-gradient-to-r from-orange-50 to-pink-50 border border-orange-200 shadow-sm">
     <p className="text-sm text-gray-500 mb-1">
       Selected Plan:{" "}
@@ -399,7 +382,7 @@ const currencies = [
     </div>
   </div>
 )}
-
+ */}
 
           <button
             type="submit"

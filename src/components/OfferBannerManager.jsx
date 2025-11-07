@@ -138,7 +138,7 @@ const OfferBannerModal = ({ restaurantId, token, offers, setOffers }) => {
       {/* Main Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="mt-5 px-6 py-3 bg-gradient-to-r from-pink-500 to-yellow-500 text-white font-medium rounded-lg shadow hover:opacity-90"
+        className="mt-5 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-lg shadow hover:opacity-90"
       >
         Manage Banners
       </button>
@@ -192,6 +192,8 @@ const OfferBannerModal = ({ restaurantId, token, offers, setOffers }) => {
                   >
                     {loading ? "Uploading..." : "Upload"}
                   </button>
+
+
                 </div>
               )}
             </div>
