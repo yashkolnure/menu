@@ -431,7 +431,7 @@ const FaqItem = ({ question, answer, isOpen, onClick }) => (
             </p>
             <a href="/membership">
               <button className="px-10 py-4 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 font-bold shadow-lg hover:scale-105 transition-transform">
-                Get Started
+                Get Started FREE
               </button>
             </a>
           </div>
@@ -458,6 +458,21 @@ const FaqItem = ({ question, answer, isOpen, onClick }) => (
           }
         `}</style>
       </section>
+      <section className="py-8">
+  <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-10">
+    <div className="rounded-3xl shadow-2xl bg-white/90 backdrop-blur-xl  md:p-6 flex flex-col items-center border border-orange-100 relative overflow-hidden">
+
+      <div className="absolute top-1/2 left-1/2 w-48 h-48 bg-gradient-to-br from-orange-300 to-pink-400 opacity-30 rounded-full blur-3xl z-0"></div>
+      <iframe
+        className="relative z-10 w-full h-96 md:h-128 rounded-2xl border-0"
+        src="https://www.youtube.com/embed/gjv5_9cXs9E?rel=0"
+        title="Introductory Video"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      ></iframe>
+    </div>
+  </div>
+</section>  
 
 {/* <section className="py-10 ">
  <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-10">
@@ -524,6 +539,48 @@ const FaqItem = ({ question, answer, isOpen, onClick }) => (
 
 
 <style>{cssStyles}</style>
+
+<section className="relative py-10 bg-transparent">
+  <div className="max-w-7xl mx-auto px-6 text-center">
+    <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+      How to Create Menu, Online
+    </h2>
+    <p className="text-lg text-gray-700 mb-10 max-w-2xl mx-auto">
+     Easily convert your paper menu into a digital QR menu that customers can scan and order from instantly. </p>
+
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+      {[
+       {
+          icon: "1",
+          title: "Step 1: Choose Plan & Sign Up",
+          desc: "Select the plan that suits your restaurant and quickly create your account to get started."
+        },
+        {
+          icon: "2",
+          title: "Step 2: Add Your Menu with AI",
+          desc: "Upload your menu or images and let our AI automatically organize items, descriptions, and prices for you."
+        },
+        {
+          icon: "3",
+          title: "Step 3: Download & Use",
+          desc: "Publish your digital menu and download the QR code. Customers can instantly scan and view your menu on any device."
+        }
+
+      ].map((step, index) => (
+        <div
+          key={index}
+          className="bg-white/40 backdrop-blur-lg rounded-3xl shadow-xl p-8 flex flex-col items-center text-center hover:scale-105 hover:-translate-y-2 hover:shadow-2xl transition-transform duration-300"
+        >
+          <div className="w-16 h-16 flex items-center justify-center bg-blue-500 text-white rounded-full text-3xl mb-4">
+            {step.icon}
+          </div>
+          <h3 className="text-xl font-bold mb-2">{step.title}</h3>
+          <p className="text-gray-700">{step.desc}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
 
         <section className="how-it-works-section-creative">
 
@@ -613,47 +670,6 @@ const FaqItem = ({ question, answer, isOpen, onClick }) => (
   </div>
 </section>
 {/* How It Works Section */}
-<section className="relative py-10 bg-transparent">
-  <div className="max-w-7xl mx-auto px-6 text-center">
-    <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-      How It Works: Your Menu, Online
-    </h2>
-    <p className="text-lg text-gray-700 mb-10 max-w-2xl mx-auto">
-     Easily convert your paper menu into a digital QR menu that customers can scan and order from instantly. </p>
-
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-      {[
-       {
-          icon: "1",
-          title: "Step 1: Choose Plan & Sign Up",
-          desc: "Select the plan that suits your restaurant and quickly create your account to get started."
-        },
-        {
-          icon: "2",
-          title: "Step 2: Add Your Menu with AI",
-          desc: "Upload your menu or images and let our AI automatically organize items, descriptions, and prices for you."
-        },
-        {
-          icon: "3",
-          title: "Step 3: Download & Use",
-          desc: "Publish your digital menu and download the QR code. Customers can instantly scan and view your menu on any device."
-        }
-
-      ].map((step, index) => (
-        <div
-          key={index}
-          className="bg-white/40 backdrop-blur-lg rounded-3xl shadow-xl p-8 flex flex-col items-center text-center hover:scale-105 hover:-translate-y-2 hover:shadow-2xl transition-transform duration-300"
-        >
-          <div className="w-16 h-16 flex items-center justify-center bg-blue-500 text-white rounded-full text-3xl mb-4">
-            {step.icon}
-          </div>
-          <h3 className="text-xl font-bold mb-2">{step.title}</h3>
-          <p className="text-gray-700">{step.desc}</p>
-        </div>
-      ))}
-    </div>
-  </div>
-</section>
 
 
 <HomePagePortfolioSection />

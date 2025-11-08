@@ -383,7 +383,7 @@ export default function PetobaBillingLanding() {
     <div className="border border-gray-200 rounded-3xl p-8 text-center hover:shadow-xl transition-all duration-300">
       <h3 className="text-xl font-semibold text-gray-900 mb-2">Monthly</h3>
       <p className="text-gray-500 mb-4">For restaurants starting small</p>
-      <div className="text-3xl font-bold text-gray-900 mb-2">₹250</div>
+      <div className="text-3xl font-bold text-gray-900 mb-2">₹199</div>
       <div className="text-sm text-gray-500 mb-6">/month</div>
       <ul className="text-gray-700 mb-6 space-y-4 text-left">
         <li>🧾 Instant KOT Printing</li>
@@ -410,7 +410,7 @@ export default function PetobaBillingLanding() {
     <div className="border-2 border-yellow-500 rounded-3xl p-8 text-center hover:shadow-xl transition-all duration-300">
       <h3 className="text-xl font-semibold text-gray-900 mb-2">Half-Yearly</h3>
       <p className="text-gray-500 mb-4">Save by subscribing for 6 months</p>
-      <div className="text-3xl font-bold text-gray-900 mb-2">₹850</div>
+      <div className="text-3xl font-bold text-gray-900 mb-2">₹549</div>
       <div className="text-sm text-gray-500 mb-6">/6 months</div>
       <ul className="text-gray-700 mb-6 space-y-4 text-left">
                 <li>🧾 Instant KOT Printing</li>
@@ -437,10 +437,10 @@ export default function PetobaBillingLanding() {
     <div className="border-2 border-green-500 rounded-3xl p-8 text-center hover:shadow-xl transition-all duration-300">
       <h3 className="text-xl font-semibold text-gray-900 mb-2">Yearly</h3>
       <p className="text-gray-500 mb-4">Best value for growing restaurants</p>
-      <div className="text-3xl font-bold text-gray-900 mb-2">₹1500</div>
+      <div className="text-3xl font-bold text-gray-900 mb-2">₹899</div>
       <div className="text-sm text-gray-500 mb-6">/year</div>
       <ul className="text-gray-700 mb-6 space-y-4 text-left">
-                <li>🧾 Instant KOT Printing</li>
+        <li>🧾 Instant KOT Printing</li>
         <li>💳 Print Bills Quickly</li>
         <li>📲 Send Bills via WhatsApp</li>
         <li>📡 Real-Time Order Updates</li>
