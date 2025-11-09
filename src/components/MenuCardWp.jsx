@@ -31,6 +31,7 @@ function MenuCard({
   decreaseQty,
   currency , // default to INR
   conversionRate = 1, // conversion rate to multiply price (e.g. 0.012 for USD)
+  enableOrdering ,
 }) {
   const [expanded, setExpanded] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
@@ -57,8 +58,10 @@ function MenuCard({
   };
 
   const renderCartControls = (isPopup = false) => {
-    if (quantity === 0) {
-      return (
+if (quantity === 0) {
+  return (
+    <>
+      {enableOrdering === "enabled" && (
         <button
           onClick={(e) => handleStopProp(e, addToCart)}
           className={
@@ -70,8 +73,11 @@ function MenuCard({
           <FaPlus className={isPopup ? "text-sm" : "text-xs"} />
           {isPopup ? "Add to Cart" : "Add"}
         </button>
-      );
-    }
+      )}
+    </>
+  );
+}
+
 
     return (
       <div

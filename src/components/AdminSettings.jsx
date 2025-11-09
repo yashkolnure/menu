@@ -47,6 +47,7 @@ const AdminSettingsModal = ({ token }) => {
     logo: "",
     homeImage: "",
     currency: "INR",
+    enableOrdering: "enabled",
   });
 
   const [errors, setErrors] = useState({});
@@ -84,6 +85,7 @@ const AdminSettingsModal = ({ token }) => {
               logo: data.logo || "",
               homeImage: data.homeImage || "",
               currency: data.currency || "INR",
+              enableOrdering: data.enableOrdering || "enabled", // ◀️ NEW
               password: "", // ◀️ Always keep password field empty on load
               confirmPassword: "", // ◀️ Always keep confirmPassword empty on load
             });
@@ -359,7 +361,22 @@ const AdminSettingsModal = ({ token }) => {
                     </div>
                   </div>
 
-                    <div></div >
+                    {/* Enable Ordering Dropdown */}
+<div>
+  <div className="flex items-center border rounded-lg p-3 bg-gray-50">
+    <FaStore className="text-purple-700 text-lg mr-3" />
+    <select
+      name="enableOrdering"
+      value={formData.enableOrdering}
+      onChange={handleChange}
+      className="flex-1 bg-transparent outline-none"
+    >
+      <option value="enabled">Enable Ordering</option>
+      <option value="disabled">Disable Ordering</option>
+    </select>
+  </div>
+</div>
+
                   {/* File Uploads */}
                   <FileUploadInput
                     label="Upload Logo"

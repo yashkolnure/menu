@@ -338,6 +338,7 @@ if (!adminPhone) {
                 increaseQty={(item) => updateQty(item._id, (cart.find(c => c._id === item._id)?.quantity || 0) + 1)}
                 decreaseQty={(item) => updateQty(item._id, (cart.find(c => c._id === item._id)?.quantity || 0) - 1)}
                 currency={restaurantDetails?.currency }
+                enableOrdering={restaurantDetails?.enableOrdering  }
               />
             ))
           ) : (
