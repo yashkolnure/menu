@@ -42,6 +42,7 @@ import RedirectManagerPage from "./pages/redirectpage";
 import BillingApp from "./pages/billingpage";
 import PetobaBillingLanding from "./pages/BillingLanding";
 import RestaurantMenuPageDemo from "./pages/Menudemo";
+import SplashScreen from "./pages/SplashScreen";
 
 // Wrapper to handle conditional Header/Footer
 function AppWrapper() {
@@ -55,6 +56,7 @@ function AppWrapper() {
     "/demo/:id",
     "/shop/:id",
     "/restaurant/:id",
+    "/mymenu/:id",
   ];
 
   // Check current route
@@ -69,7 +71,8 @@ function AppWrapper() {
       <Routes>
         <Route path="/menu/:id" element={<MenuPageWithoutCart />} />
         <Route path="/cloudkitchen/:id" element={<MenuPageWithoutCartCloud />} />
-        <Route path="/menuwp/:id" element={<RestaurantMenuPagewp />} />
+        <Route path="/menuwp/:id" element={<SplashScreen />} />
+        <Route path="/mymenu/:id" element={<RestaurantMenuPagewp />} />
         <Route path="/demo/:id" element={<RestaurantMenuPageDemo />} />
         <Route path="/shop/:id" element={<Beautysalon />} />
         <Route path="/doredirect" element={<RedirectManagerPage />} />
