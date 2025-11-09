@@ -36,7 +36,7 @@ useEffect(() => {
         // Redirect to menu page after 2.5s
         setTimeout(() => {
           navigate(`/mymenu/${id}`);
-        }, 30500);
+        }, 3500);
       } catch (err) {
         console.error("Error fetching restaurant details:", err);
         setError(err.message);
