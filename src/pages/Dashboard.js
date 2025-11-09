@@ -5,6 +5,7 @@ import UpgradePopup from "../components/UpgradePopup";
 import QRCodeTemplates from "../components/QRCodeTemplates";
 import CustomFields from "../components/CustomFields";
 import AdminSettings from "../components/AdminSettings";
+import ExpertHelpPopup from "../components/ExpertHelpPopup";
 import OfferBannerManager from "../components/OfferBannerManager";
 import { Helmet } from "react-helmet";
 
@@ -33,6 +34,16 @@ function Dashboard() {
   const imagePasteRef = useRef(null);
   const [customEditCategories, setCustomEditCategories] = useState({});
   const [showUpgrade, setShowUpgrade] = useState(false);
+   const [showPopup, setShowPopup] = useState(false);
+
+  // Open popup automatically after 10 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowPopup(true);
+    }, 10000); // 10 seconds
+
+    return () => clearTimeout(timer);
+  }, []);
 
 
   useEffect(() => {
@@ -894,6 +905,28 @@ return (
           </button>
         )}
       </div>
+          <div>
+      <button
+        onClick={() => setShowPopup(true)}
+        className="  fixed bottom-6 left-6 z-50
+    px-5 py-3
+    rounded-full
+    bg-gradient-to-r from-blue-600 to-indigo-600
+    text-white font-semibold
+    shadow-[0_0_15px_rgba(59,130,246,0.6)]
+    hover:shadow-[0_0_25px_rgba(59,130,246,0.9)]
+    hover:scale-105
+    transition-all duration-300
+    flex items-center gap-2"
+      >
+        Need Expert Help?
+      </button>
+
+      <ExpertHelpPopup
+        open={showPopup}
+        onClose={() => setShowPopup(false)}
+      />
+    </div>
     </div>
 
     {/* Messages */}
@@ -1276,7 +1309,16 @@ return (
     {/* Floating Button */}
     <button
       onClick={handleMenuClick}
-      className="fixed bottom-6 right-6 flex items-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg z-50"
+      className="  fixed bottom-6 right-6 z-50
+    px-5 py-3
+    rounded-full
+    bg-gradient-to-r from-blue-600 to-indigo-600
+    text-white font-semibold
+    shadow-[0_0_15px_rgba(59,130,246,0.6)]
+    hover:shadow-[0_0_25px_rgba(59,130,246,0.9)]
+    hover:scale-105
+    transition-all duration-300
+    flex items-center gap-2"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -1468,6 +1510,7 @@ return (
         </button>
       )}
   </div>
+  
 );
 
 }
