@@ -28,6 +28,7 @@ function Dashboard() {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const [savingItems, setSavingItems] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
   const [openCategory, setOpenCategory] = useState(null);
   const [isFetching, setIsFetching] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -35,6 +36,11 @@ function Dashboard() {
   const [customEditCategories, setCustomEditCategories] = useState({});
   const [showUpgrade, setShowUpgrade] = useState(false);
    const [showPopup, setShowPopup] = useState(false);
+   const triggerAction = async (fn) => {
+  setIsLoading(true);
+  await fn();
+  setIsLoading(false);
+};
 
   // Open popup automatically after 10 seconds
   useEffect(() => {
@@ -1310,15 +1316,15 @@ return (
     <button
       onClick={handleMenuClick}
       className="  fixed bottom-6 right-6 z-50
-    px-5 py-3
-    rounded-full
-    bg-gradient-to-r from-blue-600 to-indigo-600
-    text-white font-semibold
-    shadow-[0_0_15px_rgba(59,130,246,0.6)]
-    hover:shadow-[0_0_25px_rgba(59,130,246,0.9)]
-    hover:scale-105
-    transition-all duration-300
-    flex items-center gap-2"
+        px-5 py-3
+        rounded-full
+        bg-gradient-to-r from-blue-600 to-indigo-600
+        text-white font-semibold
+        shadow-[0_0_15px_rgba(59,130,246,0.6)]
+        hover:shadow-[0_0_25px_rgba(59,130,246,0.9)]
+        hover:scale-105
+        transition-all duration-300
+        flex items-center gap-2"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -1339,7 +1345,17 @@ return (
 
 
 <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-  {/* Left Column - Offer Banner Manager */}
+  {/* COMMON LOADING STATE */}
+  {isLoading && (
+    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div className="bg-white px-6 py-4 rounded-lg shadow flex items-center gap-3">
+        <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-400 border-t-transparent"></div>
+        <span className="text-gray-700 font-medium">Please wait...</span>
+      </div>
+    </div>
+  )}
+
+  {/* Offer Banner Manager */}
   <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[220px]">
     <div className="absolute -top-20 -right-20 w-72 h-72 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full blur-3xl opacity-20"></div>
 
@@ -1351,149 +1367,121 @@ return (
       Add offer banner images to instantly highlight promotions and discounts.
     </p>
 
-    {restaurant.membership_level === 3 ? (
-      <OfferBannerManager
-        className="mt-5"
-        restaurantId={restaurantId}
-        token={token}
-        offers={offers}
-        setOffers={setOffers}
-      />
-    ) : (
-      <p className="mt-5 text-gray-500 italic relative z-10">
-        ⚠ Upgrade to <span className="font-semibold text-purple-600">Pro</span>{" "}
-        to use this feature.
-      </p>
-    )}
+    <OfferBannerManager
+      className="mt-5"
+      restaurantId={restaurantId}
+      token={token}
+      offers={offers}
+      setOffers={setOffers}
+    />
   </div>
 
-  {/* Right Column - Bulk Upload Section */}
-    <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[220px]">
-      {/* Background Circle */}
-      <div className="absolute -top-20 -right-20 w-72 h-72 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full blur-3xl opacity-20"></div>
+  {/* Bulk Upload Section */}
+  <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[220px]">
+    <div className="absolute -top-20 -right-20 w-72 h-72 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full blur-3xl opacity-20"></div>
 
-      {/* Heading */}
-      <h2 className="text-2xl font-semibold text-gray-800 relative z-10">
-        Bulk Upload Your Menu ( AI )
-      </h2>
+    <h2 className="text-2xl font-semibold text-gray-800 relative z-10">
+      Bulk Upload Your Menu (AI)
+    </h2>
 
-      {/* Description */}
-      <p className="text-gray-600 mt-2 max-w-sm relative z-10">
-        Upload your full menu using{" "}
-        <span className="font-medium">Images, PDF, or Excel</span> — our AI will
-        process it automatically.
-      </p>
+    <p className="text-gray-600 mt-2 max-w-sm relative z-10">
+      Upload your full menu using <span className="font-medium">Images, PDF, or Excel</span> — our AI will process it automatically.
+    </p>
 
-      {/* Upload Button */}
-      {restaurant.membership_level >= 2 ? (
-        <button
-          onClick={() => handleOptionClick("/bulk-upload", true)}
-          className="mt-5 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-lg shadow hover:opacity-90 relative z-10"
-        >
-          Upload Menu
-        </button>
+    <button
+      onClick={() => triggerAction(() => handleOptionClick("/bulk-upload", true))}
+      disabled={isLoading}
+      className={`mt-5 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-lg shadow hover:opacity-90 relative z-10 ${
+        isLoading ? "opacity-60 cursor-not-allowed" : ""
+      }`}
+    >
+      {isLoading ? (
+        <div className="flex items-center gap-2">
+          <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+          Loading...
+        </div>
       ) : (
-        <p className="mt-5 text-gray-500 italic relative z-10">
-          ⚠ Upgrade to{" "}
-          <span className="font-semibold text-purple-600">Premium</span> or{" "}
-          <span className="font-semibold text-blue-600">Pro</span> to use this
-          feature.
-        </p>
+        "Upload Menu"
       )}
+    </button>
 
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-lg p-6 w-80 relative">
-            <h3 className="text-lg font-semibold mb-4">Choose Upload Option</h3>
+    {/* Modal */}
+    {showModal && (
+      <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl shadow-lg p-6 w-80 relative">
+          <h3 className="text-lg font-semibold mb-4">Choose Upload Option</h3>
 
-            <div className="flex flex-col space-y-3">
-              {/* Manual with AI */}
-              <button
-                onClick={() => handleOptionClick("/bulk-upload", true)}
-                className="w-full px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
-              >
-                Manual with AI
-              </button>
+          <div className="flex flex-col space-y-3">
 
-              {/* Automatic with AI */}
-              <button
-                onClick={() =>
-                  handleOptionClick(
-                    "/upload-menu",
-                    restaurant.membership_level === 3
-                  )
-                }
-                className={`w-full px-4 py-2 rounded-lg ${
-                  restaurant.membership_level === 3
-                    ? "bg-blue-500 text-white hover:bg-blue-600"
-                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                }`}
-              >
-                Automatic with AI{" "}
-                {restaurant.membership_level !== 3 && "(Premium Only)"}
-              </button>
-            </div>
-
-            {/* Close Button */}
+            {/* Manual with AI */}
             <button
-              onClick={() => setShowModal(false)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+              onClick={() => triggerAction(() => handleOptionClick("/bulk-upload", true))}
+              disabled={isLoading}
+              className={`w-full px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 ${
+                isLoading ? "opacity-60 cursor-not-allowed" : ""
+              }`}
             >
-              ✕
+              {isLoading ? "Loading..." : "Manual with AI"}
+            </button>
+
+            {/* Automatic with AI */}
+            <button
+              onClick={() => triggerAction(() => handleOptionClick("/upload-menu", true))}
+              disabled={isLoading}
+              className={`w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 ${
+                isLoading ? "opacity-60 cursor-not-allowed" : ""
+              }`}
+            >
+              {isLoading ? "Loading..." : "Automatic with AI"}
             </button>
           </div>
+
+          {/* Close Button */}
+          <button
+            onClick={() => setShowModal(false)}
+            className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+          >
+            ✕
+          </button>
         </div>
-      )}
-    </div>  
+      </div>
+    )}
+  </div>
 </div>
 
-<div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6"> 
-     {/* Left Column - Offer Banner Manager */}
+{/* SECOND ROW */}
+<div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+
+  {/* Connect Social */}
   <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[220px]">
     <div className="absolute -top-20 -right-20 w-72 h-72 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full blur-3xl opacity-20 transform rotate-45"></div>
 
     <h2 className="text-2xl font-semibold text-gray-800 relative z-10">
-     Connect Social & Google Review
+      Connect Social & Google Review
     </h2>
 
     <p className="text-gray-600 mt-2 max-w-sm relative z-10">
       Add your social media, contact details, and a custom line to your digital menu.
     </p>
 
-    {restaurant.membership_level === 3 ? (
-      <CustomFields />
-    ) : (
-      <p className="mt-5 text-gray-500 italic relative z-10">
-        ⚠ Upgrade to <span className="font-semibold text-purple-600">Pro</span>{" "}
-        to use this feature.
-      </p>
-    )}
+    <CustomFields />
   </div>
-{/* Left Column - Restaurant Admin Settings */}
-<div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[220px]">
-  <div className="absolute -top-20 -right-20 w-72 h-72 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full blur-3xl opacity-20 transform rotate-45"></div>
 
-  <h2 className="text-2xl font-semibold text-gray-800 relative z-10">
-    Manage Restaurant Settings
-  </h2>
+  {/* Restaurant Settings */}
+  <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[220px]">
+    <div className="absolute -top-20 -right-20 w-72 h-72 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full blur-3xl opacity-20 transform rotate-45"></div>
 
-  <p className="text-gray-600 mt-2 max-w-sm relative z-10">
-    Edit your restaurant name, logo, WhatsApp, and password in one place
-  </p>
+    <h2 className="text-2xl font-semibold text-gray-800 relative z-10">
+      Manage Restaurant Settings
+    </h2>
 
-  {restaurant.membership_level === 3 ? (
-    <AdminSettings />
-  ) : (
-    <p className="mt-5 text-gray-500 italic relative z-10">
-      ⚠ Upgrade to <span className="font-semibold text-purple-600">Pro</span>{" "}
-      to unlock full management access.
+    <p className="text-gray-600 mt-2 max-w-sm relative z-10">
+      Edit your restaurant name, logo, WhatsApp, and password in one place
     </p>
-  )}
-</div>
 
-
+    <AdminSettings />
   </div>
+</div>
 
     {/* QR Section */}
     <QRCodeTemplates
