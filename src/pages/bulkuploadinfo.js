@@ -60,6 +60,7 @@ I will now provide the menu card image. Please extract all items and return the 
 ]`;
 
 // ✅ Upload Function
+// ✅ Upload Function
 const handleUpload = async () => {
   setMessage("");
   setError("");
@@ -82,9 +83,22 @@ const handleUpload = async () => {
     return;
   }
 
+  // ✅ Check restaurantId consistency
+  const invalidItems = parsedData.filter(
+    (item) => item.restaurantId && item.restaurantId !== restaurantId
+  );
+
+  if (invalidItems.length > 0) {
+    setError(
+      `❌ Some items have a different restaurantId. Please make sure all items use restaurantId: "${restaurantId}".`
+    );
+    return;
+  }
+
+  // ✅ Ensure each item has the correct restaurantId
   const enrichedData = parsedData.map((item) => ({
     ...item,
-    restaurantId: item.restaurantId || restaurantId,
+    restaurantId: restaurantId,
   }));
 
   try {
@@ -94,7 +108,7 @@ const handleUpload = async () => {
       enrichedData,
       { headers: { Authorization: `Bearer ${token}` } }
     );
-    
+
     setMessage("✅ Menu uploaded successfully! Redirecting to Dashboard...");
     setJsonInput("");
 
