@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { Helmet } from "react-helmet";
 import { Edit, Trash, LogIn, BookOpen, Loader2, Upload, Plus } from "lucide-react";
 import { Toaster, toast } from "react-hot-toast";
 
-const AgencyDashboard = () => {
+const SuperAdminDashboard = () => {
   const [restaurants, setRestaurants] = useState([]);
   const [form, setForm] = useState({
     name: "",
@@ -14,11 +13,14 @@ const AgencyDashboard = () => {
     contact: "",
     password: "",
     subadmin_id: "",
+    membership_level: "",
     currency: "INR", // 🆕 Default to INR
-    membership_level: 3,
+    homeImage: "",  
+    active: true,
   });
   const [editingId, setEditingId] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(null);
   const [loading, setLoading] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const formRef = useRef(null);
@@ -26,10 +28,15 @@ const AgencyDashboard = () => {
   const limits = {
     1: 10,   // Level 1 agency → max 10 restaurants
     2: 25,   // Level 2 agency → max 25 restaurants
-    3: 50,  // Level 3 agency → max 50 restaurants
+    3: 10000,  // Level 3 agency → max 50 restaurants
   };
 
-  const currencies = [
+  const API = "/api/admin";
+  const WP_USERNAME = "yashkolnure58@gmail.com";
+  const WP_APP_PASSWORD = "05mq iTLF UvJU dyaz 7KxQ 8pyc";
+  const WP_SITE_URL = "https://website.avenirya.com";
+
+const currencies = [
   { code: "INR", name: "Indian Rupee", symbol: "₹" },
   { code: "USD", name: "US Dollar", symbol: "$" },
   { code: "EUR", name: "Euro", symbol: "€" },
@@ -42,11 +49,31 @@ const AgencyDashboard = () => {
   { code: "CNY", name: "Chinese Yuan", symbol: "¥" },
 ];
 
-  const API = "/api/admin";
-  const WP_USERNAME = "yashkolnure58@gmail.com";
-  const WP_APP_PASSWORD = "05mq iTLF UvJU dyaz 7KxQ 8pyc";
-  const WP_SITE_URL = "https://website.avenirya.com";
+  const [uploadingHome, setUploadingHome] = useState(false);
 
+const uploadHomeImageToWordPress = async (file) => {
+  const formDataImage = new FormData();
+  formDataImage.append("file", file);
+  setUploadingHome(true);
+
+  try {
+    const response = await axios.post(`${WP_SITE_URL}/wp-json/wp/v2/media`, formDataImage, {
+      headers: {
+        Authorization: "Basic " + btoa(`${WP_USERNAME}:${WP_APP_PASSWORD}`),
+        "Content-Disposition": `attachment; filename="${file.name}"`,
+      },
+    });
+
+    const imageUrl = response.data.source_url;
+    setForm((prev) => ({ ...prev, homeImage: imageUrl }));
+    toast.success("Home image uploaded successfully!");
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to upload home image to WordPress");
+  } finally {
+    setUploadingHome(false);
+  }
+};
   // Get logged-in agency ID from localStorage
   const agencyId = localStorage.getItem("agencyId");
 
@@ -92,8 +119,9 @@ const AgencyDashboard = () => {
         logo: "",
         contact: "",
         password: "",
+        currency: "INR", // 🆕 Default to INR
         subadmin_id: agencyId,
-        membership_level: 3,
+        membership_level: "",
       });
       setEditingId(null);
       setFormOpen(false);
@@ -113,7 +141,9 @@ const AgencyDashboard = () => {
       contact: restaurant.contact || "",
       password: "",
       subadmin_id: restaurant.subadmin_id || agencyId,
-      currency: restaurant.currency || "INR",
+      homeImage: restaurant.homeImage || "", // <-- add this
+      active: typeof restaurant.active === "boolean" ? restaurant.active : true, // <-- add this
+      currency: restaurant.currency || "INR", // 🆕 Add currency field
     });
     setFormOpen(true);
   };
@@ -134,7 +164,7 @@ const AgencyDashboard = () => {
     try {
       const agencyToken = localStorage.getItem("agencyToken");
       if (!agencyToken) {
-        toast.error("You must be logged in as agency to impersonate");
+        toast.error("This Page is Not For You....!");
         return;
       }
 
@@ -188,27 +218,6 @@ const AgencyDashboard = () => {
 
   return (
     <div className="relative min-h-screen  ">
-              <Helmet>
-        <title>Petoba | Digital QR Menu & Ordering</title>
-        <meta
-          name="description"
-          content="Petoba lets restaurants create digital QR menus. Customers scan, order, and enjoy a contactless dining experience."
-        />
-
-        <link
-          rel="icon"
-          href="https://petoba.avenirya.com/wp-content/uploads/2025/09/download-1.png"
-          type="image/png"
-        />
-        <meta
-          property="og:image"
-          content="https://petoba.avenirya.com/wp-content/uploads/2025/09/Untitled-design-6.png"
-        />
-        <meta property="og:title" content="Petoba - Digital QR Menu" />
-        <meta property="og:description" content="Turn your restaurant’s menu into a digital QR code menu." />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://yash.avenirya.com" />
-      </Helmet>
       {/* Background gradients */}
       <div className="absolute -top-32 -left-32 w-96 h-96 bg-gradient-to-r from-pink-300 to-purple-300 rounded-full filter blur-3xl opacity-30"></div>
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-gradient-to-r from-green-400 to-blue-500 rounded-full blur-3xl opacity-20"></div>
@@ -233,7 +242,7 @@ const AgencyDashboard = () => {
         {/* Popup form */}
         {formOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-white w-full max-w-2xl p-6 rounded-2xl shadow relative">
+            <div className="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 rounded-2xl shadow relative">
               <button
                 onClick={() => setFormOpen(false)}
                 className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
@@ -250,7 +259,26 @@ const AgencyDashboard = () => {
                 <input name="address" placeholder="Address" value={form.address} onChange={handleChange} className="p-3 border rounded-lg focus:ring focus:ring-blue-300" />
                 <input type="number" name="contact" placeholder="Contact Number" value={form.contact} onChange={handleChange} className="p-3 border rounded-lg focus:ring focus:ring-blue-300" />
                 <input name="password" type="password" placeholder={editingId ? "Change Password (optional)" : "Password"} value={form.password} onChange={handleChange} className="p-3 border rounded-lg focus:ring focus:ring-blue-300" />
-
+                <div className="md:col-span-2 mt-4">
+                  <label className="block mb-2 text-sm font-medium text-gray-600">
+                    Upload Home Image
+                  </label>
+                  <div className="border-dashed border-2 p-6 rounded-lg text-center cursor-pointer hover:bg-gray-50">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => uploadHomeImageToWordPress(e.target.files[0])}
+                      className="hidden"
+                      id="homeImageUpload"
+                    />
+                    <label htmlFor="homeImageUpload" className="cursor-pointer flex flex-col items-center gap-2 text-gray-500">
+                      <Upload size={24} />
+                      <span>Click or drag to upload</span>
+                    </label>
+                  </div>
+                  {uploadingHome && <p className="text-blue-500 mt-2 flex items-center gap-2"><Loader2 className="animate-spin" size={16}/> Uploading...</p>}
+                  {form.homeImage && <img src={form.homeImage} alt="Home" className="mt-3 rounded-md h-20 object-cover border" />}
+                </div>
                 <div className="md:col-span-2">
                   <label className="block mb-2 text-sm font-medium text-gray-600">
                     Upload Logo
@@ -267,22 +295,23 @@ const AgencyDashboard = () => {
                 </div>
               </div>
               <div>
-  <label className="block mb-2 mt-4 text-sm font-medium text-gray-600">
-    Select Currency
-  </label>
-  <select
-    name="currency"
-    value={form.currency}
-    onChange={handleChange}
-    className="p-3 border rounded-lg focus:ring focus:ring-blue-300 w-full"
-  >
-    {currencies.map((cur) => (
-      <option key={cur.code} value={cur.code}>
-        {cur.symbol} {cur.name} ({cur.code})
-      </option>
-    ))}
-  </select>
-</div>
+                <label className="block mb-2 mt-4 text-sm font-medium text-gray-600">
+                  Select Currency
+                </label>
+                <select
+                  name="currency"
+                  value={form.currency}
+                  onChange={handleChange}
+                  className="p-3 border rounded-lg focus:ring focus:ring-blue-300 w-full"
+                >
+                  {currencies.map((cur) => (
+                    <option key={cur.code} value={cur.code}>
+                      {cur.symbol} {cur.name} ({cur.code})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
 
               <button
                 onClick={handleSubmit}
@@ -323,29 +352,115 @@ const AgencyDashboard = () => {
                       <td className="p-3 border">{rest.name}</td>
                       <td className="p-3 border">{rest.contact || "-"}</td>
                       <td className="p-3 border text-center">
-                        <button
-                          onClick={async () => {
-                            const confirmMsg = rest.active
-                              ? `Are you sure you want to deactivate "${rest.name}"?`
-                              : `Are you sure you want to activate "${rest.name}"?`;
-                            if (!window.confirm(confirmMsg)) return;
-                            try {
-                              await axios.put(`${API}/restaurants/${rest._id}`, { active: !rest.active });
-                              toast.success(`Restaurant ${rest.active ? "deactivated" : "activated"}!`);
-                              fetchRestaurantsByAgency(agencyId);
-                            } catch (err) {
-                              toast.error("Failed to update status");
-                            }
-                          }}
-                          className={`px-3 py-1 rounded-full font-semibold text-xs ${
-                            rest.active
-                              ? "bg-green-100 text-green-700 border border-green-300"
-                              : "bg-gray-200 text-gray-600 border border-gray-300"
-                          }`}
-                        >
-                          {rest.active ? "Active" : "Inactive"}
-                        </button>
+<div className="relative inline-block">
+  <button
+    onClick={async () => {
+      if (rest.active) {
+        const confirmMsg = `Are you sure you want to deactivate "${rest.name}"?`;
+        if (!window.confirm(confirmMsg)) return;
+
+        try {
+          await axios.put(`${API}/restaurants/${rest._id}`, {
+            active: false,
+            expiresAt: null,
+          });
+          toast.success(`Restaurant deactivated!`);
+          fetchRestaurantsByAgency(agencyId);
+        } catch {
+          toast.error("Failed to deactivate");
+        }
+      } else {
+        // Toggle dropdown visibility
+        setShowDropdown((prev) => (prev === rest._id ? null : rest._id));
+      }
+    }}
+    className={`px-3 py-1 rounded-full font-semibold text-xs ${
+      rest.active
+        ? "bg-green-100 text-green-700 border border-green-300"
+        : "bg-gray-200 text-gray-600 border border-gray-300 hover:bg-gray-300"
+    }`}
+  >
+    {rest.active ? "Active" : "Inactive"}
+  </button>
+
+  {/* dropdown menu for duration */}
+  {showDropdown === rest._id && !rest.active && (
+    <div className="absolute right-0 w-40 mt-2 bg-white border border-gray-200 rounded-lg shadow-md text-sm z-10">
+      <p className="px-3 py-2 text-gray-700 font-semibold border-b">Select Duration</p>
+      {[
+        { label: "7 Days", value: "7d" },
+        { label: "1 Month", value: "1m" },
+        { label: "2 Months", value: "2m" },
+        { label: "6 Months", value: "6m" },
+        { label: "1 Year", value: "1y" },
+        { label: "Lifetime", value: "5y" },
+      ].map((opt) => (
+        <button
+          key={opt.value}
+          onClick={async () => {
+            setShowDropdown(null);
+            const now = new Date();
+            if (opt.value === "7d") now.setDate(now.getDate() + 7);
+            else if (opt.value === "1m") now.setMonth(now.getMonth() + 1);
+            else if (opt.value === "2m") now.setMonth(now.getMonth() + 2);
+            else if (opt.value === "6m") now.setMonth(now.getMonth() + 6);
+            else if (opt.value === "1y") now.setFullYear(now.getFullYear() + 1);
+            else if (opt.value === "5y") now.setFullYear(now.getFullYear() + 5);
+
+            const expiresAt = now;
+            try {
+              await axios.put(`${API}/restaurants/${rest._id}`, {
+                active: true,
+                expiresAt,
+              });
+              toast.success(`"${rest.name}" activated for ${opt.label}!`);
+              fetchRestaurantsByAgency(agencyId);
+            } catch {
+              toast.error("Failed to activate");
+            }
+          }}
+          className="block w-full text-left px-3 py-2 hover:bg-gray-100"
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  )}
+</div>
+                        
+{rest.expiresAt && (() => {
+  const now = new Date();
+  const expiry = new Date(rest.expiresAt);
+  const diffMs = expiry - now;
+
+  if (diffMs <= 0) {
+    return <span className="text-xs text-gray-500"><br />Expired</span>;
+  }
+
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const diffMonths = Math.floor(diffDays / 30);
+  const diffYears = Math.floor(diffDays / 365);
+
+  let timeLeft = "";
+
+  if (diffYears >= 1) {
+    timeLeft = `${diffYears}y left`;
+  } else if (diffMonths >= 1) {
+    timeLeft = `${diffMonths}m left`;
+  } else {
+    timeLeft = `${diffDays}d left`;
+  }
+
+  return (
+    <span className="text-xs text-gray-500">
+      <br />
+      {timeLeft}
+    </span>
+  );
+})()}
+
                       </td>
+                      
                       <td className="p-3 border text-center">
                         <div className="flex justify-center gap-3">
                           <button
@@ -399,4 +514,4 @@ const AgencyDashboard = () => {
   );
 };
 
-export default AgencyDashboard;
+export default SuperAdminDashboard;
