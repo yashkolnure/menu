@@ -59,7 +59,7 @@ useEffect(() => {
 const fetchOffers = async () => {
   try {
     const res = await fetch(
-      `/api/admin/${restaurantId}/offers`,
+      `https://yash.avenirya.com/api/admin/${restaurantId}/offers`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
     const data = await res.json();
@@ -76,7 +76,7 @@ const handleAddOffer = async () => {
   }
   try {
     const res = await fetch(
-      `/api/admin/${restaurantId}/offers`,
+      `https://yash.avenirya.com/api/admin/${restaurantId}/offers`,
       {
         method: "POST",
         headers: {
@@ -113,7 +113,7 @@ const handleAddOffer = async () => {
     if (!window.confirm("Are you sure you want to delete this offer?")) return;
     try {
       const res = await fetch(
-        `/api/admin/${restaurantId}/offers/${offerId}`,
+        `https://yash.avenirya.com/api/admin/${restaurantId}/offers/${offerId}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -155,7 +155,7 @@ const handleImageUpload = (e) => {
   }
   const fetchRestaurantDetails = async () => {
     try {
-      const res = await fetch(`/api/admin/${restaurantId}/details`, {
+      const res = await fetch(`https://yash.avenirya.com/api/admin/${restaurantId}/details`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -176,7 +176,7 @@ const handleImageUpload = (e) => {
   // Fetch Menu
   const fetchMenu = async () => {
     try {
-      const response = await fetch(`/api/admin/${restaurantId}/menu`, {
+      const response = await fetch(`https://yash.avenirya.com/api/admin/${restaurantId}/menu`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -198,7 +198,6 @@ const handleImageUpload = (e) => {
   
     const fetchBilling = async () => {
       if (restaurantId && token) {
-        await fetchBillingData(); // make sure this function exists
       }
     };
   
@@ -218,13 +217,7 @@ const handleImageUpload = (e) => {
   }, [activeTab, restaurantId, token]);
   
   // Fetch Billing Data
-  const fetchBillingData = async () => {
-    const res = await fetch(`/api/admin/${restaurantId}/billing`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
-    setBillingData(data);
-  };
+
 
   useEffect(() => {
     let intervalId;
@@ -232,7 +225,7 @@ const handleImageUpload = (e) => {
     const fetchOrderHistory = async () => {
       setLoadingHistory(true); // move here so UI shows loading
       try {
-        const res = await fetch(`/api/orders/${restaurantId}/order-history`, {
+        const res = await fetch(`https://yash.avenirya.com/api/orders/${restaurantId}/order-history`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -439,7 +432,7 @@ const filteredOrders = groupedOrders.filter((order) => {
   };
   
   const fetchOrders = async () => {
-    const res = await fetch(`/api/admin/${restaurantId}/orders`, {
+    const res = await fetch(`https://yash.avenirya.com/api/admin/${restaurantId}/orders`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
@@ -514,7 +507,7 @@ const handleAddDish = async () => {
   }
 
   try {
-    const res = await fetch(`/api/admin/${restaurantId}/menu`, {
+    const res = await fetch(`https://yash.avenirya.com/api/admin/${restaurantId}/menu`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -546,7 +539,7 @@ const handleAddDish = async () => {
   const handleDelete = async (itemId) => {
     try {
       const res = await fetch(
-        `/api/admin/${restaurantId}/menu/${itemId}`,
+        `https://yash.avenirya.com/api/admin/${restaurantId}/menu/${itemId}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -585,7 +578,7 @@ const handleAddDish = async () => {
   
       const token = localStorage.getItem("token");
   
-      const response = await fetch(`/api/clearTable/${tableNumber}`, {
+      const response = await fetch(`https://yash.avenirya.com/api/clearTable/${tableNumber}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -597,8 +590,7 @@ const handleAddDish = async () => {
   
       console.log(`✅ Table ${tableNumber} cleared!`);
   
-      // Refresh billing data immediately
-      fetchBillingData();
+
     } catch (error) {
       console.error("❌ Error in clearTable:", error);
       alert("Failed to clear the table. Please try again.");
@@ -606,7 +598,7 @@ const handleAddDish = async () => {
   };
   useEffect(() => {
     fetchMenu();
-    fetchBillingData();
+
     fetchOrderHistory(); // 👈 This is important
   }, []);
 
@@ -615,7 +607,7 @@ const handleAddDish = async () => {
   const fetchOrderHistory = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`/api/admin/${restaurantId}/order-history`, {
+      const res = await fetch(`https://yash.avenirya.com/api/admin/${restaurantId}/order-history`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -626,7 +618,6 @@ const handleAddDish = async () => {
       const contentType = res.headers.get("content-type");
       if (contentType && contentType.includes("application/json")) {
         const data = await res.json();
-        console.log("Order history:", data);
         setOrderHistory(data);
       } else {
         const text = await res.text(); // likely HTML
@@ -780,14 +771,13 @@ const handleStatusChange = (orderId, newStatus) => {
     </div>
 
     {/* Existing offers */}
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       {offers.map((o) => (
         <div key={o._id} className="relative border p-2 rounded">
           <img
             src={o.image}
             alt="Offer"
             className="w-full object-cover rounded"
-            style={{ height: 270, width: 600 }}
           />
           <p className="text-xs text-gray-500 mt-1">
             Uploaded on: {new Date(o.createdAt).toLocaleString()}
@@ -847,7 +837,7 @@ const handleStatusChange = (orderId, newStatus) => {
         {activeTab === "menu" && (
           <div>
             <h2 className="text-2xl font-semibold mb-6 text-orange-600 flex items-center gap-2">Menu</h2>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
               {menu.map((item) => (
                 <div key={item._id} className="border border-gray-200 p-4 rounded-lg shadow hover:shadow-lg bg-white">
                   <img
@@ -960,7 +950,7 @@ const handleStatusChange = (orderId, newStatus) => {
     {orders.length === 0 ? (
       <p className="text-gray-500 text-center mt-10">No orders yet.</p>
     ) : (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {orders
           .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
           .map((order) => (
@@ -1006,7 +996,7 @@ const handleStatusChange = (orderId, newStatus) => {
     {billingData.length === 0 ? (
       <p className="text-gray-500">No billing data available.</p>
     ) : (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {billingData.map((data) => (
           <div
             key={data.tableNumber}
@@ -1135,7 +1125,7 @@ const handleStatusChange = (orderId, newStatus) => {
             <p className="text-gray-500 text-lg">No matching orders found.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
             {filteredOrders.map((order) => (
               <div
                 key={order.invoiceNumber}
@@ -1159,9 +1149,9 @@ const handleStatusChange = (orderId, newStatus) => {
                     </li>
                   ))}
                 </ul>
-                <div className="text-right mt-4">
-                  <p className="text-sm font-medium text-gray-500">Total</p>
-                  <p className="text-xl font-bold text-green-600">₹{order.totalAmount}</p>
+                <div className="text-right mt-4 bottom-0 w-full flex justify-between items-center gap-2 ">
+                  <p className="text-m font-medium text-gray-800 ">Total</p>
+                  <p className="text-xl font-bold text-green-600 ">₹{order.totalAmount}</p>
                 </div>
               </div>
             ))}

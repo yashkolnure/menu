@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Copy, Upload, CheckCircle, FileJson, ClipboardCheck, Info } from "lucide-react";
+import { Copy,  CheckCircle } from "lucide-react";
 import axios from "axios";
 import { Helmet } from "react-helmet";
 import { useNavigate } from "react-router-dom";

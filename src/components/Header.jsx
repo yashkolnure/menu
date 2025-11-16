@@ -54,7 +54,7 @@ const Header = () => {
 
   return (
     
-    <header className="sticky top-0 z-50 bg-transparent py-0">
+    <header className="sticky top-0 z-50 py-0">
      {/* 🔹 Scrolling Offer Banner with Timer */}
       {/* <div className="scroll-banner">
   <div className="scroll-track">
@@ -72,9 +72,9 @@ const Header = () => {
 
 
       
-      <div className="max-w-[1200px] mx-auto px-4 py-2">
+      <div className="max-w-[1200px] mx-auto  py-2">
         {/* Main pill container */}
-        <div className="flex items-center justify-between bg-white/60 backdrop-blur-lg rounded-full px-6 py-0 border border-gray-200 shadow-lg">
+        <div className="flex items-center justify-between backdrop-blur-lg rounded-full px-6 py-0 border border-gray-200 shadow-lg">
           
           {/* Logo */}
           <div className="flex items-center gap-2">

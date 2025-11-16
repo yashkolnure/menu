@@ -76,6 +76,17 @@ const uploadHomeImageToWordPress = async (file) => {
 };
   // Get logged-in agency ID from localStorage
   const agencyId = localStorage.getItem("agencyId");
+const storedAgency = localStorage.getItem("agency");
+
+let agency = null;
+try {
+  agency = storedAgency ? JSON.parse(storedAgency) : null;
+} catch (error) {
+  console.error("Failed to parse agency from localStorage:", error);
+}
+
+const agencyName = agency?.name || "Unknown Agency";
+const agencyEmail = agency?.email || "";
 
   useEffect(() => {
     if (agencyId) {
@@ -99,18 +110,71 @@ const uploadHomeImageToWordPress = async (file) => {
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
+  
+const sendActivationMail = async (email, restaurantName, duration, agencyName, agencyEmail, agencyId) => {
+  try {
+    // Prepare shared email content
+    const subject = "🎉 Restaurant Activated Successfully!";
+    const message = `
+      <div style="font-family: Poppins, Arial, sans-serif; color: #222;">
+        <h2 style="color: #f9ac54;">Restaurant Activation Successful 🎉</h2>
+        <p>Hello,</p>
+        <p>Your restaurant <strong>${restaurantName}</strong> has been <strong>activated</strong> for <strong>${duration}</strong>.</p>
+        <p><strong>Activated by Agency:</strong> ${agencyName}</p>
+        <br>
+        <a href="https://menu.avenirya.com/login" style="background:#f9ac54; color:#111317; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:bold;">Go to Dashboard</a>
+        <br><br>
+        <hr style="border:none; border-top:1px solid #eee; margin:20px 0;">
+        <p style="font-size:14px; color:#555;">This is an automated activation notice from <strong>Avenirya Solutions OPC Pvt Ltd</strong>.</p>
+      </div>
+    `;
+
+    // 1️⃣ Send to restaurant
+    await axios.post("https://app.avenirya.com/wp-json/avenirya/v1/send-mail", {
+      to: email,
+      subject,
+      message,
+    });
+
+    // 2️⃣ Send separate mail to admin (you)
+    await axios.post("https://app.avenirya.com/wp-json/avenirya/v1/send-mail", {
+      to: "yashkolnure58@gmail.com",
+      subject: `✅ Activation Alert: ${restaurantName} Activated`,
+      message: `
+        <div style="font-family: Poppins, Arial, sans-serif; color: #222;">
+          <h2 style="color: #f9ac54;">New Restaurant Activated</h2>
+          <p><strong>Restaurant:</strong> ${restaurantName}</p>
+          <p><strong>Activated by Agency:</strong> ${agencyName} (ID: ${agencyId}, Email: ${agencyEmail})</p>
+          <p><strong>Duration:</strong> ${duration}</p>
+          <p><strong>Recipient Email:</strong> ${email}</p>
+          <br>
+          <p style="font-size:14px; color:#555;">This is a system notification from Avenirya Solutions OPC Pvt Ltd.</p>
+        </div>
+      `,
+    });
+
+  } catch (err) {
+    console.error("❌ Failed to send activation mails:", err);
+  }
+};
+
+
   const handleSubmit = async () => {
     try {
       const payload = { ...form, membership_level: 3 };
       if (!payload.password) delete payload.password; // Only send password if entered
 
       if (editingId) {
-        await axios.put(`${API}/restaurants/${editingId}`, payload);
-        toast.success("Restaurant updated successfully!");
-      } else {
-        await axios.post(`${API}/restaurant/register`, payload);
-        toast.success("Restaurant created successfully!");
-      }
+          // Editing existing restaurant — keep current active status
+          await axios.put(`${API}/restaurants/${editingId}`, payload);
+          toast.success("Restaurant updated successfully!");
+        } else {
+          // Creating new restaurant — make inactive by default
+          payload.active = false;
+          await axios.post(`${API}/restaurant/register`, payload);
+          toast.success("Restaurant created successfully (inactive by default)!");
+        }
+
 
       setForm({
         name: "",
@@ -413,11 +477,17 @@ const uploadHomeImageToWordPress = async (file) => {
                 active: true,
                 expiresAt,
               });
+
+              // Send activation mail using WordPress API
+              await sendActivationMail(rest.email, rest.name, opt.label, agencyName, agencyEmail, agencyId);
+
               toast.success(`"${rest.name}" activated for ${opt.label}!`);
               fetchRestaurantsByAgency(agencyId);
-            } catch {
+            } catch (err) {
+              console.error("Activation failed:", err);
               toast.error("Failed to activate");
             }
+
           }}
           className="block w-full text-left px-3 py-2 hover:bg-gray-100"
         >
