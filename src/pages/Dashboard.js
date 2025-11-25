@@ -9,1498 +9,685 @@ import ExpertHelpPopup from "../components/ExpertHelpPopup";
 import OfferBannerManager from "../components/OfferBannerManager";
 import { Helmet } from "react-helmet";
 
+// --- ICONS ---
+const Icons = {
+  Home: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>,
+  Menu: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>,
+  QR: () => (  <svg    className="w-5 h-5"    viewBox="0 0 24 24"    fill="currentColor" >    <path d="M3 3h8v8H3V3Zm2 2v4h4V5H5Zm10-2h8v8h-8V3Zm2 2v4h4V5h-4ZM3 13h8v8H3v-8Zm2 2v4h4v-4H5Zm13-2h2v2h-2v-2Zm2 3h2v6h-6v-2h4v-4Zm-6 1h2v5h-2v-5Zm0-4h4v2h-4v-2Z" /> </svg>),
+  Settings: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
+  Upload: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>,
+  Edit: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>,
+  Trash: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>,
+  Plus: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>,
+  Hamburger: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>,
+  Close: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>, 
+  Logout: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+};
 
 function Dashboard() {
+  // --- STATE ---
+  const [activeTab, setActiveTab] = useState("overview"); 
   const [restaurant, setRestaurant] = useState({ name: "", logo: "", address: "", contact: "" });
   const [restaurantId, setRestaurantId] = useState(localStorage.getItem("restaurantId") || "");
   const [menuItems, setMenuItems] = useState([]);
   const [offers, setOffers] = useState([]);
   const [existingItems, setExistingItems] = useState([]);
-  const [itemForm, setItemForm] = useState({ name: "", category: "", description: "", price: "", image: "", _id: null });
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile Menu State
+  
+  // FIX: Ref for scrolling
+  const formRef = useRef(null);
+
+  // Form States
+  const [itemForm, setItemForm] = useState({ name: "", category: "", description: "", price: "", image: "", _id: null, inStock: true });
   const [customCategory, setCustomCategory] = useState("");
-  const [uploading, setUploading] = useState(false);
+  const [showItemForm, setShowItemForm] = useState(false);
+  
+  // Loading/Feedback States
   const [message, setMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [isEditMode, setIsEditMode] = useState(false);
-  const [editedItems, setEditedItems] = useState([]);
-  const token = localStorage.getItem("token");
-  const navigate = useNavigate();
-  const [savingItems, setSavingItems] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [openCategory, setOpenCategory] = useState(null);
-  const [isFetching, setIsFetching] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const imagePasteRef = useRef(null);
-  const [customEditCategories, setCustomEditCategories] = useState({});
   const [showUpgrade, setShowUpgrade] = useState(false);
-   const [showPopup, setShowPopup] = useState(false);
-   const triggerAction = async (fn) => {
-  setIsLoading(true);
-  await fn();
-  setIsLoading(false);
-};
+  const [showPopup, setShowPopup] = useState(false);
+  
+  const navigate = useNavigate();
+  const token = localStorage.getItem("token");
 
-  // Open popup automatically after 10 seconds
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowPopup(true);
-    }, 10000); // 10 seconds
+  // --- HELPERS ---
+  const triggerAction = async (fn) => {
+    setIsLoading(true);
+    await fn();
+    setIsLoading(false);
+  };
+  
+  const getDaysLeft = () => {
+    if (!restaurant.expiresAt) return null;
+    const today = new Date();
+    const expiry = new Date(restaurant.expiresAt);
+    const diffTime = expiry - today;
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
 
-    return () => clearTimeout(timer);
-  }, []);
-
+  const daysLeft = getDaysLeft();
+  
+  const handleLogout = () => {
+    if (window.confirm("Are you sure you want to logout?")) {
+        localStorage.clear();
+        navigate("/login");
+    }
+  };
 
   useEffect(() => {
     if (!restaurantId || !token) return;
-
     const fetchRestaurant = async () => {
       try {
-        const res = await axios.get(`/api/admin/${restaurantId}/details`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axios.get(`/api/admin/${restaurantId}/details`, { headers: { Authorization: `Bearer ${token}` } });
         setRestaurant(res.data);
-        
-      } catch (e) {
-        console.error(e);
-        setError("Failed to fetch restaurant.");
-        
-      }
+      } catch (e) { setError("Failed to fetch restaurant."); }
     };
-
     const fetchMenu = async () => {
       try {
-        const res = await axios.get(`/api/admin/${restaurantId}/menu`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axios.get(`/api/admin/${restaurantId}/menu`, { headers: { Authorization: `Bearer ${token}` } });
         setExistingItems(res.data);
-      } catch (e) {
-        console.error(e);
-        setError("Failed to fetch menu.");
-      }
+      } catch (e) { setError("Failed to fetch menu."); }
     };
-
     fetchRestaurant();
     fetchMenu();
   }, [restaurantId, token]);
 
   useEffect(() => {
-    const handlePaste = (e) => {
-      const items = e.clipboardData.items;
-      for (const item of items) {
-        if (item.type.indexOf("image") !== -1) {
-          const file = item.getAsFile();
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            setItemForm((prev) => ({ ...prev, image: event.target.result }));
-          };
-          reader.readAsDataURL(file);
-        }
-      }
-    };
-    const ref = imagePasteRef.current;
-    if (ref) ref.addEventListener("paste", handlePaste);
-    return () => {
-      if (ref) ref.removeEventListener("paste", handlePaste);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (groupedItems.length && !selectedCategory) {
-      setSelectedCategory(groupedItems[0].category);
-    }
+    if (groupedItems.length && !selectedCategory) setSelectedCategory(groupedItems[0].category);
   }, [existingItems]);
 
-const handleItemChange = (e) => {
-  const { name, value } = e.target;
-
-  // Allow numbers with optional one decimal point
-  if (name === "price" && !/^\d*\.?\d*$/.test(value)) return;
-
-  setItemForm((prev) => ({ ...prev, [name]: value }));
-};
+  // --- HANDLERS ---
+  const handleItemChange = (e) => {
+    const { name, value } = e.target;
+    if (name === "price" && !/^\d*\.?\d*$/.test(value)) return;
+    setItemForm((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setItemForm((prev) => ({ ...prev, image: reader.result }));
-    };
+    reader.onloadend = () => { setItemForm((prev) => ({ ...prev, image: reader.result })); };
     reader.readAsDataURL(file);
   };
 
-// Define limits
-const membershipLimits = {
-  1: 15,
-  2: 100,
-  3: Infinity
-};
-
-
-async function batchUpdate(items, batchSize = 5) {
-  let index = 0;
-  while (index < items.length) {
-    const batch = items.slice(index, index + batchSize);
-    await Promise.all(
-      batch.map(item =>
-        axios.put(
-          `/api/admin/${item.restaurantId}/menu/${item._id}`,
-          item,
-          { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
-        )
-      )
-    );
-    index += batchSize;
-  }
-};
+  const membershipLimits = { 1: 15, 2: 100, 3: Infinity };
 
   async function uploadImageToWordPress(base64Image, filename) {
     try {
-      // Remove the data URL prefix if present
       const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, "");
-      
-      // Convert base64 to blob
       const byteCharacters = atob(base64Data);
       const byteArrays = [];
-      
       for (let offset = 0; offset < byteCharacters.length; offset += 512) {
         const slice = byteCharacters.slice(offset, offset + 512);
         const byteNumbers = new Array(slice.length);
-        
-        for (let i = 0; i < slice.length; i++) {
-          byteNumbers[i] = slice.charCodeAt(i);
-        }
-        
+        for (let i = 0; i < slice.length; i++) byteNumbers[i] = slice.charCodeAt(i);
         const byteArray = new Uint8Array(byteNumbers);
         byteArrays.push(byteArray);
       }
-      
       const blob = new Blob(byteArrays, { type: 'image/jpeg' });
       const formData = new FormData();
       formData.append('file', blob, filename || `menu-item-${Date.now()}.jpg`);
-
-      // WordPress credentials
+      
       const username = "yashkolnure58@gmail.com";
       const appPassword = "05mq iTLF UvJU dyaz 7KxQ 8pyc";
       const authHeader = `Basic ${btoa(`${username}:${appPassword}`)}`;
-
+      
       const response = await fetch("https://website.avenirya.com/wp-json/wp/v2/media", {
-        method: "POST",
-        headers: {
-          "Authorization": authHeader
-        },
-        body: formData
+        method: "POST", headers: { "Authorization": authHeader }, body: formData
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to upload image to WordPress");
-      }
-
+      if (!response.ok) throw new Error("Failed to upload image");
       const data = await response.json();
       return data.source_url;
-    } catch (error) {
-      console.error("WordPress upload error:", error);
-      throw error;
-    }
+    } catch (error) { console.error("WordPress upload error:", error); throw error; }
   }
 
-const addItemToList = async () => {
-  setError("");
-  setMessage("");
-  if (!itemForm.name || !itemForm.category || !itemForm.price) {
-    setError("All fields are required.");
-    return;
-  }
-
-  // Get current plan's limit
-  const limit = membershipLimits[restaurant.membership_level] || 0;
-  const totalItems = existingItems.length;
-
-  if (totalItems >= limit && limit !== Infinity) {
-    setError(`You have reached the limit of ${limit} items for your membership plan.`);
-    return;
-  }
-
-  let imageUrl = itemForm.image;
-  if (itemForm.image && itemForm.image.startsWith("data:")) {
-    try {
-      imageUrl = await uploadImageToWordPress(
-        itemForm.image,
-        `${itemForm.name.replace(/\s+/g, "-")}_${itemForm.category.replace(/\s+/g, "-")}.jpg`
-      );
-    } catch (error) {
-      setError("Image upload failed.");
-      return;
-    }
-  }
-
-  const newItem = {
-    ...itemForm,
-    price: parseFloat(itemForm.price),
-    restaurantId,
-    image: imageUrl,
-    inStock: itemForm.inStock ?? true,
-  };
-
-  try {
-    await axios.post(
-      `/api/admin/${restaurantId}/menu`,
-      newItem,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    setMessage("Item added successfully!");
-    setItemForm({ name: "", category: "", description: "", price: "", image: "", _id: null });
-    setCustomCategory("");
-    // Refresh the menu
-    const res = await axios.get(
-      `/api/admin/${restaurantId}/menu`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    setExistingItems(res.data);
-  } catch (err) {
-    setError("Failed to add item: " + (err.response?.data?.message || err.message));
-  }
-};
-
-  const handleUpload = async () => {
-    if (!menuItems.length) return;
+  const addItemToList = async () => {
+    setError(""); setMessage("");
+    if (!itemForm.name || !itemForm.category || !itemForm.price) { setError("All fields are required."); return; }
     
-    try {
-      setUploading(true);
-      setMessage("");
-      setError("");
-      
-      // First upload all images to WordPress
-      const itemsWithImageUrls = await Promise.all(
-        menuItems.map(async (item) => {
-          if (item.image.startsWith('data:')) {
-            try {
-              const imageUrl = await uploadImageToWordPress(
-                item.image,
-                `${item.name.replace(/\s+/g, '-')}_${item.category.replace(/\s+/g, '-')}.jpg`
-              );
-              return { ...item, image: imageUrl };
-            } catch (error) {
-              console.error(`Failed to upload image for ${item.name}:`, error);
-              return { ...item, image: '' }; // Fallback to no image
-            }
-          }
-          return item; // If it's already a URL, keep it
-        })
-      );
-      
-      // Then send to your backend
-      await axios.post(
-        `/api/admin/bulk`,
-        itemsWithImageUrls,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
-      setMessage("Upload successful");
-      setMenuItems([]);
-      
-      // Refresh the existing items
-      const res = await axios.get(
-        `/api/admin/${restaurantId}/menu`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setExistingItems(res.data);
-      
-    } catch (err) {
-      setError("Upload failed: " + (err.response?.data?.message || err.message));
-    } finally {
-      setUploading(false);
+    const limit = membershipLimits[restaurant.membership_level] || 0;
+    if (existingItems.length >= limit && limit !== Infinity) { setError(`Limit reached: ${limit} items.`); return; }
+
+    let imageUrl = itemForm.image;
+    if (itemForm.image && itemForm.image.startsWith("data:")) {
+      try {
+        imageUrl = await uploadImageToWordPress(itemForm.image, `${itemForm.name.replace(/\s+/g, "-")}_${itemForm.category.replace(/\s+/g, "-")}.jpg`);
+      } catch (error) { setError("Image upload failed."); return; }
     }
+
+    const newItem = { ...itemForm, price: parseFloat(itemForm.price), restaurantId, image: imageUrl, inStock: itemForm.inStock ?? true };
+    try {
+      await axios.post(`/api/admin/${restaurantId}/menu`, newItem, { headers: { Authorization: `Bearer ${token}` } });
+      setMessage("Item added successfully!");
+      setItemForm({ name: "", category: "", description: "", price: "", image: "", _id: null, inStock: true });
+      setCustomCategory("");
+      setShowItemForm(false); 
+      const res = await axios.get(`/api/admin/${restaurantId}/menu`, { headers: { Authorization: `Bearer ${token}` } });
+      setExistingItems(res.data);
+    } catch (err) { setError("Failed to add item."); }
   };
 
-   const handleUpgrade = async (newLevel) => {
+  const handleUpdate = async () => {
     try {
-      const res = await axios.put(
-        `/api/admin/upgrade-membership/${restaurantId}`,
-        { newLevel },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      setMessage(""); setError("");
+      let imageUrl = itemForm.image;
+      if (itemForm.image && itemForm.image.startsWith("data:")) {
+        imageUrl = await uploadImageToWordPress(itemForm.image, `${itemForm.name.replace(/\s+/g, "-")}-${Date.now()}.jpg`);
+      }
+      const updatedItem = { ...itemForm, image: imageUrl, inStock: itemForm.inStock };
+      await axios.put(`/api/admin/${restaurantId}/menu/${itemForm._id}`, updatedItem, { headers: { Authorization: `Bearer ${token}` } });
+      
+      setItemForm({ name: "", category: "", description: "", price: "", image: "", _id: null, inStock: true });
+      setMessage("Updated successfully");
+      setShowItemForm(false);
+      const res = await axios.get(`/api/admin/${restaurantId}/menu`, { headers: { Authorization: `Bearer ${token}` } });
+      setExistingItems(res.data);
+    } catch (err) { setError("Update failed."); }
+  };
 
-      setRestaurant((prev) => ({
-        ...prev,
-        membership_level: res.data.restaurant.membership_level,
-      }));
-
-      setShowUpgrade(false);
-    } catch (err) {
-      console.error("Upgrade failed:", err.response?.data || err.message);
-      alert(err.response?.data?.message || "Upgrade failed");
-    }
+  const handleDelete = async (id) => {
+    if(!window.confirm("Are you sure you want to delete this item?")) return;
+    try {
+      await axios.delete(`/api/admin/${restaurantId}/menu/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      setExistingItems(existingItems.filter(item => item._id !== id));
+    } catch (err) { console.error("Delete failed"); }
   };
 
   const handleEditItem = (item) => {
     setItemForm({
-      name: item.name,
-      category: item.category,
-      description: item.description,
-      price: item.price.toString(),
-      image: item.image,
-      _id: item._id,
-      inStock: item.inStock === true,
+      name: item.name, category: item.category, description: item.description,
+      price: item.price.toString(), image: item.image, _id: item._id, inStock: item.inStock === true,
     });
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-  
- // Memory cache for media items
-let mediaCache = null;
+    
+    setShowItemForm(true);
 
-// Clean and normalize dish/media names
-function cleanName(name) {
-  return name
-    .toLowerCase()
-    .replace(/\(.*?\)/g, '')       // Remove (anything)
-    .replace(/[^a-z\s-]/g, '')     // Remove digits/special characters
-    .replace(/-/g, ' ')            // Dashes to space
-    .replace(/\s+/g, ' ')          // Collapse spaces
-    .trim();
-}
-
-// Levenshtein similarity
-function levenshteinSimilarity(a, b) {
-  a = a.toLowerCase();
-  b = b.toLowerCase();
-  const matrix = Array.from({ length: b.length + 1 }, (_, i) =>
-    Array(a.length + 1).fill(0)
-  );
-
-  for (let i = 0; i <= b.length; i++) matrix[i][0] = i;
-  for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
-
-  for (let i = 1; i <= b.length; i++) {
-    for (let j = 1; j <= a.length; j++) {
-      const cost = a[j - 1] === b[i - 1] ? 0 : 1;
-      matrix[i][j] = Math.min(
-        matrix[i - 1][j] + 1,
-        matrix[i][j - 1] + 1,
-        matrix[i - 1][j - 1] + cost
-      );
-    }
-  }
-
-  const distance = matrix[b.length][a.length];
-  const maxLen = Math.max(a.length, b.length);
-  return 1 - distance / maxLen;
-}
-
-// Fetch all media items once (bulk first, fallback to pagination)
-async function fetchAllMediaItems() {
-  const allItems = [];
-
-  try {
-    const bulkRes = await fetch(`https://website.avenirya.com/wp-json/wp/v2/media?per_page=10000`);
-    if (!bulkRes.ok) throw new Error("Bulk fetch failed");
-    return await bulkRes.json();
-  } catch (e) {
-    console.warn("Bulk fetch failed, falling back to pagination...");
-  }
-
-  let page = 1;
-  const perPage = 100;
-  const maxPages = 100;
-
-  while (page <= maxPages) {
-    const res = await fetch(`https://website.avenirya.com/wp-json/wp/v2/media?per_page=${perPage}&page=${page}`);
-    if (!res.ok) break;
-
-    const data = await res.json();
-    allItems.push(...data);
-
-    if (data.length < perPage) break;
-    page++;
-  }
-
-  return allItems;
-}
-
-// Fetch and attach best match image using cached media
-async function fetchImageForItemCached(index) {
-  const item = editedItems[index];
-  if (!item) {
-    console.warn(`fetchImageForItemCached: no editedItems[${index}]`);
-    return;
-  }
-
-  const rawName = item?.name || "";
-  const rawCategory = item?.category || "";
-  if (!rawName) {
-    setError("Dish name required to fetch image.");
-    return;
-  }
-
-  // Use combined name + category for matching
-  const combined = `${rawName} ${rawCategory}`.trim();
-  const cleanedTarget = cleanName(combined);
-
-  setSavingItems((prev) => ({ ...prev, [item._id]: "fetching" }));
-  console.log(`🔎 fetchImageForItemCached: id=${item._id} target="${combined}"`);
-
-  try {
-    if (!mediaCache || mediaCache.length === 0) {
-      setError("Media cache is empty. Please fetch media first.");
-      setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
-      return;
-    }
-
-    let bestMatch = null;
-    let bestScore = 0;
-
-    for (const media of mediaCache) {
-      if (!media) continue;
-
-      // media title
-      const mediaTitle = media.title?.rendered ? cleanName(media.title.rendered) : "";
-      // media slug (filename-like)
-      const mediaSlug = media.slug ? cleanName(media.slug.replace(/-/g, " ")) : "";
-      // try source filename if available
-      const mediaFilename = media.meta?.file ? cleanName(media.meta.file) : "";
-
-      const scoreTitle = mediaTitle ? levenshteinSimilarity(cleanedTarget, mediaTitle) : 0;
-      const scoreSlug = mediaSlug ? levenshteinSimilarity(cleanedTarget, mediaSlug) : 0;
-      const scoreFile = mediaFilename ? levenshteinSimilarity(cleanedTarget, mediaFilename) : 0;
-
-      // choose best of the three for this media
-      const score = Math.max(scoreTitle, scoreSlug, scoreFile);
-
-      if (score > bestScore) {
-        bestScore = score;
-        bestMatch = media;
-      }
-    }
-
-    console.log(`→ bestScore=${bestScore.toFixed(3)} for "${combined}" (id=${item._id})`);
-
-    const MIN_SCORE = 0.5; // tune threshold (0..1)
-    if (!bestMatch || bestScore < MIN_SCORE) {
-      setError(`No image matched for "${combined}" (score ${bestScore.toFixed(2)})`);
-      setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
-      return;
-    }
-
-    const imageUrl = bestMatch.source_url;
-    // Try fetching image blob and convert to data URL (may fail due to CORS)
-    try {
-      const resp = await fetch(imageUrl);
-      if (!resp.ok) throw new Error(`Image fetch failed ${resp.status}`);
-      const blob = await resp.blob();
-
-      // Convert blob -> dataURL
-      await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          updateEditedItem(index, "image", reader.result);
-          setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
-          console.log(`✅ Attached image (dataURL) for ${item.name}`);
-          resolve();
-        };
-        reader.onerror = (err) => reject(err);
-        reader.readAsDataURL(blob);
-      });
-    } catch (fetchErr) {
-      // If fetch fails (CORS or network), fallback: store remote URL instead of dataURI
-      console.warn("Image fetch -> dataURL failed, falling back to storing URL:", fetchErr);
-      updateEditedItem(index, "image", imageUrl);
-      setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
-      setMessage(`Attached image URL for "${item.name}" (couldn't convert to dataURI)`);
-    }
-  } catch (err) {
-    console.error("❌ fetchImageForItemCached error:", err);
-    setError("Failed to fetch image: " + (err.message || err));
-    setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
-  }
-}
-
-// Helper: run async tasks in batches
-async function runInBatches(tasks, batchSize = 5) {
-  const results = [];
-  for (let i = 0; i < tasks.length; i += batchSize) {
-    const batch = tasks.slice(i, i + batchSize);
-    const res = await Promise.allSettled(batch.map(fn => fn()));
-    results.push(...res);
-  }
-  return results;
-}
-
-// Main: fetch images for all dishes using memory cache
-async function fetchAllImages() {
-  setIsFetching(true); // start loading
-  if (!mediaCache) {
-    mediaCache = await fetchAllMediaItems();
-  }
-
-  const tasks = editedItems.map((item, index) => {
-    const img = item.image;
-    if (!img || img.startsWith("data:")) {
-      return () => fetchImageForItemCached(index);
-    }
-    return null;
-  }).filter(Boolean);
-
-  await runInBatches(tasks, 5); // adjust concurrency limit if needed
-  setIsFetching(false); // stop loading
-}
-
-const handleUpdate = async () => {
-  try {
-    setMessage("");
-    setError("");
-
-    let imageUrl = itemForm.image;
-
-    // If it's a new base64 image, upload to WordPress first
-    if (itemForm.image && itemForm.image.startsWith("data:")) {
-      imageUrl = await uploadImageToWordPress(
-        itemForm.image,
-        `${itemForm.name.replace(/\s+/g, "-")}-${Date.now()}.jpg`
-      );
-    }
-
-    // Ensure inStock defaults to true if not set
-    const updatedItem = { 
-      ...itemForm, 
-      image: imageUrl, 
-  inStock: itemForm.inStock // keep exact value true/false
-    };
-
-    await axios.put(
-      `/api/admin/${restaurantId}/menu/${itemForm._id}`,
-      updatedItem,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-
-    setItemForm({ 
-      name: "", 
-      category: "", 
-      description: "", 
-      price: "", 
-      image: "", 
-      _id: null,
-      inStock: true // reset default
-    });
-
-    setMessage("Updated successfully");
-    console.log("Update body:", updatedItem);
-    // Refresh the menu
-    const res = await axios.get(
-      `/api/admin/${restaurantId}/menu`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    setExistingItems(res.data);
-
-  } catch (err) {
-    setError("Update failed: " + (err.response?.data?.message || err.message));
-  }
-};
-
-
-  const handleDelete = async (id) => {
-    try {
-      await axios.delete(`/api/admin/${restaurantId}/menu/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setExistingItems(existingItems.filter(item => item._id !== id));
-    } catch (err) {
-      console.error("Delete failed");
-    }
+    // FIX: Scroll to form when editing
+    setTimeout(() => {
+        if(formRef.current) {
+            formRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+    }, 100);
   };
 
-    const handleOptionClick = (path, allowed) => {
-    if (!allowed) return; // prevent navigation if not allowed
+  const handleUpgrade = async (newLevel) => {
+    try {
+      const res = await axios.put(`/api/admin/upgrade-membership/${restaurantId}`, { newLevel }, { headers: { Authorization: `Bearer ${token}` } });
+      setRestaurant((prev) => ({ ...prev, membership_level: res.data.restaurant.membership_level }));
+      setShowUpgrade(false);
+    } catch (err) { alert("Upgrade failed"); }
+  };
+
+  const handleOptionClick = (path, allowed) => {
+    if (!allowed) return;
     navigate(path);
     setShowModal(false);
   };
-
-  const updateEditedItem = (index, field, value) => {
-    const updated = [...editedItems];
-    updated[index][field] = value;
-    setEditedItems(updated);
-  };
-
-  const handlePasteImage = (e, index) => {
-    const items = e.clipboardData.items;
-    for (const item of items) {
-      if (item.type.indexOf("image") !== -1) {
-        const file = item.getAsFile();
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          updateEditedItem(index, "image", event.target.result);
-        };
-        reader.readAsDataURL(file);
-      }
-    }
-  };
-
-  const handleImageFileChange = (e, index) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      updateEditedItem(index, "image", reader.result);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const saveAllEditedItems = async () => {
-    setIsSaving(true);
-    try {
-      setMessage("");
-      setError("");
-      
-      // First process all images
-      const itemsToSave = await Promise.all(
-        editedItems.map(async (item) => {
-          if (item.image.startsWith('data:')) {
-            try {
-              const imageUrl = await uploadImageToWordPress(
-                item.image,
-                `${item.name.replace(/\s+/g, '-')}_${item.category.replace(/\s+/g, '-')}.jpg`
-              );
-              return { ...item, image: imageUrl };
-            } catch (error) {
-              console.error(`Failed to upload image for ${item.name}:`, error);
-              return item; // Keep original (will fail to save if it was a new image)
-            }
-          }
-          return item; // If it's already a URL, keep it
-        })
-      );
-      
-      // Then save all items
-      const requests = itemsToSave.map(item =>
-        axios.put(
-          `/api/admin/${restaurantId}/menu/${item._id}`,
-          item,
-          { headers: { Authorization: `Bearer ${token}` } }
-        )
-      );
-      
-      await batchUpdate(itemsToSave, 50); 
-      setMessage("All items updated successfully.");
-      setIsEditMode(false);
-      
-      // Refresh the menu
-      const res = await axios.get(
-        `/api/admin/${restaurantId}/menu`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setExistingItems(res.data);
-      
-    } catch (err) {
-      setError("Failed to save changes: " + (err.response?.data?.message || err.message));
-    }
-    setIsSaving(false);
-  };
-
-  const handleMenuClick = () => {
-    window.open(`https://app.avenirya.com/menuwp/${restaurantId}`, "_blank");
-  };
-
 
   const allCategories = [...new Set([...existingItems.map((i) => i.category), ...menuItems.map((i) => i.category)])];
   const groupedItems = allCategories.map(cat => ({
     category: cat,
     items: existingItems.filter(item => item.category === cat)
   }));
-return (
-  <div className="p-6 max-w-7xl mx-auto space-y-8">
-            <Helmet>
-        <title>Petoba | Digital QR Menu & Ordering</title>
-        <meta
-          name="description"
-          content="Petoba lets restaurants create digital QR menus. Customers scan, order, and enjoy a contactless dining experience."
-        />
 
-        <link
-          rel="icon"
-          href="https://petoba.avenirya.com/wp-content/uploads/2025/09/download-1.png"
-          type="image/png"
-        />
-        <meta
-          property="og:image"
-          content="https://petoba.avenirya.com/wp-content/uploads/2025/09/Untitled-design-6.png"
-        />
-        <meta property="og:title" content="Petoba - Digital QR Menu" />
-        <meta property="og:description" content="Turn your restaurant’s menu into a digital QR code menu." />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://yash.avenirya.com" />
+
+  // --- COMPONENTS ---
+  const SidebarItem = ({ id, label, icon: Icon }) => (
+    <button 
+      onClick={() => { 
+          setActiveTab(id); 
+          setIsEditMode(false); 
+          setShowItemForm(false);
+          setIsMobileMenuOpen(false); // Close mobile menu on click
+      }}
+      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === id ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-600 hover:bg-gray-100'}`}
+    >
+      <Icon />
+      <span className="font-medium">{label}</span>
+    </button>
+  );
+
+  // --- MAIN LAYOUT RENDER ---
+  return (
+    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+      <Helmet>
+        <title>Dashboard - {restaurant.name || "Petoba"}</title>
       </Helmet>
 
-      
-    <div className="absolute -top-32 -left-32 w-96 h-96 bg-gradient-to-r from-pink-300 to-purple-300 rounded-full filter blur-3xl opacity-30 z-0"></div>
-      
-    {/* Welcome */}
-    <h2 className="text-3xl font-bold text-gray-800">
-      Welcome, <span className="text-orange-600">{restaurant.name}</span>
-    </h2>
-      
+      <UpgradePopup isOpen={showUpgrade} onClose={() => setShowUpgrade(false)} currentLevel={restaurant?.membership_level || 1} onUpgrade={handleUpgrade} />
+      <ExpertHelpPopup open={showPopup} onClose={() => setShowPopup(false)} />
 
-      <UpgradePopup
-        isOpen={showUpgrade}
-        onClose={() => setShowUpgrade(false)}
-        currentLevel={restaurant?.membership_level || 1}
-        onUpgrade={handleUpgrade}
-      />
-
-    {/* Add / Edit Dish */}
-    <div
-      className="p-6 bg-white rounded-2xl shadow-lg border border-gray-100"
-      ref={imagePasteRef}
-    >
-      <div className="flex items-center justify-between mb-2 bg-white z-10">
-        <h3 className="text-xl font-semibold flex items-center gap-2">
-          🍽️ Add / Edit Dish
-        </h3>
-
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <input
-          name="name"
-          value={itemForm.name}
-          onChange={handleItemChange}
-          placeholder="Dish Name"
-          className="border p-3 rounded-lg focus:ring focus:ring-blue-300"
-        />
-        <input
-          name="price"
-          type="text"
-          value={itemForm.price}
-          onChange={(e) => {
-            const value = e.target.value;
-            // Allow only numbers and up to one decimal point
-            if (/^\d*\.?\d*$/.test(value)) {
-              handleItemChange(e);
-            }
-          }}
-          placeholder={`${restaurant?.currency || "₹"} Price`}
-          className="border p-3 rounded-lg focus:ring focus:ring-blue-300"
-        />
-
-        <input
-          name="description"
-          value={itemForm.description}
-          onChange={handleItemChange}
-          placeholder="Description"
-          className="border p-3 rounded-lg focus:ring focus:ring-blue-300"
-        />
-
-        {/* Category Selector */}
-        <select
-          value={itemForm.category || ""}
-          onChange={(e) => {
-            const val = e.target.value;
-            setCustomCategory(val === "__custom__" ? val : "");
-            setItemForm({
-              ...itemForm,
-              category: val === "__custom__" ? "" : val,
-            });
-          }}
-          className="border p-3 rounded-lg focus:ring focus:ring-blue-300"
-        >
-          <option value="">Select Category</option>
-          {allCategories.map((cat, i) => (
-            <option key={i} value={cat}>
-              {cat}
-            </option>
-          ))}
-          <option value="__custom__">➕ Custom Category</option>
-        </select>
-
-        {customCategory === "__custom__" && (
-          <input
-            type="text"
-            placeholder="Enter category"
-            value={itemForm.category}
-            onChange={(e) =>
-              setItemForm({ ...itemForm, category: e.target.value })
-            }
-            className="border p-3 rounded-lg focus:ring focus:ring-blue-300 md:col-span-2 lg:col-span-1"
-          />
-        )}
-      </div>
-      
-      {/* Image Upload (membership gated) */}
-      <div className="mt-4">
-        {restaurant.membership_level === 1 ? (
-          <div className="p-5 border-2 border-dashed rounded-xl bg-gray-50 flex flex-col sm:flex-row sm:items-center gap-3 text-gray-500">
-            <div className="flex-1">
-              <div className="font-medium">Image upload is locked on Free plan</div>
-              <div className="text-xs">
-                Upgrade to enable uploads and auto image fetch.
-              </div>
-            </div>
-        <button
-        onClick={() => setShowUpgrade(true)}
-        className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700"
-      >
-        Upgrade Plan
-      </button>
-          </div>
-        ) : (
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="border p-3 rounded-lg w-full"
-          />
-        )}
-      </div>
-
-{/* Stock Toggle - only in edit mode */}
-{itemForm._id && (
-  <div className="flex items-center gap-3 border p-3 rounded-lg mt-4">
-    <label className="flex items-center gap-2 cursor-pointer">
-      <input
-        type="checkbox"
-        checked={itemForm.inStock ?? true} // default to true if undefined
-        onChange={(e) =>
-          setItemForm({ ...itemForm, inStock: e.target.checked })
-        }
-        className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-      />
-      <span
-        className={`font-medium ${
-          itemForm.inStock ?? true ? "text-green-600" : "text-red-600"
-        }`}
-      >
-        {itemForm.inStock ?? true ? "In Stock ✅" : "Out of Stock ❌"}
-      </span>
-    </label>
-  </div>
-)}
-
-
-      {/* Preview */}
-      {itemForm.image && (
-        <div className="mt-4 flex items-center gap-4">
-          <img
-            src={itemForm.image}
-            alt="Preview"
-            className="h-20 w-20 object-cover rounded-lg border"
-          />
-          <p className="text-sm text-gray-500">
-            {itemForm.image.startsWith("data:")
-              ? "New image"
-              : "Existing image"}
-          </p>
-        </div>
+      {/* --- MOBILE OVERLAY --- */}
+      {isMobileMenuOpen && (
+          <div 
+            className="fixed inset-0 z-40 bg-black/50 md:hidden backdrop-blur-sm transition-opacity"
+            onClick={() => setIsMobileMenuOpen(false)}
+          ></div>
       )}
 
-      {/* Add / Update Buttons */}
-      <div className="mt-6 flex gap-4">
-        {itemForm._id ? (
-          <button
-            onClick={handleUpdate}
-            className="px-5 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg shadow"
-          >
-            Update Item
-          </button>
-        ) : (
-          <button
-            onClick={addItemToList}
-            className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow"
-          >
-            Add Item
-          </button>
-        )}
-      </div>
-          <div>
-      <button
-        onClick={() => setShowPopup(true)}
-        className="  fixed bottom-6 left-6 z-50
-    px-5 py-3
-    rounded-full
-    bg-gradient-to-r from-blue-600 to-indigo-600
-    text-white font-semibold
-    shadow-[0_0_15px_rgba(59,130,246,0.6)]
-    hover:shadow-[0_0_25px_rgba(59,130,246,0.9)]
-    hover:scale-105
-    transition-all duration-300
-    flex items-center gap-2"
-      >
-        Need Expert Help?
-      </button>
-
-      <ExpertHelpPopup
-        open={showPopup}
-        onClose={() => setShowPopup(false)}
-      />
-    </div>
-    </div>
-
-    {/* Messages */}
-    {message && (
-      <div className="p-3 bg-green-100 text-green-700 rounded">{message}</div>
-    )}
-    {error && (
-      <div className="p-3 bg-red-100 text-red-700 rounded">{error}</div>
-    )}
-    
-
-
-    {/* Items to Upload */}
-    {menuItems.length > 0 && (
-      <div className="bg-white rounded-2xl shadow p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">📝 Items To Upload</h3>
-          <button
-            onClick={handleUpload}
-            disabled={uploading}
-            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg disabled:opacity-50"
-          >
-            {uploading ? "Uploading..." : "Upload All"}
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          {menuItems.map((item, idx) => (
-            <div
-              key={idx}
-              className="p-4 border rounded-lg shadow-sm bg-gray-50"
-            >
-              <h4 className="font-semibold">{item.name}</h4>
-              <p className="text-sm text-gray-600">{item.description}</p>
-              <p className="text-green-600 font-medium mt-1">₹{item.price}</p>
-              {item.image && (
-                <img
-                  src={item.image}
-                  className="mt-2 h-20 object-cover rounded-lg border"
-                  alt="preview"
-                />
-              )}
-              <p className="text-xs text-gray-400">{item.category}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    )}
-
-    {/* Existing Menu */}
-    {existingItems.length > 0 && (
-      <div className="bg-white p-0">
-        {/* Edit Mode Toggle */}
-        {!isEditMode && (
-          <button
-            onClick={() => {
-              setIsEditMode(true);
-              setEditedItems([...existingItems]);
-            }}
-            className="mb-6 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg"
-          >
-            Edit Menu & Add Images
-          </button>
-        )}
-
-        {isEditMode ? (
-          <>
-            <div className="flex items-center gap-3 mb-4">
-              <h3 className="text-xl font-semibold">Edit Menu Items</h3>
-
-              <button
-                type="button"
-                className="ml-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded flex items-center gap-2"
-                onClick={() => {
-                  if (
-                    restaurant.membership_level === 1 
-                  ) {
-                    alert("Please upgrade your plan to use this feature.");
-                  } else {
-                    fetchAllImages();
-                  }
-                }}
-                  disabled={isFetching}   
-              >
-               {isFetching ? (
-  <>
-    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z"></path>
-    </svg>
-    Fetching...
-  </>
-) : (
-  "Fetch All Images ( AI )"
-)}
-                <span className="relative group ml-1 w-5 h-5 flex items-center justify-center rounded-full bg-white text-orange-700 font-bold text-xs cursor-pointer shadow border border-blue-300">
-                  i
-                  <span className="absolute bottom-full mb-2 w-56 text-xs text-white bg-gray-900 rounded-lg py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow z-10 left-1/2 -translate-x-1/2 sm:left-auto sm:right-0">
-                    <strong>Pro Feature:</strong> Automatically fetch images for
-                    all dishes you added.
-                  </span>
-                </span>
-              </button>
-            </div>
-
-            {/* Editable List */}
-            <div className="space-y-3 w-full">
-              {editedItems.map((item, index) => (
-                <div
-                  key={item._id}
-                  className="w-full flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-3 p-3 border rounded-xl shadow bg-white"
-                  onPaste={(e) => handlePasteImage(e, index)}
-                >
-                  {/* Image preview + uploader (hide for level 1) */}
-                  {restaurant.membership_level > 1 && item.image && (
-                    <div className="flex flex-col items-center sm:items-start">
-                      <img
-                        src={item.image}
-                        alt="preview"
-                        className="h-14 w-14 object-cover rounded border"
-                      />
-                      <span className="text-xs text-gray-500 mt-1">
-                        {item.image.startsWith("data:")
-                          ? "New image"
-                          : "Existing"}
-                      </span>
-                    </div>
-                  )}
-
-                  {restaurant.membership_level > 1 && (
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleImageFileChange(e, index)}
-                      className="text-sm border rounded px-2 py-2 w-full sm:w-auto"
-                    />
-                  )}
-
-                  {/* Name */}
-                  <input
-                    value={item.name}
-                    onChange={(e) =>
-                      updateEditedItem(index, "name", e.target.value)
-                    }
-                    className="border p-3 rounded text-sm flex-1 w-full sm:w-auto min-w-[140px]"
-                    placeholder="Name"
-                  />
-
-                  {/* Description */}
-                  <input
-                    value={item.description}
-                    onChange={(e) =>
-                      updateEditedItem(index, "description", e.target.value)
-                    }
-                    className="border p-3 rounded text-sm flex-1 w-full sm:w-auto min-w-[160px]"
-                    placeholder="Description"
-                  />
-
-                  {/* Price (numbers only) */}
-                  <input
-                    value={item.price}
-                    onChange={(e) =>
-                      /^\d*\.?\d{0,2}$/.test(e.target.value) &&
-                      updateEditedItem(index, "price", e.target.value)
-                    }
-                    className="border p-3 rounded text-sm w-full sm:w-24 text-center"
-                    placeholder={`${restaurant?.currency || "₹"} Price`}
-                  />
-
-
-                  {/* Category with custom option */}
-                  <div className="flex flex-col w-full sm:w-48">
-                    <select
-                      value={
-                        allCategories.includes(item.category)
-                          ? item.category
-                          : "__custom__"
-                      }
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        if (val === "__custom__") {
-                          setCustomEditCategories((prev) => ({
-                            ...prev,
-                            [item._id]: true,
-                          }));
-                          updateEditedItem(index, "category", "");
-                        } else {
-                          setCustomEditCategories((prev) => ({
-                            ...prev,
-                            [item._id]: false,
-                          }));
-                          updateEditedItem(index, "category", val);
-                        }
-                      }}
-                      className="border p-3 rounded text-sm w-full"
-                    >
-                      <option value="">Select Category</option>
-                      {allCategories.map((cat, i) => (
-                        <option key={i} value={cat}>
-                          {cat}
-                        </option>
-                      ))}
-                      <option value="__custom__">➕ Custom</option>
-                    </select>
-
-                    {customEditCategories[item._id] && (
-                      <input
-                        type="text"
-                        placeholder="Enter category"
-                        value={item.category}
-                        onChange={(e) =>
-                          updateEditedItem(index, "category", e.target.value)
-                        }
-                        className="mt-1 border p-2 rounded text-sm w-full"
-                      />
-                    )}
-                  </div>
-                  
-                  {/* Per-item Save */}
-                  <button
-                    onClick={async () => {
-                      setSavingItems((prev) => ({
-                        ...prev,
-                        [item._id]: "saving",
-                      }));
-                      try {
-                        let imageUrl = item.image;
-
-                        if (item.image?.startsWith?.("data:")) {
-                          imageUrl = await uploadImageToWordPress(
-                            item.image,
-                            `${item.name.replace(/\s+/g, "-")}_${item.category.replace(
-                              /\s+/g,
-                              "-"
-                            )}.jpg`
-                          );
-                        }
-
-                        const updatedItem = { ...item, image: imageUrl };
-
-                        await axios.put(
-                          `/api/admin/${restaurantId}/menu/${item._id}`,
-                          updatedItem,
-                          { headers: { Authorization: `Bearer ${token}` } }
-                        );
-
-                        setSavingItems((prev) => ({
-                          ...prev,
-                          [item._id]: "saved",
-                        }));
-                        setMessage(`Saved: ${item.name}`);
-                        setTimeout(() => {
-                          setSavingItems((prev) => ({
-                            ...prev,
-                            [item._id]: undefined,
-                          }));
-                        }, 1200);
-                      } catch {
-                        setSavingItems((prev) => ({
-                          ...prev,
-                          [item._id]: undefined,
-                        }));
-                        setError("Save failed");
-                      }
+      {/* --- SIDEBAR (Desktop Fixed, Mobile Drawer) --- */}
+      <aside className={`
+        fixed md:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 
+        transform transition-transform duration-300 ease-in-out md:transform-none flex flex-col
+        ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}
+      `}>
+        <div className="pr-6 border-b border-gray-100 flex items-center justify-between py-4 pl-4">
+            <div className="flex items-center gap-3">
+                <img 
+                    src={'https://petoba.avenirya.com/wp-content/uploads/2022/07/Untitled-design-6.png'} 
+                    alt="Petoba Logo" 
+                    className="w-32 cursor-pointer hover:opacity-80 transition-opacity" 
+                    onClick={() => {
+                        navigate("/");        // Navigates to homepage
+                        setActiveTab("overview"); // Resets tab
                     }}
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm mt-2 sm:mt-0"
-                    disabled={savingItems[item._id] === "saving"}
-                  >
-                    {savingItems[item._id] === "saving"
-                      ? "Saving..."
-                      : savingItems[item._id] === "saved"
-                      ? "Saved"
-                      : "Save"}
-                  </button>
-                </div>
-              ))}
+                />
             </div>
-
-            {/* Bulk actions */}
-            <div className="flex gap-4 mt-6">
-              <button
-                onClick={saveAllEditedItems}
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
-              >
-               {isSaving ? (
-                  <>
-                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z"></path>
-                    </svg>
-                    Saving All Items...
-                  </>
-                ) : (
-                  "Save All Changes"
-                )}
-              </button>
-              <button
-                onClick={() => setIsEditMode(false)}
-                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
-              >
-                Cancel
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <h3 className="text-xl font-semibold mb-6">📖 Your Menu</h3>
-            {groupedItems
-              .sort((a, b) => a.category.localeCompare(b.category))
-              .map((group, index) => (
-                <div key={index} className="mb-4 border rounded-lg bg-white shadow">
-                  <button
-                    className="w-full flex justify-between items-center px-4 py-3 text-lg font-semibold text-black-500 focus:outline-none"
-                    onClick={() => setOpenCategory(openCategory === group.category ? null : group.category)}
-                  >
-                    <span>{group.category}</span>
-                    <span className="ml-2">
-                      {openCategory === group.category ? "▲" : "▼"}
-                    </span>
-                  </button>
-                  {openCategory === group.category && (
-                    <div className="p-2 border-t">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {group.items.map((item, i) => {
-                          const isOutOfStock = item.inStock === false;
-                          return (
-                            <div
-                              key={i}
-                              className={`p-4 border rounded-lg bg-white shadow hover:shadow-md transition relative ${
-                                isOutOfStock ? "opacity-60" : ""
-                              }`}
-                            >
-                              {item.image && (
-                                <img
-                                  src={item.image}
-                                  alt={item.name}
-                                  className="h-20 w-20 object-cover rounded-lg mb-2 border"
-                                />
-                              )}
-                              <h4 className="font-semibold">{item.name}</h4>
-                              <p className="text-sm text-gray-600">{item.description}</p>
-                              <p className="text-green-700 font-semibold mt-1">
-                                ₹{item.price}
-                              </p>
-                              <p
-                                className={`text-xs font-semibold mt-1 ${
-                                  isOutOfStock ? "text-red-600" : "text-green-600"
-                                }`}
-                              >
-                                {isOutOfStock ? "Out of Stock ❌" : "In Stock ✅"}
-                              </p>
-                              <div className="flex gap-2 mt-3">
-                                <button
-                                  onClick={() => handleEditItem(item)}
-                                  className="flex-1 text-xs px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded"
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={() => handleDelete(item._id)}
-                                  className="flex-1 text-xs px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded"
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-
-          </>
-        )}
-      </div>
-    )}
-
-    {/* Floating Button */}
-    <button
-      onClick={handleMenuClick}
-      className="  fixed bottom-6 right-6 z-50
-        px-5 py-3
-        rounded-full
-        bg-gradient-to-r from-blue-600 to-indigo-600
-        text-white font-semibold
-        shadow-[0_0_15px_rgba(59,130,246,0.6)]
-        hover:shadow-[0_0_25px_rgba(59,130,246,0.9)]
-        hover:scale-105
-        transition-all duration-300
-        flex items-center gap-2"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-5 w-5"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M4 6h16M4 12h16M4 18h16"
-        />
-      </svg>
-      My Menu
-    </button>
-
-
-<div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-  {/* COMMON LOADING STATE */}
-  {isLoading && (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="bg-white px-6 py-4 rounded-lg shadow flex items-center gap-3">
-        <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-400 border-t-transparent"></div>
-        <span className="text-gray-700 font-medium">Please wait...</span>
-      </div>
-    </div>
-  )}
-
-  {/* Offer Banner Manager */}
-  <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[220px]">
-    <div className="absolute -top-20 -right-20 w-72 h-72 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full blur-3xl opacity-20"></div>
-
-    <h2 className="text-2xl font-semibold text-gray-800 relative z-10">
-      Offer Banner Manager
-    </h2>
-
-    <p className="text-gray-600 mt-2 max-w-sm relative z-10">
-      Add offer banner images to instantly highlight promotions and discounts.
-    </p>
-
-    <OfferBannerManager
-      className="mt-5"
-      restaurantId={restaurantId}
-      token={token}
-      offers={offers}
-      setOffers={setOffers}
-    />
-  </div>
-
-  {/* Bulk Upload Section */}
-  <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[220px]">
-    <div className="absolute -top-20 -right-20 w-72 h-72 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full blur-3xl opacity-20"></div>
-
-    <h2 className="text-2xl font-semibold text-gray-800 relative z-10">
-      Bulk Upload Your Menu (AI)
-    </h2>
-
-    <p className="text-gray-600 mt-2 max-w-sm relative z-10">
-      Upload your full menu using <span className="font-medium">Images, PDF, or Excel</span> — our AI will process it automatically.
-    </p>
-
-    <button
-      onClick={() => triggerAction(() => handleOptionClick("/bulk-upload", true))}
-      disabled={isLoading}
-      className={`mt-5 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-lg shadow hover:opacity-90 relative z-10 ${
-        isLoading ? "opacity-60 cursor-not-allowed" : ""
-      }`}
-    >
-      {isLoading ? (
-        <div className="flex items-center gap-2">
-          <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-          Loading...
+            {/* Close Button Mobile */}
+            <button onClick={() => setIsMobileMenuOpen(false)} className="md:hidden text-gray-500">
+                <Icons.Close />
+            </button>
         </div>
-      ) : (
-        "Upload Menu"
-      )}
-    </button>
 
-    {/* Modal */}
-    {showModal && (
-      <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-        <div className="bg-white rounded-xl shadow-lg p-6 w-80 relative">
-          <h3 className="text-lg font-semibold mb-4">Choose Upload Option</h3>
+        <nav className="flex-1 overflow-y-auto p-4 space-y-2">
+            <SidebarItem id="overview" label="Overview" icon={Icons.Home} />
+            <SidebarItem id="menu" label="Menu Manager" icon={Icons.Menu} />
+            <SidebarItem id="qr" label="QR Code & Marketing" icon={Icons.QR} />
+            <SidebarItem id="settings" label="Settings" icon={Icons.Settings} />
+            <SidebarItem id="uploads" label="Bulk Import" icon={Icons.Upload} />
+             <div className="mt-auto pt-4">
+                <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-500 hover:bg-red-50 transition-colors">
+                    <Icons.Logout /><span className="font-medium">Logout</span>
+                </button>
+            </div>
+        </nav>
 
-          <div className="flex flex-col space-y-3">
+        <div className="p-4 border-t border-gray-100">
+          <div className={`p-4 rounded-xl border ${daysLeft !== null && daysLeft <= 7 ? 'bg-red-50 border-red-100' : 'bg-gradient-to-r from-orange-100 to-orange-50 border-orange-100'}`}>
+            
+            {/* Header Row: Label + Days Left Badge */}
+            <div className="flex justify-between items-center mb-1">
+              <p className={`text-xs font-bold uppercase ${daysLeft !== null && daysLeft <= 7 ? 'text-red-800' : 'text-orange-800'}`}>
+                Current Plan
+              </p>
+              {daysLeft !== null && (
+                <span className={`text-[10px] px-2 py-0.5 rounded-full ${daysLeft <= 7 ? 'bg-red-200 text-red-800' : 'bg-orange-200 text-orange-800'}`}>
+                  {daysLeft <= 0 ? "Expired" : `${daysLeft} Days Left`}
+                </span>
+              )}
+            </div>
 
-            {/* Manual with AI */}
-            <button
-              onClick={() => triggerAction(() => handleOptionClick("/bulk-upload", true))}
-              disabled={isLoading}
-              className={`w-full px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 ${
-                isLoading ? "opacity-60 cursor-not-allowed" : ""
-              }`}
-            >
-              {isLoading ? "Loading..." : "Manual with AI"}
-            </button>
+            {/* Plan Name */}
+            <p className={`text-sm font-bold mb-1 ${daysLeft !== null && daysLeft <= 7 ? 'text-red-900' : 'text-orange-900'}`}>
+              {restaurant.membership_level === 1 ? 'Free Tier' : restaurant.membership_level === 2 ? 'Pro Tier' : 'Pro Plan'}
+            </p>
+            
+            {/* Expiry Date */}
+            {restaurant.expiry && (
+              <p className="text-xs text-gray-500 mb-3">
+                Valid till: {new Date(restaurant.expiry).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+              </p>
+            )}
 
-            {/* Automatic with AI */}
-            <button
-              onClick={() => triggerAction(() => handleOptionClick("/upload-menu", true))}
-              disabled={isLoading}
-              className={`w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 ${
-                isLoading ? "opacity-60 cursor-not-allowed" : ""
-              }`}
-            >
-              {isLoading ? "Loading..." : "Automatic with AI"}
-            </button>
+            {/* Action Button (Renew vs Upgrade) */}
+            {restaurant.membership_level !== 3 && (
+              <button 
+                onClick={() => setShowUpgrade(true)} 
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold py-2 rounded-lg shadow-sm transition hover:shadow-md"
+              >
+                {daysLeft !== null && daysLeft <= 0 ? "Renew Now" : "Unlock More Features"}
+              </button>
+            )}
           </div>
-
-          {/* Close Button */}
-          <button
-            onClick={() => setShowModal(false)}
-            className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
-          >
-            ✕
-          </button>
         </div>
-      </div>
-    )}
-  </div>
-</div>
+      </aside>
 
-{/* SECOND ROW */}
-<div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* --- MAIN CONTENT --- */}
+      <main className="flex-1 flex flex-col h-full relative overflow-hidden">
+        
+        {/* Top Header */}
+        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-6 z-10">
+            <div className="flex items-center gap-4">
+                 {/* Mobile Toggle Button */}
+                 <button 
+                    onClick={() => setIsMobileMenuOpen(true)} 
+                    className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                 >
+                    <Icons.Hamburger />
+                 </button>
 
-  {/* Connect Social */}
-  <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[220px]">
-    <div className="absolute -top-20 -right-20 w-72 h-72 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full blur-3xl opacity-20 transform rotate-45"></div>
+                 <div className="flex flex-col">
+                    <h1 className="text-lg md:text-xl font-bold text-gray-800 capitalize truncate max-w-[200px] sm:max-w-none">
+                        {activeTab === 'overview' ? 'Dashboard Overview' : 
+                         activeTab === 'menu' ? 'Menu Manager' : 
+                         activeTab === 'qr' ? 'QR & Marketing' : 
+                         activeTab === 'settings' ? 'Settings' : 'Bulk Menu Upload'}
+                    </h1>
+                    {activeTab === 'overview' && <span className="text-xs text-gray-500 hidden sm:block">Manage {restaurant.name}'s digital presence</span>}
+                 </div>
+            </div>
+            <div className="flex items-center gap-4">
+                 <div className="flex items-center gap-3 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-200">
+                    <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">
+                        {restaurant.name ? restaurant.name.charAt(0).toUpperCase() : "R"}
+                    </div>
+                    <span className="text-sm font-medium text-gray-700 hidden md:block max-w-[100px] truncate">{restaurant.name || "Restaurant"}</span>
+                 </div>
+            </div>
+        </header>
 
-    <h2 className="text-2xl font-semibold text-gray-800 relative z-10">
-      Connect Social & Google Review
-    </h2>
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth bg-gray-50/50">
+            <div className="max-w-6xl mx-auto pb-20"> 
+                
+                {message && <div className="mb-4 p-4 bg-green-50 text-green-700 border border-green-200 rounded-lg flex items-center shadow-sm"><span className="mr-2">✅</span> {message}</div>}
+                {error && <div className="mb-4 p-4 bg-red-50 text-red-700 border border-red-200 rounded-lg flex items-center shadow-sm"><span className="mr-2">⚠️</span> {error}</div>}
 
-    <p className="text-gray-600 mt-2 max-w-sm relative z-10">
-      Add your social media, contact details, and a custom line to your digital menu.
-    </p>
+                {/* --- TAB CONTENT SWITCH --- */}
+                {/* 1. OVERVIEW TAB */}
+                {activeTab === 'overview' && (
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {/* Stat Cards */}
+                            <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
+                                <div className="relative z-10">
+                                    <p className="opacity-80 text-sm font-medium mb-1 tracking-wide">TOTAL MENU ITEMS</p>
+                                    <h2 className="text-4xl font-extrabold tracking-tight">{existingItems.length}</h2>
+                                    <p className="mt-4 text-xs bg-white/10 backdrop-blur-sm inline-block px-3 py-1 rounded-full border border-white/20">
+                                        {membershipLimits[restaurant.membership_level] === Infinity 
+                                            ? '✨ Unlimited Plan Active' 
+                                            : `${membershipLimits[restaurant.membership_level]} Items Allowed on Plan`}
+                                    </p>
+                                </div>
+                                <div className="absolute -right-4 -bottom-4 opacity-20 transform rotate-12"><svg className="w-40 h-40" fill="currentColor" viewBox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg></div>
+                            </div>
 
-    <CustomFields />
-  </div>
+                            <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex flex-col justify-between">
+                                <div>
+                                    <h3 className="text-gray-800 text-lg font-bold">What would you like to do?</h3>
+                                    <div className="flex flex-col gap-3 mt-4">
+                                        <button onClick={() => { setActiveTab("menu"); setShowItemForm(true); }} className="flex items-center justify-between bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-4 py-3 rounded-lg text-sm font-medium transition group">
+                                            <span>Add a New Dish</span>
+                                            <span className="text-indigo-400 group-hover:translate-x-1 transition-transform">→</span>
+                                        </button>
+                                        <button onClick={() => triggerAction(() => handleOptionClick("/bulk-upload", true))} className="flex items-center justify-between bg-gray-50 hover:bg-gray-100 text-gray-700 px-4 py-3 rounded-lg text-sm font-medium transition group">
+                                            <span>Bulk Upload via AI</span>
+                                            <span className="text-gray-400 group-hover:translate-x-1 transition-transform">→</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <button onClick={() => setShowPopup(true)} className="mt-4 text-xs text-center text-gray-400 hover:text-indigo-600 underline">Need help setting up your menu?</button>
+                            </div>
+                            
+                            <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm relative overflow-hidden flex flex-col justify-center text-center">
+                                <div className="absolute top-0 right-0 w-20 h-20 bg-green-100 rounded-bl-full opacity-50"></div>
+                                <h3 className="text-gray-800 font-bold text-lg mb-2">Your Live Menu</h3>
+                                <p className="text-gray-500 text-sm mb-5">This is what your customers see when they scan the QR code.</p>
+                                <button onClick={() => window.open(`https://app.avenirya.com/menuwp/${restaurantId}`, "_blank")} className="w-full bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-800 transition shadow-lg font-medium flex items-center justify-center gap-2">
+                                    <span>View Customer Menu</span>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        {/* Banner Manager Section */}
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
+                            <h3 className="text-lg font-bold text-gray-800 mb-2">Promotional Banners</h3>
+                            <p className="text-gray-500 text-sm mb-6">These banners appear at the top of your digital menu to highlight offers.(Ideal banner size is 650x300 px)</p>
+                            <OfferBannerManager restaurantId={restaurantId} token={token} offers={offers} setOffers={setOffers} />
+                        </div>
+                    </div>
+                )}
+                
+                {/* 2. MENU MANAGER TAB */}
+                {activeTab === 'menu' && (
+                    <div className="space-y-6">
+                        {/* Header Actions */}
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-800">Manage Your Menu</h2>
+                                <p className="text-gray-500 text-sm">Add attractive dishes and set prices to boost orders.</p>
+                            </div>
+                            <div ref={formRef}></div>
+                            <button 
+                                onClick={() => {
+                                    setShowItemForm(!showItemForm);
+                                    setItemForm({ name: "", category: "", description: "", price: "", image: "", _id: null, inStock: true });
+                                }}
+                                className={`w-full sm:w-auto flex justify-center items-center gap-2 px-5 py-2.5 rounded-lg shadow-sm transition-all ${showItemForm ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
+                            >
+                                {showItemForm ? (<span>Cancel Adding</span>) : (<><Icons.Plus /> <span>Add New Dish</span></>)}
+                            </button>
+                        </div>
 
-  {/* Restaurant Settings */}
-  <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[220px]">
-    <div className="absolute -top-20 -right-20 w-72 h-72 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full blur-3xl opacity-20 transform rotate-45"></div>
+                        {/* Add/Edit Form */}
+                        {showItemForm && (
+                             <div className="bg-white rounded-xl shadow-lg border border-indigo-100 p-4 md:p-6 animate-fade-in-down">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="text-lg font-bold text-indigo-900">{itemForm._id ? "Edit Item Details" : "Create New Menu Item"}</h3>
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                                    <div className="col-span-1 md:col-span-2">
+                                        <label className="block text-sm font-bold text-gray-700 mb-1">Dish Name</label>
+                                        <input name="name" value={itemForm.name} onChange={handleItemChange} placeholder="e.g. Signature Butter Chicken" className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
+                                        <p className="text-xs text-gray-400 mt-1">Keep it short and appetizing.</p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 mb-1">Selling Price</label>
+                                        <input name="price" value={itemForm.price} onChange={handleItemChange} placeholder="150" className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 mb-1">Menu Category</label>
+                                        <select value={itemForm.category || ""} onChange={(e) => {
+                                            const val = e.target.value;
+                                            setCustomCategory(val === "__custom__" ? val : "");
+                                            setItemForm({ ...itemForm, category: val === "__custom__" ? "" : val });
+                                        }} className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                                            <option value="">Select Category...</option>
+                                            {allCategories.map((cat, i) => <option key={i} value={cat}>{cat}</option>)}
+                                            <option value="__custom__">+ Create New Category</option>
+                                        </select>
+                                    </div>
+                                    {customCategory === "__custom__" && (
+                                        <div className="col-span-1 md:col-span-2">
+                                            <label className="block text-sm font-bold text-gray-700 mb-1">New Category Name</label>
+                                            <input type="text" placeholder="e.g. Summer Specials" value={itemForm.category} onChange={(e) => setItemForm({ ...itemForm, category: e.target.value })} className="w-full border border-blue-300 bg-blue-50 p-2.5 rounded-lg" />
+                                        </div>
+                                    )}
+                                    <div className="col-span-1 md:col-span-4">
+                                        <label className="block text-sm font-bold text-gray-700 mb-1">Description</label>
+                                        <textarea name="description" value={itemForm.description} onChange={handleItemChange} rows="2" placeholder="Describe ingredients, taste (e.g., Spicy tomato gravy with fresh cream)" className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
+                                        <p className="text-xs text-gray-400 mt-1">Customers order 30% more when dishes have good descriptions.</p>
+                                    </div>
+                                    
+                                    {/* Image Section */}
+                                    <div className="col-span-1 md:col-span-2">
+                                         <label className="block text-sm font-bold text-gray-700 mb-1">Dish Photo</label>
+                                         {restaurant.membership_level === 1 ? (
+                                            <div onClick={() => setShowUpgrade(true)} className="p-3 border-2 border-dashed rounded-lg bg-gray-50 text-center cursor-pointer hover:bg-gray-100 transition-colors">
+                                                <span className="text-xs text-gray-500">Image upload is a <b>Premium Feature</b>. <span className="text-indigo-600 font-bold underline">Click to Upgrade</span></span>
+                                            </div>
+                                         ) : (
+                                             <div className="relative">
+                                                <input type="file" accept="image/*" onChange={handleImageChange} className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"/>
+                                             </div>
+                                         )}
+                                    </div>
+                                    
+                                    {/* Stock & Preview */}
+                                    <div className="col-span-1 md:col-span-2 flex items-center gap-6">
+                                        {itemForm._id && (
+                                            <label className="flex items-center gap-2 cursor-pointer select-none">
+                                                <div className={`w-10 h-6 flex items-center rounded-full p-1 duration-300 ease-in-out ${itemForm.inStock ? 'bg-green-500' : 'bg-gray-300'}`}>
+                                                    <div className={`bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${itemForm.inStock ? 'translate-x-4' : ''}`} />
+                                                    <input type="checkbox" className="hidden" checked={itemForm.inStock ?? true} onChange={(e) => setItemForm({ ...itemForm, inStock: e.target.checked })} />
+                                                </div>
+                                                <span className="text-sm font-medium text-gray-700">{itemForm.inStock ? "Available to Order" : "Marked Out of Stock"}</span>
+                                            </label>
+                                        )}
+                                        {itemForm.image && <img src={itemForm.image} alt="Preview" className="h-14 w-14 object-cover rounded-lg border border-gray-200 shadow-sm" />}
+                                    </div>
+                                </div>
 
-    <h2 className="text-2xl font-semibold text-gray-800 relative z-10">
-      Manage Restaurant Settings
-    </h2>
+                                <div className="mt-6 flex justify-end gap-3 border-t pt-4">
+                                    <button onClick={() => setShowItemForm(false)} className="px-5 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Cancel</button>
+                                    <button 
+                                        onClick={itemForm._id ? handleUpdate : addItemToList} 
+                                        className="px-6 py-2 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 font-medium transition-all"
+                                    >
+                                        {itemForm._id ? "Update Dish" : "Save & Add to Menu"}
+                                    </button>
+                                </div>
+                             </div>
+                        )}
 
-    <p className="text-gray-600 mt-2 max-w-sm relative z-10">
-      Edit your restaurant name, logo, WhatsApp, and password in one place
-    </p>
+                        {/* Menu Grid */}
+                        <div className="grid grid-cols-1 gap-6 ">
+                            {groupedItems.map((group, idx) => (
+                                <div key={idx} className="bg-white rounded-xl shadow-sm border bg-white overflow-hidden">
+                                    <button 
+                                        onClick={() => setOpenCategory(openCategory === group.category ? null : group.category)}
+                                        className="w-full flex justify-between items-center px-6 py-4 bg-white hover:bg-gray-50 transition-colors"
+                                    >
+                                        <h4 className="text-lg font-bold text-gray-800">{group.category} <span className="text-sm font-normal text-gray-500 ml-2">({group.items.length} dishes)</span></h4>
+                                        <span className="text-gray-400">{openCategory === group.category ? "▲" : "▼"}</span>
+                                    </button>
+                                    
+                                    {openCategory === group.category && (
+                                        <div className="p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                                            {group.items.map((item) => (
+                                                <div key={item._id} className={`flex gap-4 p-3 rounded-lg border ${item.inStock === false ? 'bg-gray-50 border-gray-200 opacity-75' : 'bg-white border-gray-100 shadow-sm hover:shadow-md'} transition-all`}>
+                                                    {/* Image */}
+                                                    <div className="w-20 h-20 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden relative">
+                                                        {item.image ? (
+                                                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center text-gray-300 bg-gray-50"><Icons.Menu /></div>
+                                                        )}
+                                                        {item.inStock === false && <div className="absolute inset-0 bg-white/80 flex items-center justify-center font-bold text-xs text-red-600 border-2 border-red-500 rounded-lg m-2">SOLD OUT</div>}
+                                                    </div>
+                                                    
+                                                    {/* Content */}
+                                                    <div className="flex-1 flex flex-col justify-between">
+                                                        <div>
+                                                            <div className="flex justify-between items-start">
+                                                                <h5 className="font-semibold text-gray-800 line-clamp-1 text-sm md:text-base">{item.name}</h5>
+                                                                <span className="font-bold text-green-700 text-sm">₹{item.price}</span>
+                                                            </div>
+                                                            <p className="text-xs text-gray-500 line-clamp-2 mt-1">{item.description || "No description provided"}</p>
+                                                        </div>
+                                                        <div className="flex justify-end gap-2 mt-2">
+                                                            <button onClick={() => handleEditItem(item)} className="px-2 py-1 text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded flex items-center gap-1"><Icons.Edit /> Edit</button>
+                                                            <button onClick={() => handleDelete(item._id)} className="px-2 py-1 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded flex items-center gap-1"><Icons.Trash /> Delete</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                            
+                            {groupedItems.length === 0 && (
+                                 <div className="text-center py-16 bg-white rounded-xl border border-dashed border-gray-300">
+                                    <div className="text-indigo-200 mb-4 flex justify-center"><svg className="w-16 h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg></div>
+                                    <h3 className="text-xl font-bold text-gray-900">Your Menu is Empty</h3>
+                                    <p className="text-gray-500 mb-8 max-w-sm mx-auto">Customers can't order yet. Start by adding your most popular category and a few dishes.</p>
+                                    <button onClick={() => setShowItemForm(true)} className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold shadow-lg transition-all transform hover:scale-105">
+                                        Add Your First Dish
+                                    </button>
+                                 </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+                
+                {/* 3. QR CODE TAB */}
+                {activeTab === 'qr' && (
+                    <div className="space-y-6">
+                        <QRCodeTemplates restaurantId={restaurantId} membership_level={restaurant.membership_level} />
+                    </div>
+                )}
+                
+                {/* 4. SETTINGS TAB */}
+                {activeTab === 'settings' && (
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                            <h3 className="text-lg font-bold mb-4 text-gray-800 flex items-center gap-2">
+                                <span className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center"><Icons.Settings /></span>
+                                Restaurant Profile
+                            </h3>
+                            <AdminSettings />
+                         </div>
+                         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                            <h3 className="text-lg font-bold mb-4 text-gray-800 flex items-center gap-2">
+                                <span className="w-8 h-8 rounded-lg bg-pink-100 text-pink-600 flex items-center justify-center"><Icons.Home /></span>
+                                Social & Contact Info
+                            </h3>
+                            <CustomFields />
+                         </div>
+                    </div>
+                )}
+                
+                {/* 5. UPLOADS TAB */}
+                {activeTab === 'uploads' && (
+                      <div className="bg-white p-6 md:p-10 rounded-xl shadow-sm border border-gray-200 text-center max-w-3xl mx-auto mt-6">
+                        <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6 text-blue-500 ring-4 ring-blue-50"><Icons.Upload /></div>
+                        <h2 className="text-3xl font-bold text-gray-800">Bulk Menu Import</h2>
+                        <p className="text-gray-500 mt-3 mb-10 max-w-lg mx-auto leading-relaxed">
+                            Don't waste time adding dishes one by one. Upload your menu using an image, PDF, or Excel file and our AI will organize it for you.
+                        </p>
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <button 
+                                onClick={() => triggerAction(() => handleOptionClick("/bulk-upload", true))} 
+                                disabled={isLoading}
+                                className="p-6 border-2 border-gray-200 hover:border-indigo-500 hover:bg-indigo-50 rounded-2xl transition-all flex flex-col items-center justify-center gap-3 group text-center"
+                            >
+                                <span className="text-3xl">📄</span>
+                                <div>
+                                    <span className="block font-bold text-gray-800 group-hover:text-indigo-700 text-lg">AI Assistant Import</span>
+                                    <span className="text-sm text-gray-500 mt-1">Review items before adding them to your menu.</span>
+                                </div>
+                            </button>
+                            <button 
+                                onClick={() => triggerAction(() => handleOptionClick("/bulk-upload", true))} 
+                                disabled={isLoading}
+                                className="p-6 bg-gradient-to-br from-indigo-600 to-blue-600 text-white rounded-2xl shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all flex flex-col items-center justify-center gap-3 text-center border-2 border-transparent"
+                            >
+                                <span className="text-3xl">⚡</span>
+                                <div>
+                                    <span className="block font-bold text-white text-lg">Full Auto Import</span>
+                                    <span className="text-sm text-blue-100 opacity-90 mt-1">Fastest method. AI handles everything automatically.</span>
+                                </div>
+                            </button>
+                        </div>
+                      </div>
+                )}
 
-    <AdminSettings />
-  </div>
-</div>
+            </div>
+        </div>
 
-    {/* QR Section */}
-    <QRCodeTemplates
-      restaurantId={restaurantId}
-      membership_level={restaurant.membership_level}
-    />
-
-      {restaurant.membership_level !== 3 && (
-        <button
-          onClick={() => setShowUpgrade(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700"
-        >
-          Upgrade Plan
-        </button>
-      )}
-  </div>
-  
-);
-
+        {/* Global Loading Overlay */}
+        {isLoading && (
+            <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
+                 <div className="flex flex-col items-center bg-white p-6 rounded-2xl shadow-2xl border border-gray-100">
+                    <div className="animate-spin rounded-full h-10 w-10 border-4 border-indigo-200 border-t-indigo-600 mb-4"></div>
+                    <span className="font-bold text-gray-800 text-lg">Processing...</span>
+                    <span className="text-gray-500 text-sm mt-1">Please wait while we update your data.</span>
+                 </div>
+            </div>
+        )}
+      </main>
+    </div>
+  );
 }
 
 export default Dashboard;

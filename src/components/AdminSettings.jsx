@@ -1,82 +1,119 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { Toaster, toast } from "react-hot-toast";
-import { Loader2, Upload } from "lucide-react";
-import {
-  FaStore,
-  FaEnvelope,
-  FaMapMarkerAlt,
-  FaPhone,
-  FaLock,
-  FaMoneyBillAlt,
-  // FaAlignJustify, // This icon wasn't used, can be removed
-} from "react-icons/fa";
 
-// --- Copied from your reference ---
-// ✅ WordPress Upload Credentials (Ideally, move these to a config file)
+// --- ICONS (Defined outside component) ---
+const Icons = {
+  Store: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>,
+  Mail: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>,
+  Map: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
+  Phone: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>,
+  Lock: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>,
+  Money: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+  Upload: () => <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>,
+  Loading: () => <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z"></path></svg>,
+  Check: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+};
+
 const WP_USERNAME = "yashkolnure58@gmail.com";
 const WP_APP_PASSWORD = "05mq iTLF UvJU dyaz 7KxQ 8pyc";
 const WP_SITE_URL = "https://website.avenirya.com";
+// Fixed API URL to match your Dashboard
+const API_BASE_URL = "/api"; 
 
-// ✅ Currencies List
 const currencies = [
   { code: "INR", name: "Indian Rupee", symbol: "₹" },
   { code: "USD", name: "US Dollar", symbol: "$" },
   { code: "EUR", name: "Euro", symbol: "€" },
   { code: "GBP", name: "British Pound", symbol: "£" },
   { code: "AED", name: "UAE Dirham", symbol: "د.إ" },
-  { code: "AUD", name: "Australian Dollar", symbol: "A$" },
-  { code: "CAD", name: "Canadian Dollar", symbol: "CA$" },
-  { code: "SGD", name: "Singapore Dollar", symbol: "S$" },
-  { code: "JPY", name: "Japanese Yen", symbol: "¥" },
-  { code: "CNY", name: "Chinese Yuan", symbol: "¥" },
 ];
-// --- End of copied section ---
 
-const AdminSettingsModal = ({ token }) => {
-  const [isOpen, setIsOpen] = useState(false);
+// --- HELPER COMPONENTS (Moved OUTSIDE AdminSettings) ---
+// Passing value and onChange as props fixes the focus issue
+const TextInput = ({ label, name, value, onChange, type = "text", icon: Icon, placeholder }) => (
+  <div className="flex flex-col gap-1.5">
+    <label className="text-sm font-semibold text-gray-700">{label}</label>
+    <div className="relative group">
+      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-indigo-500">
+        <Icon />
+      </div>
+      <input
+        type={type}
+        name={name}
+        value={value || ""} 
+        onChange={onChange}
+        placeholder={placeholder}
+        className="w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all outline-none text-sm"
+      />
+    </div>
+  </div>
+);
 
-  // ✅ Updated state to match your new fields
+const FileUploader = ({ label, fieldName, imageUrl, loading, onUpload }) => (
+  <div className="flex flex-col gap-2">
+    <label className="text-sm font-semibold text-gray-700">{label}</label>
+    <div className="flex gap-4 items-start">
+      {/* Preview Box */}
+      <div className="w-24 h-24 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+        {loading ? (
+          <Icons.Loading />
+        ) : imageUrl ? (
+          <img src={imageUrl} alt="Preview" className="w-full h-full object-cover" />
+        ) : (
+          <span className="text-xs text-gray-400">No Image</span>
+        )}
+      </div>
+      
+      {/* Upload Button */}
+      <div className="flex-1">
+        <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors group">
+          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+            <span className="text-gray-400 group-hover:text-indigo-500 mb-1"><Icons.Upload /></span>
+            <p className="text-xs text-gray-500">Click to upload</p>
+          </div>
+          <input 
+            type="file" 
+            className="hidden" 
+            accept="image/*"
+            onChange={(e) => onUpload(e.target.files[0], fieldName)}
+          />
+        </label>
+      </div>
+    </div>
+  </div>
+);
+
+const AdminSettings = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     address: "",
     contact: "",
     password: "",
-    confirmPassword: "", // ◀️ Added confirmPassword
+    confirmPassword: "",
     logo: "",
     homeImage: "",
     currency: "INR",
     enableOrdering: "enabled",
   });
 
-  const [errors, setErrors] = useState({});
-  const [message, setMessage] = useState("");
-
-  // ✅ New state for loading and saving
-  const [loading, setLoading] = useState(false); // For fetching data
-  const [saving, setSaving] = useState(false); // For saving data
+  const [message, setMessage] = useState({ type: "", text: "" });
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingHome, setUploadingHome] = useState(false);
 
   const restaurantId = localStorage.getItem("restaurantId");
+  const token = localStorage.getItem("token");
 
-  // ✅ Updated to fetch main restaurant data
   useEffect(() => {
-    if (isOpen && restaurantId) {
+    if (restaurantId && token) {
       setLoading(true);
-      setMessage("Loading data...");
-      // Using the endpoint from your reference's PUT request
-      fetch(`/api/admin/${restaurantId}/details`, {
+      fetch(`${API_BASE_URL}/admin/${restaurantId}/details`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-        .then((res) => {
-          if (res.ok) return res.json();
-          throw new Error("Failed to fetch restaurant data");
-        })
+        .then((res) => res.json())
         .then((data) => {
           if (data) {
-            // Set all data EXCEPT password fields
             setFormData({
               name: data.name || "",
               email: data.email || "",
@@ -85,334 +122,218 @@ const AdminSettingsModal = ({ token }) => {
               logo: data.logo || "",
               homeImage: data.homeImage || "",
               currency: data.currency || "INR",
-              enableOrdering: data.enableOrdering || "enabled", // ◀️ NEW
-              password: "", // ◀️ Always keep password field empty on load
-              confirmPassword: "", // ◀️ Always keep confirmPassword empty on load
+              enableOrdering: data.enableOrdering || "enabled",
+              password: "",
+              confirmPassword: "",
             });
-            setMessage("");
           }
         })
-        .catch((err) => {
-          setMessage(`❌ ${err.message}`);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+        .catch(() => setMessage({ type: "error", text: "Failed to load data" }))
+        .finally(() => setLoading(false));
     }
-  }, [isOpen, restaurantId, token]);
+  }, [restaurantId, token]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  // ✅ WordPress Upload Logic
   const uploadImageToWordPress = async (file, fieldName) => {
-    const formDataImage = new FormData();
-    formDataImage.append("file", file);
-
+    if (!file) return;
     if (fieldName === "logo") setUploadingLogo(true);
     if (fieldName === "homeImage") setUploadingHome(true);
 
-    try {
-      const response = await axios.post(
-        `${WP_SITE_URL}/wp-json/wp/v2/media`,
-        formDataImage,
-        {
-          headers: {
-            Authorization: "Basic " + btoa(`${WP_USERNAME}:${WP_APP_PASSWORD}`),
-            "Content-Disposition": `attachment; filename="${file.name}"`,
-          },
-        }
-      );
+    const formDataImage = new FormData();
+    formDataImage.append("file", file);
 
-      const imageUrl = response.data.source_url;
-      setFormData((prev) => ({ ...prev, [fieldName]: imageUrl }));
-      toast.success(
-        `${fieldName === "logo" ? "Logo" : "Home Image"} uploaded!`
-      );
+    try {
+      const response = await fetch(`${WP_SITE_URL}/wp-json/wp/v2/media`, {
+        method: "POST",
+        headers: {
+          Authorization: "Basic " + btoa(`${WP_USERNAME}:${WP_APP_PASSWORD}`),
+        },
+        body: formDataImage,
+      });
+      
+      const data = await response.json();
+      if (response.ok) {
+        setFormData((prev) => ({ ...prev, [fieldName]: data.source_url }));
+        setMessage({ type: "success", text: `${fieldName === "logo" ? "Logo" : "Background"} uploaded!` });
+      } else {
+        throw new Error("Upload failed");
+      }
     } catch (err) {
-      console.error(err);
-      toast.error(
-        `Failed to upload ${fieldName === "logo" ? "logo" : "home image"}`
-      );
+      setMessage({ type: "error", text: "Image upload failed." });
     } finally {
       if (fieldName === "logo") setUploadingLogo(false);
       if (fieldName === "homeImage") setUploadingHome(false);
+      setTimeout(() => setMessage({ type: "", text: "" }), 3000);
     }
   };
 
-  // ✅ Updated Save logic
   const handleSave = async () => {
-    if (!restaurantId) {
-      setMessage("❌ No restaurant ID found");
+    if (formData.password && formData.password !== formData.confirmPassword) {
+      setMessage({ type: "error", text: "Passwords do not match." });
       return;
     }
 
-    // ◀️ Start Password Validation
-    if (formData.password && formData.password.trim() !== "") {
-      if (formData.password !== formData.confirmPassword) {
-        setMessage("❌ Passwords do not match. Please re-type.");
-        // Clear message after 3 seconds
-        setTimeout(() => setMessage(""), 3000);
-        return; // Stop the save
-      }
-    }
-    // ◀️ End Password Validation
-
     setSaving(true);
-    setMessage("⏳ Saving...");
-
-    // Create payload, only include password if it's been changed
     const payload = { ...formData };
-    if (!payload.password || payload.password.trim() === "") {
-      delete payload.password;
-    }
-    // Always remove confirmPassword from the data sent to backend
+    if (!payload.password) delete payload.password;
     delete payload.confirmPassword;
 
     try {
-      const res = await fetch(
-        `/api/admin/restaurants/${restaurantId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+      const res = await fetch(`${API_BASE_URL}/admin/restaurants/${restaurantId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
 
       const result = await res.json();
       if (res.ok) {
-        setMessage("✅ Saved successfully!");
-        // Update form state with new data AND clear password fields
-        setFormData({
-          ...formData, // Keep existing fields
-          ...result, // Overwrite with new data from server
-          password: "", // ◀️ Reset password
-          confirmPassword: "", // ◀️ Reset confirmPassword
-        });
+        setMessage({ type: "success", text: "Profile saved successfully!" });
+        setFormData(prev => ({ ...prev, password: "", confirmPassword: "" }));
       } else {
-        setMessage(`❌ Failed: ${result.message || "Unknown error"}`);
+        throw new Error(result.message);
       }
     } catch (e) {
-      setMessage("❌ Network error.");
+      setMessage({ type: "error", text: "Failed to save changes." });
     } finally {
       setSaving(false);
-      setTimeout(() => setMessage(""), 2500);
+      setTimeout(() => setMessage({ type: "", text: "" }), 3000);
     }
   };
 
-  // Helper component for file uploads
-  const FileUploadInput = ({ label, fieldName, imageUrl, uploader, loading }) => (
-    <div className="md:col-span-1">
-      <label className="block mb-2 text-sm font-medium text-gray-600">
-        {label}
-      </label>
-      <div className="border-dashed border-2 p-6 rounded-lg text-center cursor-pointer hover:bg-gray-50">
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => uploader(e.target.files[0], fieldName)}
-          className="hidden"
-          id={`${fieldName}Upload`}
-        />
-        <label
-          htmlFor={`${fieldName}Upload`}
-          className="cursor-pointer flex flex-col items-center gap-2 text-gray-500"
-        >
-          <Upload size={24} />
-          <span>Click or drag to upload</span>
-        </label>
-      </div>
-      {loading && (
-        <p className="text-blue-500 mt-2 flex items-center gap-2">
-          <Loader2 className="animate-spin" size={16} /> Uploading...
-        </p>
-      )}
-      {imageUrl && (
-        <img
-          src={imageUrl}
-          alt={fieldName}
-          className="mt-3 rounded-md h-20 object-cover border"
-        />
-      )}
-    </div>
-  );
-
-  // Helper for text inputs
-  const TextInput = ({ name, placeholder, icon, type = "text" }) => (
-    <div>
-      <div className="flex items-center border rounded-lg p-3 bg-gray-50">
-        {icon}
-        <input
-          type={type}
-          name={name}
-          placeholder={placeholder}
-          value={formData[name] || ""}
-          onChange={handleChange}
-          className="flex-1 bg-transparent outline-none"
-        />
-      </div>
-      {errors[name] && (
-        <p className="text-red-500 text-xs mt-1">{errors[name]}</p>
-      )}
-    </div>
-  );
+  if (loading) return <div className="p-8 text-center text-gray-500 flex flex-col items-center gap-2"><Icons.Loading /> Loading Profile...</div>;
 
   return (
-    <div>
-      <Toaster position="top-right" />
-      {/* Open Button */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="mt-5 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-lg shadow hover:opacity-90"
-      >
-        Manage Profile
-      </button>
-
-      {/* Modal */}
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-xl shadow-lg w-[90%] max-w-2xl max-h-[90vh] overflow-y-auto p-6 relative">
-            {/* Header */}
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">🏪 Restaurant Profile</h2>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="text-gray-500 hover:text-gray-800 text-lg"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Status */}
-            {message && (
-              <div className="mb-4 text-center text-sm font-medium text-gray-700">
-                {message}
-              </div>
-            )}
-
-            {loading ? (
-              <div className="flex justify-center items-center h-64">
-                <Loader2 className="animate-spin text-blue-500" size={32} />
-              </div>
-            ) : (
-              // ✅ New Form JSX
-              <div className="space-y-5">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <TextInput
-                    name="name"
-                    placeholder="Restaurant Name"
-                    icon={<FaStore className="text-gray-600 text-lg mr-3" />}
-                  />
-                  <TextInput
-                    name="email"
-                    placeholder="Email"
-                    type="email"
-                    icon={<FaEnvelope className="text-blue-600 text-lg mr-3" />}
-                  />
-                  <TextInput
-                    name="address"
-                    placeholder="Address"
-                    icon={
-                      <FaMapMarkerAlt className="text-red-600 text-lg mr-3" />
-                    }
-                  />
-                  <TextInput
-                    name="contact"
-                    placeholder="WhatsApp Number (With Country code )"
-                    type="tel"
-                    icon={<FaPhone className="text-green-600 text-lg mr-3" />}
-                  />
-
-                  {/* ◀️ Updated Password Section */}
-                  <TextInput
-                    name="password"
-                    placeholder="Change Password (optional)"
-                    type="password"
-                    icon={<FaLock className="text-gray-600 text-lg mr-3" />}
-                  />
-                  <TextInput
-                    name="confirmPassword"
-                    placeholder="Retype Password"
-                    type="password"
-                    icon={<FaLock className="text-gray-600 text-lg mr-3" />}
-                  />
-                  
-                  {/* Currency Dropdown */}
-                  <div>
-                    <div className="flex items-center border rounded-lg p-3 bg-gray-50">
-                      <FaMoneyBillAlt className="text-green-700 text-lg mr-3" />
-                      <select
-                        name="currency"
-                        value={formData.currency}
-                        onChange={handleChange}
-                        className="flex-1 bg-transparent outline-none"
-                      >
-                        {currencies.map((cur) => (
-                          <option key={cur.code} value={cur.code}>
-                            {cur.symbol} {cur.name} ({cur.code})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                    {/* Enable Ordering Dropdown */}
-<div>
-  <div className="flex items-center border rounded-lg p-3 bg-gray-50">
-    <FaStore className="text-purple-700 text-lg mr-3" />
-    <select
-      name="enableOrdering"
-      value={formData.enableOrdering}
-      onChange={handleChange}
-      className="flex-1 bg-transparent outline-none"
-    >
-      <option value="enabled">Enable Ordering</option>
-      <option value="disabled">Disable Ordering</option>
-    </select>
-  </div>
-</div>
-
-                  {/* File Uploads */}
-                  <FileUploadInput
-                    label="Upload Logo"
-                    fieldName="logo"
-                    imageUrl={formData.logo}
-                    uploader={uploadImageToWordPress}
-                    loading={uploadingLogo}
-                  />
-                  <FileUploadInput
-                    label="Logo Background Image"
-                    fieldName="homeImage"
-                    imageUrl={formData.homeImage}
-                    uploader={uploadImageToWordPress}
-                    loading={uploadingHome}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Save Button */}
-            <button
-              onClick={handleSave}
-              disabled={saving || loading || uploadingLogo || uploadingHome}
-              className={`mt-6 w-full py-3 rounded-lg text-white font-medium ${
-                saving || loading || uploadingLogo || uploadingHome
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700"
-              }`}
-            >
-              {saving ? "Saving..." : "💾 Save Info"}
-            </button>
-          </div>
+    <div className="space-y-8 animate-fade-in">
+      
+      {message.text && (
+        <div className={`p-4 rounded-lg text-sm font-medium flex items-center gap-2 ${message.type === 'error' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
+           {message.type === 'success' && <Icons.Check />}
+           {message.text}
         </div>
       )}
+
+      {/* Basic Info Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+        <TextInput 
+            label="Restaurant Name" 
+            name="name" 
+            value={formData.name} 
+            onChange={handleChange} 
+            icon={Icons.Store} 
+            placeholder="My Awesome Restaurant" 
+        />
+        <TextInput 
+            label="Contact Number" 
+            name="contact" 
+            value={formData.contact} 
+            onChange={handleChange} 
+            icon={Icons.Phone} 
+            placeholder="+91 9876543210" 
+        />
+        <div className="md:col-span-2">
+           <TextInput 
+                label="Full Address" 
+                name="address" 
+                value={formData.address} 
+                onChange={handleChange} 
+                icon={Icons.Map} 
+                placeholder="Street, City, Zip" 
+            />
+        </div>
+        <TextInput 
+            label="Email Address" 
+            name="email" 
+            type="email" 
+            value={formData.email} 
+            onChange={handleChange} 
+            icon={Icons.Mail} 
+            placeholder="admin@restaurant.com" 
+        />
+        
+        <div className="flex flex-col gap-1.5">
+           <label className="text-sm font-semibold text-gray-700">Currency</label>
+           <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400"><Icons.Money /></div>
+              <select name="currency" value={formData.currency} onChange={handleChange} className="w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none text-sm appearance-none">
+                 {currencies.map(c => <option key={c.code} value={c.code}>{c.symbol} {c.name}</option>)}
+              </select>
+           </div>
+        </div>
+      </div>
+
+
+      {/* Branding Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+         <FileUploader 
+            label="Restaurant Logo" 
+            fieldName="logo" 
+            imageUrl={formData.logo} 
+            loading={uploadingLogo} 
+            onUpload={uploadImageToWordPress}
+         />
+         <FileUploader 
+            label="Menu Background" 
+            fieldName="homeImage" 
+            imageUrl={formData.homeImage} 
+            loading={uploadingHome} 
+            onUpload={uploadImageToWordPress}
+         />
+      </div>
+
+      <hr className="border-gray-100" />
+
+      {/* Security Section */}
+      <div>
+         <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <Icons.Lock /> Change Password <span className="text-xs font-normal text-gray-500">(Leave empty to keep current)</span>
+         </h4>
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <TextInput 
+                label="New Password" 
+                name="password" 
+                type="password" 
+                value={formData.password} 
+                onChange={handleChange} 
+                icon={Icons.Lock} 
+                placeholder="••••••••" 
+            />
+            <TextInput 
+                label="Confirm Password" 
+                name="confirmPassword" 
+                type="password" 
+                value={formData.confirmPassword} 
+                onChange={handleChange} 
+                icon={Icons.Lock} 
+                placeholder="••••••••" 
+            />
+         </div>
+      </div>
+
+      {/* Save Action */}
+      <div className="">
+        <button 
+           onClick={handleSave} 
+           disabled={saving}
+           className="w-full md:w-auto px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all font-medium flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+        >
+           {saving ? (
+             <>
+               <Icons.Loading /> Saving Changes...
+             </>
+           ) : (
+             "Save Profile"
+           )}
+        </button>
+      </div>
+
     </div>
   );
 };
 
-export default AdminSettingsModal;
+export default AdminSettings;
