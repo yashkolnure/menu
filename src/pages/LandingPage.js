@@ -1,4 +1,4 @@
-import {React, useRef, useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Helmet } from "react-helmet";
 import HomePagePortfolioSection from "../components/HomePagePortfolioSection";
 import {
@@ -10,375 +10,153 @@ import {
   Image,
   Headphones,
   Link,
-  Star
+  Star,
+  ArrowRight,
+  Check,
+  X,
+  PlayCircle,
+  Smartphone,
+  Zap,
+  TrendingUp,
+  ChefHat
 } from "lucide-react";
-
 import { BsQrCodeScan } from 'react-icons/bs';
 import { IoDocumentTextOutline, IoRestaurantOutline } from 'react-icons/io5';
 
-// --- All the CSS for the new creative design is here ---
-const cssStyles = `
-  .how-it-works-section-creative {
-    padding: 4rem 20px;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    position: relative;
-    overflow: hidden;
-    max-width: 1300px;
-    place-self: center;
+// --- Custom Animations & CSS ---
+const customStyles = `
+  @keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-15px); }
+    100% { transform: translateY(0px); }
+  }
+  .animate-float {
+    animation: float 4s ease-in-out infinite;
+  }
+  
+  .fade-in-section {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    will-change: opacity, visibility;
+  }
+  .fade-in-section.is-visible {
+    opacity: 1;
+    transform: none;
   }
 
-  .how-it-works-section-creative .container {
-    max-width: 1100px;
-    margin: 0 auto;
-    position: relative;
+  /* Smooth scroll behavior */
+  html {
+    scroll-behavior: smooth;
   }
-
-  .how-it-works-section-creative .section-header {
-    text-align: center;
-    margin-bottom: 80px; /* More space for the layout to breathe */
-  }
-
-  .how-it-works-section-creative .section-header h2 {
-    font-size: 2.8rem;
-    color: #2c3e50; /* A darker, softer black */
-    font-weight: 700;
-    margin-bottom: 10px;
-  }
-
-  .how-it-works-section-creative .section-header p {
-    font-size: 1.2rem;
-    color: #7f8c8d;
-  }
-
-  .how-it-works-section-creative .steps-container-creative {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
-  }
-
-  /* The dashed connecting line */
-  .how-it-works-section-creative .steps-container-creative::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 10%;
-    right: 10%;
-    height: 2px;
-    background-image: linear-gradient(to right, #bdc3c7 60%, transparent 40%);
-    background-size: 15px 2px;
-    background-repeat: repeat-x;
-    transform: translateY(-50%);
-    z-index: 0;
-  }
-
-  .how-it-works-section-creative .step-card-creative {
-    background: linear-gradient(145deg, #ffffff, #e6eef5);
-    border-radius: 15px;
-    padding: 30px;
-    text-align: center;
-    width: 30%;
-    box-shadow: 0 10px 30px rgba(44, 62, 80, 0.1);
-    position: relative;
-    z-index: 1;
-    border: 1px solid #ffffff;
-  }
-
-  /* Creating the ZIG-ZAG effect */
-  .how-it-works-section-creative .step-card-creative:nth-child(1) {
-    transform: translateY(-40px);
-  }
-  .how-it-works-section-creative .step-card-creative:nth-child(2) {
-    transform: translateY(40px);
-  }
-  .how-it-works-section-creative .step-card-creative:nth-child(3) {
-    transform: translateY(-40px);
-  }
-
-  .how-it-works-section-creative .step-icon-creative {
-    background: linear-gradient(45deg, #3498db, #2980b9);
-    color: white;
-    border-radius: 50%;
-    width: 80px;
-    height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: -70px auto 20px auto; /* Pulls the icon up to sit on the card's edge */
-    border: 5px solid #f8f9fa; /* Creates a border effect matching the background */
-    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
-  }
-
-  .how-it-works-section-creative .step-title-creative {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 15px;
-    color: #2c3e50;
-  }
-
-  .how-it-works-section-creative .step-description-creative {
-    font-size: 1rem;
-    color: #7f8c8d;
-    line-height: 1.6;
-    font-weight: 500;
-  }
-
-  /* Responsive adjustments for mobile */
-  @media (max-width: 900px) {
-    .how-it-works-section-creative .steps-container-creative {
-      flex-direction: column;
-      gap: 60px; /* Increased gap for vertical rhythm */
-    }
-    
-    .how-it-works-section-creative .step-card-creative {
-      width: 90%;
-      max-width: 420px;
-    }
-    
-    /* Reset zig-zag transforms */
-    .how-it-works-section-creative .step-card-creative:nth-child(1),
-    .how-it-works-section-creative .step-card-creative:nth-child(2),
-    .how-it-works-section-creative .step-card-creative:nth-child(3) {
-      transform: translateY(0);
-    }
-    
-    /* Hide the horizontal line on mobile */
-    .how-it-works-section-creative .steps-container-creative::before {
-      display: none;
-    }
+  
+  .glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
   }
 `;
-// Data for the steps
+
+// Helper for Scroll Animation
+const FadeInSection = ({ children, delay = "0ms" }) => {
+  const [isVisible, setVisible] = useState(false);
+  const domRef = useRef();
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => setVisible(entry.isIntersecting));
+    });
+    const currentRef = domRef.current;
+    if (currentRef) observer.observe(currentRef);
+    return () => {
+        if(currentRef) observer.unobserve(currentRef);
+    };
+  }, []);
+
+  return (
+    <div
+      className={`fade-in-section ${isVisible ? 'is-visible' : ''}`}
+      style={{ transitionDelay: delay }}
+      ref={domRef}
+    >
+      {children}
+    </div>
+  );
+};
+
+// --- DATA ---
+
 const stepsData = [
   { 
-    icon: <BsQrCodeScan size={36} />, 
+    icon: <BsQrCodeScan size={32} />, 
     title: '1. Scan QR', 
-    description: 'Use your phone camera to scan the QR code on your table and instantly view the menu.' 
+    description: 'Guests scan the table QR code with their phone camera. No app needed.' 
   },
   { 
-    icon: <IoDocumentTextOutline size={36} />, 
-    title: '2. Place Order', 
-    description: 'Select your favorite items and place your order directly from WhatsApp.' 
+    icon: <IoDocumentTextOutline size={32} />, 
+    title: '2. Select & Order', 
+    description: 'Guests browse the digital menu and select their items.' 
   },
   { 
-    icon: <IoRestaurantOutline size={36} />, 
-    title: '3. Enjoy Your Meal', 
-    description: 'Your order is sent to the kitchen. We’ll bring the food to your table as soon as it\'s ready.' 
-  }];
-
+    icon: <IoRestaurantOutline size={32} />, 
+    title: '3. WhatsApp Send', 
+    description: 'The order is sent directly to your WhatsApp as a formatted message.' 
+  }
+];
 
 const features = [
-    {
-      title: "Scannable QR Menus",
-      description:
-        "Generate modern QR codes that customers can scan from any device. Fast, simple, and user-friendly access to your digital menu.",
-      icon: <QrCode size={48} className="text-blue-500" />,
-    },
-    {
-      title: "WhatsApp Ordering",
-      description:
-        "Turn conversations into sales. Customers can scan, browse, and place orders directly through WhatsApp, and you receive them instantly.",
-      icon: <MessageCircle size={48} className="text-green-500" />,
-    },
-    {
-      title: "Social Media Integration",
-      description:
-        "Link your Instagram, Facebook, and other social profiles directly to your menu. Let customers explore your brand and boost engagement.",
-      icon: <Link size={48} className="text-teal-500" />,
-    },
-    {
-      title: "Boost Google Reviews",
-      description:
-        "Encourage happy customers to leave feedback with a direct link to your Google review page. Improve your online reputation and attract new business.",
-      icon: <Star size={48} className="text-yellow-500" />,
-    },
-    {
-      title: "Promote Daily Offers",
-      description:
-        "Highlight your latest deals and discounts with attractive offer banners inside your menu. Keep customers engaged and coming back.",
-      icon: <Megaphone size={48} className="text-orange-500" />,
-    },
-    {
-      title: "Powerful Admin Dashboard",
-      description:
-        "Stay in control with an easy-to-use dashboard. Add or update items, adjust prices, and manage categories anytime, anywhere.",
-      icon: <LayoutDashboard size={48} className="text-purple-500" />,
-    },
-    {
-      title: "AI Menu Upload",
-      description:
-        "No more manual entry. Upload photos or PDFs of your menu, and let our AI instantly digitize everything for you.",
-      icon: <Bot size={48} className="text-pink-500" />,
-    },
-    {
-      title: "Food Items with Images",
-      description:
-        "Enhance your menu effortlessly. Our AI automatically pairs food items with high-quality images to make dishes irresistible.",
-      icon: <Image size={48} className="text-indigo-500" />,
-    },
-    {
-      title: "Dedicated Support",
-      description:
-        "Get help when you need it. Our support team is always available via WhatsApp and email to keep your restaurant running smoothly.",
-      icon: <Headphones size={48} className="text-red-500" />,
-    },
-  ];
+  { title: "Scannable QR Menus", desc: "Modern QRs that work on any device.", icon: <QrCode size={32} className="text-blue-500" /> },
+  { title: "WhatsApp Ordering", desc: "Receive orders directly on your phone.", icon: <MessageCircle size={32} className="text-green-500" /> },
+  { title: "Social Growth", desc: "Link Instagram & Facebook to your menu.", icon: <Link size={32} className="text-teal-500" /> },
+  { title: "Google Reviews", desc: "Auto-prompt happy customers to rate you.", icon: <Star size={32} className="text-yellow-500" /> },
+  { title: "Daily Offers", desc: "Highlight deals with eye-catching banners.", icon: <Megaphone size={32} className="text-orange-500" /> },
+  { title: "Admin Dashboard", desc: "Update prices and items in real-time.", icon: <LayoutDashboard size={32} className="text-purple-500" /> },
+  { title: "AI Menu Upload", desc: "Upload a photo, let AI digitize it.", icon: <Bot size={32} className="text-pink-500" /> },
+  { title: "Auto Food Images", desc: "AI pairs dishes with tasty photos.", icon: <Image size={32} className="text-indigo-500" /> },
+  { title: "Premium Support", desc: "We help you set up and succeed.", icon: <Headphones size={32} className="text-red-500" /> },
+];
 
-const HomePage = () => {
-     const [currentIndices, setCurrentIndices] = useState([0, 1, 2]);
-
-
-
-  const [open, setOpen] = useState(false);
-  const [message, setMessage] = useState("");
-const [formData, setFormData] = useState({ phone: '' });
-
-  const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState("");
-  
-  const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setStatus('');
-
-  // Validate: not empty
-  if (!formData.name) {
-    setStatus("❌ Please enter your phone number.");
-    setLoading(false);
-    return;
+const useCases = [
+  {
+    title: "Cafes & Coffee Shops",
+    desc: "Speed up table turns and let customers order that second coffee without waiting for a waiter.",
+    img: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    title: "Restaurants & Diners",
+    desc: "Update your daily specials instantly and reduce printing costs for good.",
+    img: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    title: "Hotels & Room Service",
+    desc: "Place a QR code in every room. Guests order room service straight to WhatsApp.",
+    img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    title: "Food Trucks & QSR",
+    desc: "Eliminate long queues. Customers scan, order, and pick up when ready.",
+    img: "https://images.unsplash.com/photo-1565123409695-7b5ef63a2efb?auto=format&fit=crop&q=80&w=600"
   }
-
-  // Validate: Indian mobile number (10 digits, starts with 6-9)
-  const phoneRegex = /^[6-9]\d{9}$/;
-  if (!phoneRegex.test(formData.name)) {
-    setStatus("❌ Please enter a valid 10-digit mobile number.");
-    setLoading(false);
-    return;
-  }
-
-  try {
-    const res = await fetch("https://petoba.avenirya.com/wp-json/contact-form/v1/send", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
-    const data = await res.json();
-
-    if (data.success) {
-      setStatus("✅ Thanks for your submission! We will call you shortly.");
-      setFormData({ name: "" });
-    } else {
-      setStatus("❌ Something went wrong. Please try again.");
-    }
-  } catch (error) {
-    setStatus("❌ Error connecting to the server.");
-  }
-  setLoading(false);
-};
-  
-const QrCodeIcon = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <rect x="3" y="3" width="7" height="7" />
-    <rect x="14" y="3" width="7" height="7" />
-    <rect x="3" y="14" width="7" height="7" />
-    <line x1="14" y1="14" x2="14.01" y2="14" />
-    <line x1="17.5" y1="14" x2="17.51" y2="14" />
-    <line x1="14" y1="17.5" x2="14.01" y2="17.5" />
-  </svg>
-);
-
-const WhatsappIcon = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-  </svg>
-);
-
-const SocialIcon = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72" />
-    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72" />
-  </svg>
-);
-
-const GoogleIcon = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-  </svg>
-);
-
+];
 
 const faqData = [
-  {
-    q: "What is an All-in-One QR Code?",
-    a: "It’s a single smart QR code that lets customers view your menu, order on WhatsApp, visit your social media, and leave Google reviews.",
-  },
-  {
-    q: "Do my customers need an app?",
-    a: "No. It opens instantly in any smartphone's web browser. No downloads are needed, making it fast and easy for everyone.",
-  },
-  {
-    q: "How do I create my digital menu?",
-    a: "Simply upload a photo of your current menu, and our AI will digitize it for you in minutes.",
-  },
-  {
-    q: "How does a customer order on WhatsApp?",
-    a: "Customers build their order from the menu, and it automatically creates a pre-filled WhatsApp message for them to send directly to you.",
-  },
-  {
-    q: "How do I update my menu?",
-    a: "Log in to your dashboard from any device to instantly change prices, add items, or mark something as 'sold out'.",
-  },
-  {
-    q: "Can I add my restaurant's logo?",
-    a: "Yes, you can fully customize your menu with your own logo, colors, and professional layouts to match your brand.",
-  },
-  {
-    q: "Is this just for menus?",
-    a: "No, it's a growth tool. It helps you get more orders, increase your Instagram followers, and easily collect 5-star Google reviews.",
-  },
-  {
-    q: "Is it difficult to get started?",
-    a: "Not at all. The setup is designed to be fast and easy, taking only a few minutes. No technical skills are required.",
-  },
-  {
-    q: "How much does the service cost?",
-    a: "We offer affordable monthly and yearly plans with no hidden fees. Check our 'Pricing' page for details.",
-  },
-  {
-    q: "Do you take any commission on my sales?",
-    a: "No, never. You keep 100% of your sales. We only charge a flat subscription fee.",
-  },
+  { q: "Do customers need to download an app?", a: "No! It works directly in their phone browser (Chrome/Safari) instantly." },
+  { q: "How do I receive orders?", a: "You receive a perfectly formatted WhatsApp message from the customer with their table number and items." },
+  { q: "Can I update my menu later?", a: "Yes, you get a dashboard to change prices, add items, or hide out-of-stock dishes instantly." },
+  { q: "Is there a free trial?", a: "Yes, you can create your menu and test the features before committing to a plan." },
+  { q: "Does it work on Android and iPhone?", a: "Yes, it works on any smartphone with a camera and a web browser." },
 ];
-const [openFaq, setOpenFaq] = useState(null);
 
-const FaqItem = ({ question, answer, isOpen, onClick }) => (
-  <div className="border-b border-gray-200 py-4">
-    <button
-      className="w-full flex justify-between items-center text-left focus:outline-none"
-      onClick={onClick}
-    >
-      <span className="text-lg font-medium text-gray-800">{question}</span>
-      <span className="transition-transform duration-300">
-        <svg
-          className={`w-5 h-5 text-gray-500 transform ${isOpen ? 'rotate-180' : 'rotate-0'}`}
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </span>
-    </button>
-    <div
-      className={`overflow-hidden transition-[max-height] duration-500 ease-in-out ${
-        isOpen ? 'max-h-96' : 'max-h-0'
-      }`}
-    >
-      <p className="pt-4 text-gray-600">{answer}</p>
-    </div>
-  </div>
-);
+const testimonials = [
+    { name: "Rahul S.", role: "Cafe Owner", text: "Since using Petoba, our table turnover increased by 30%. Customers love the WhatsApp integration!" },
+    { name: "Priya M.", role: "Restaurant Manager", text: "No more printing costs when we change prices. The AI upload feature saved me hours of work." },
+    { name: "Amit K.", role: "Food Court Owner", text: "Best decision for my fast food joint. The Google Review prompt has doubled our ratings." }
+];
+
+const HomePage = () => {
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState("");
+  const [openFaq, setOpenFaq] = useState(null);
 
   const sendMessage = () => {
     if (!message.trim()) return;
@@ -387,392 +165,363 @@ const FaqItem = ({ question, answer, isOpen, onClick }) => (
     setMessage("");
     setOpen(false);
   };
+
   return (
-    <div className="relative">
-            <Helmet>
-        <title>Petoba | Digital QR Menu & Ordering</title>
-        <meta
-          name="description"
-          content="Petoba lets restaurants create digital QR menus. Customers scan, order, and enjoy a contactless dining experience."
-        />
-
-        <link
-          rel="icon"
-          href="https://petoba.avenirya.com/wp-content/uploads/2025/09/download-1.png"
-          type="image/png"
-        />
-        <meta
-          property="og:image"
-          content="https://petoba.avenirya.com/wp-content/uploads/2025/09/Untitled-design-6.png"
-        />
-        <meta property="og:title" content="Petoba - Digital QR Menu" />
-        <meta property="og:description" content="Turn your restaurant’s menu into a digital QR code menu." />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://yash.avenirya.com" />
+    <div className="relative font-sans text-slate-800  selection:bg-orange-200">
+      <Helmet>
+        <title>Petoba | The Smart WhatsApp Menu</title>
+        <meta name="description" content="Turn your paper menu into a digital sales machine. WhatsApp ordering, Google Reviews, and more." />
       </Helmet>
+      
+      <style>{customStyles}</style>
 
-      {/* Background Blobs */}
-      <div className="fixed inset-0 -z-10">
-        <div className="absolute -top-20 -left-20 w-72 h-72 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full blur-3xl opacity-30"></div>
-        <div className="absolute top-40 -right-20 w-80 h-80 bg-gradient-to-r from-orange-400 to-pink-500 rounded-full blur-3xl opacity-30"></div>
-        <div className="absolute top-[400px] left-1/2 -translate-x-1/2 w-96 h-96 bg-gradient-to-r from-green-400 to-blue-500 rounded-full blur-3xl opacity-20"></div>
+      {/* --- BACKGROUND ELEMENTS --- */}
+      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-slate-50 to-orange-50/50">
+        <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-white to-transparent"></div>
+        <div className="absolute top-20 right-[-100px] w-96 h-96 bg-orange-300/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-40 left-[-100px] w-80 h-80 bg-blue-300/20 rounded-full blur-3xl"></div>
       </div>
 
-      {/* Hero Section */}
-      <section className="relative py-10">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center ">
-          {/* Left: Text */}
-          <div className="md:w-1/2 text-center md:text-left">
-            <h1 className="text-5xl md:text-6xl font-extrabold mb-6 text-gray-900">
-             All-in-One QR Code for Your Restaurant.
-            </h1>
-            <p className="text-xl md:text-2xl mb-8 text-gray-700">
-             Instantly create a digital menu, take orders via WhatsApp, grow your social media, and boost your Google ratings—all from a single scan.
-            </p>
-            <a href="/membership">
-              <button className="px-10 py-4 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 font-bold shadow-lg hover:scale-105 transition-transform">
-                Get Started FREE
-              </button>
-            </a>
-          </div>
-
-          {/* Right: Illustration */}
-          <div className="md:w-1/2 flex justify-center md:justify-end md:flex">
-            <img
-              src="https://data.avenirya.com/wp-content/uploads/2025/10/Untitled-design-8.png"
-              alt="Digital Menu With QR Stand by Petoba QR"
-              className="w-86 md:w-96 drop-shadow-lg animate-float"
-            />
-          </div>
-        </div>
-
-        {/* Floating Animation */}
-        <style jsx>{`
-          @keyframes float {
-            0% { transform: translatey(0px); }
-            50% { transform: translatey(-10px); }
-            100% { transform: translatey(0px); }
-          }
-          .animate-float {
-            animation: float 3s ease-in-out infinite;
-          }
-        `}</style>
-      </section>
-      <section className="py-8">
-  <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-10">
-    <div className="rounded-3xl shadow-2xl bg-white/90 backdrop-blur-xl  md:p-6 flex flex-col items-center border border-orange-100 relative overflow-hidden">
-
-      <div className="absolute top-1/2 left-1/2 w-48 h-48 bg-gradient-to-br from-orange-300 to-pink-400 opacity-30 rounded-full blur-3xl z-0"></div>
-      <iframe
-        className="relative z-10 w-full h-96 md:h-128 rounded-2xl border-0"
-        src="https://www.youtube.com/embed/gjv5_9cXs9E?rel=0"
-        title="Introductory Video"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-      ></iframe>
-    </div>
-  </div>
-</section>  
-
-{/* <section className="py-10 ">
- <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-10">
-    <div className="rounded-3xl shadow-2xl bg-white/90 backdrop-blur-xl p-10 md:p-16 flex flex-col items-center border border-orange-100 relative overflow-hidden">
-
-      <div className="absolute -top-14 -right-14 w-48 h-48 bg-gradient-to-br from-orange-300 to-pink-400 opacity-30 rounded-full blur-3xl z-0"></div>
-      <div className="absolute -bottom-14 -left-14 w-40 h-40 bg-gradient-to-br from-blue-300 to-green-300 opacity-30 rounded-full blur-3xl z-0"></div>
-
-
-      <div className="relative z-10 mb-6 flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 shadow-xl ring-4 ring-white/70">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-</svg>
-
-      </div>
-
-      <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl mb-4 text-center relative z-10">
-        Start Now – Get a Free Call
-      </h2>
-
-      <p className="text-lg text-gray-600 mb-10 max-w-xl mx-auto text-center relative z-10 leading-relaxed">
-        Share your number and our team will call you back to answer your
-        questions and help you get started right away.
-      </p>
-      <form
-        onSubmit={handleSubmit}
-        method="POST"
-        className="flex flex-col sm:flex-row justify-center items-center gap-5 w-full relative z-10"
-      >
-        <input
-          type="tel"
-          id="name"
-          name="name"
-          placeholder="Enter your phone number"
-          required
-          value={formData.name}
-          onChange={e => setFormData({ ...formData, name: e.target.value })}
-          className="w-full sm:w-80 px-6 py-3 border-2 border-orange-200 rounded-full shadow-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all duration-300 bg-white/95"
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full sm:w-auto px-10 py-3 border border-transparent text-lg font-semibold rounded-full shadow-md text-white bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-400 transition-all duration-300"
-        >
-          {loading ? "Submitting..." : "Get a Call Now"}
-        </button>
-      </form>
-
-      {status && (
-        <div
-          className={`mt-6 text-lg font-semibold ${
-            status.startsWith("✅") ? "text-green-600" : "text-red-600"
-          }`}
-        >
-          {status === "success"
-            ? "✅ Thanks! Our team will reach out to you soon."
-            : status}
-        </div>
-      )}
-    </div>
-  </div>
-</section> */}
-
-
-
-<style>{cssStyles}</style>
-
-<section className="relative py-10 bg-transparent">
-  <div className="max-w-7xl mx-auto px-6 text-center">
-    <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-      How to Create Menu, Online
-    </h2>
-    <p className="text-lg text-gray-700 mb-10 max-w-2xl mx-auto">
-     Easily convert your paper menu into a digital QR menu that customers can scan and order from instantly. </p>
-
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-      {[
-       {
-          icon: "1",
-          title: "Step 1: Choose Plan & Sign Up",
-          desc: "Select the plan that suits your restaurant and quickly create your account to get started."
-        },
-        {
-          icon: "2",
-          title: "Step 2: Add Your Menu with AI",
-          desc: "Upload your menu or images and let our AI automatically organize items, descriptions, and prices for you."
-        },
-        {
-          icon: "3",
-          title: "Step 3: Download & Use",
-          desc: "Publish your digital menu and download the QR code. Customers can instantly scan and view your menu on any device."
-        }
-
-      ].map((step, index) => (
-        <div
-          key={index}
-          className="bg-white/40 backdrop-blur-lg rounded-3xl shadow-xl p-8 flex flex-col items-center text-center hover:scale-105 hover:-translate-y-2 hover:shadow-2xl transition-transform duration-300"
-        >
-          <div className="w-16 h-16 flex items-center justify-center bg-blue-500 text-white rounded-full text-3xl mb-4">
-            {step.icon}
-          </div>
-          <h3 className="text-xl font-bold mb-2">{step.title}</h3>
-          <p className="text-gray-700">{step.desc}</p>
-        </div>
-      ))}
-    </div>
-  </div>
-</section>
-
-        <section className="how-it-works-section-creative">
-
-            <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 text-center ">
-              <h2 className="mb-20">How It Works</h2>
+      {/* --- HERO SECTION --- */}
+      <section className="relative pt-10 pb-10  ">
+        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center">
+          
+          {/* Left Content */}
+          <div className="text-center lg:text-left z-10">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-100/80 text-orange-700 font-semibold text-sm mb-6 border border-orange-200">
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
+              </span>
+              #1 Digital Menu Solution
+            </div>
             
-            <div className="steps-container-creative">
-              {stepsData.map((step, index) => (
-                <div key={index} className="step-card-creative">
-                  <div className="step-icon-creative">{step.icon}</div>
-                  <h3 className="step-title-creative">{step.title}</h3>
-                  <p className="step-description-creative">{step.description}</p>
+            <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.1] mb-6">
+              Turn Scans Into <br/>
+              <span className="bg-gradient-to-r from-orange-500 to-pink-600 bg-clip-text text-transparent">
+                Sales & Reviews.
+              </span>
+            </h1>
+            
+            <p className="text-lg lg:text-xl text-slate-600 mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+              Petoba is the <strong>all-in-one digital menu</strong>. Customers scan QR to order on WhatsApp, leave 5-star reviews, and follow your Instagram.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <a href="/membership" className="group relative px-8 py-4 bg-slate-900 text-white font-bold rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 ">
+                <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-orange-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <span className="relative z-10">Create Free Menu</span>
+                <ArrowRight className="relative z-10 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </a>
+              <button className="px-8 py-4 bg-white text-slate-700 font-bold rounded-full shadow-md border border-slate-200 hover:bg-slate-50 transition-all flex items-center justify-center gap-2">
+                <PlayCircle className="w-5 h-5 text-orange-500" />
+                See Demo
+              </button>
+            </div>
+          </div>
+
+          {/* Right Image */}
+          <div className="relative flex justify-center  z-10">
+             <div className="relative w-80 md:w-96 animate-float">
+                <div className="absolute inset-0  rounded-[2rem] rotate-6 opacity-30 blur-lg transform scale-95"></div>
+                <img 
+                  src="https://data.avenirya.com/wp-content/uploads/2025/10/Untitled-design-8.png" 
+                  alt="Petoba App Interface" 
+                  className="relative z-10 drop-shadow-2xl rounded-3xl"
+                />
+             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* --- STATS BAR (Social Proof) --- */}
+      <div className=" border-y border-slate-100 ">
+        <div className="py-8 border-2 border-slate-100 shadow mt-12 bg-gradient-to-br from-pink-50 to-orange-50/50 max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center rounded-b-3xl shadow-lg">
+            {[
+                { label: "Restaurants Trusted", val: "1,000+" },
+                { label: "Orders Processed", val: "10k+" },
+                { label: "Commission Fee", val: "0%" },
+                { label: "Setup Time", val: "5 Mins" }
+            ].map((stat, i) => (
+                <div key={i}>
+                    <p className="text-3xl font-extrabold text-slate-900">{stat.val}</p>
+                    <p className="text-sm font-medium text-slate-500 uppercase tracking-wide">{stat.label}</p>
                 </div>
-              ))}
+            ))}
+        </div>
+      </div>
+
+      {/* --- VIDEO SECTION --- */}
+      <FadeInSection>
+        <section className="py-16 px-6">
+          <div className="max-w-4xl mx-auto text-center mb-8">
+             <h2 className="text-3xl font-bold">See Petoba in Action</h2>
+          </div>
+          <div className="max-w-4xl mx-auto relative group cursor-pointer">
+            <div className="absolute -inset-1 bg-gradient-to-r from-orange-400 to-pink-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+            <div className="relative rounded-2xl p-2 bg-black  shadow-2xl aspect-video border-4 border-white">
+              <iframe
+                className="w-full h-full"
+                src="https://www.youtube.com/embed/gjv5_9cXs9E?rel=0"
+                title="Introductory Video"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
             </div>
           </div>
         </section>
-        {/* HOW IT WORKS SECTION END */}
+      </FadeInSection>
 
-
-
-{/* Key Features - Multi-Info Professional Style */}
-<section className="py-16 items-center">
-  <div className="max-w-7xl mx-auto px-6 items-center ">
-    <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 text-center pb-10">
-      Key Features You’ll Get
-    </h2>
-
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {[
-        {
-    icon: QrCodeIcon,
-    title: "QR Scan Menu Access",
-    subtitle: "Menu from any device",
-    points: [
-      "Instant menu access via a single QR scan",
-      "No app download required for customers",
-      "Fully responsive and works on any smartphone",
-    ],
-  },
-  {
-    icon: WhatsappIcon,
-    title: "Simple WhatsApp Ordering",
-    subtitle: "Streamline your order process",
-    points: [
-      "Customers place orders directly on WhatsApp",
-      "Receive instant order notifications",
-      "Manage orders and customer communication easily",
-    ],
-  },
-  {
-    icon: SocialIcon,
-    title: "Social Media Integration",
-    subtitle: "Connect with your customers",
-    points: [
-      "Link your Instagram, Facebook, and more",
-      "Let customers explore your social profiles",
-      "Grow your online following effortlessly",
-    ],
-  },
-  {
-    icon: GoogleIcon,
-    title: "Get Google Reviews",
-    subtitle: "Boost your online reputation",
-    points: [
-      "Prompt happy customers to leave a review",
-      "Use the same QR to increase Google ratings",
-      "Improve visibility on Google and Google Maps",
-    ],
-  }
-      ].map((feature, idx) => (
-<div className="bg-white rounded-3xl shadow-lg p-6 flex flex-col items-start hover:scale-105 transition-transform duration-300">
-      <div className="w-16 h-16 flex items-center justify-center rounded-full bg-orange-500 text-white mb-4">
-        <feature.icon Icon className="w-8 h-8" />
-      </div>
-      <h3 className="text-2xl font-bold mb-1">{feature.title}</h3>
-      <p className="text-orange-600 font-semibold mb-4">{feature.subtitle}</p>
-      <ul className="list-disc pl-5 text-gray-700 space-y-2">
-        {feature.points.map((point) => (
-          <li key={point}>{point}</li>
-        ))}
-      </ul>
-    </div>
-        
-      ))}
-    </div>
-  </div>
-</section>
-{/* How It Works Section */}
-
-
-<HomePagePortfolioSection />
-
-<section className="relative py-16">
-      <div className="max-w-6xl mx-auto px-6 text-center">
-        {/* Page Header */}
-        <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 text-center mb-4">All Features</h2>
-        <p className="text-gray-600 mb-12">
-          Everything you need to modernize your restaurant and delight customers.
-        </p>
-
-        {/* Features Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10 text-left">
-          {features.map((feature, index) => (
-            <div
-              key={index}
-              className=""
-            >
-              <div className="mb-4 flex justify-left">{feature.icon}</div>
-              <h3 className="text-xl font-semibold mb-2 text-left">
-                {feature.title}
-              </h3>
-              <p className="text-gray-600 text-base text-left">
-                {feature.description}
-              </p>
+      {/* --- PROBLEM VS SOLUTION (New Section) --- */}
+      <section className="py-10 ">
+        <div className="max-w-6xl mx-auto px-6">
+            <div className="text-center mb-12">
+                <h2 className="text-3xl md:text-4xl font-bold text-slate-900">Why Upgrade to Petoba?</h2>
+                <p className="text-slate-600 mt-3">Stop losing customers to PDF menus and slow service.</p>
             </div>
-          ))}
+            
+            <div className="grid md:grid-cols-2 gap-8">
+                {/* Old Way */}
+                <FadeInSection>
+                    <div className="bg-white p-8 rounded-3xl border border-red-100 shadow-sm relative  h-full">
+                        <div className="absolute top-0 right-0 bg-red-100 px-4 py-1 rounded-bl-xl text-red-600 font-bold text-sm">THE OLD WAY</div>
+                        <h3 className="text-xl font-bold mb-6 flex items-center gap-2"><X className="text-red-500"/> PDF / Paper Menu</h3>
+                        <ul className="space-y-4">
+                            <li className="flex items-start gap-3 text-slate-600">
+                                <X className="w-5 h-5 text-red-400 shrink-0 mt-0.5"/> <span><strong>Hard to Read:</strong> Customers have to pinch & zoom to read tiny text on PDFs.</span>
+                            </li>
+                            <li className="flex items-start gap-3 text-slate-600">
+                                <X className="w-5 h-5 text-red-400 shrink-0 mt-0.5"/> <span><strong>No Interaction:</strong> Can't order, can't search, can't filter veg/non-veg.</span>
+                            </li>
+                            <li className="flex items-start gap-3 text-slate-600">
+                                <X className="w-5 h-5 text-red-400 shrink-0 mt-0.5"/> <span><strong>Expensive to Update:</strong> Reprinting paper menus costs money every time prices change.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </FadeInSection>
+
+                {/* Petoba Way */}
+                <FadeInSection delay="200ms">
+                    <div className="bg-white p-8 rounded-3xl border-2 border-green-400 shadow-xl relative  h-full transform md:-translate-y-2">
+                         <div className="absolute top-0 right-0 bg-green-500 px-4 py-1 rounded-bl-xl text-white font-bold text-sm">THE PETOBA WAY</div>
+                         <h3 className="text-xl font-bold mb-6 flex items-center gap-2"><Check className="text-green-500"/> Smart QR Menu</h3>
+                         <ul className="space-y-4">
+                            <li className="flex items-start gap-3 text-slate-700">
+                                <Check className="w-5 h-5 text-green-500 shrink-0 mt-0.5"/> <span><strong>Mobile Optimized:</strong> Beautiful, easy-to-read list with food photos.</span>
+                            </li>
+                            <li className="flex items-start gap-3 text-slate-700">
+                                <Check className="w-5 h-5 text-green-500 shrink-0 mt-0.5"/> <span><strong>Direct WhatsApp Ordering:</strong> Turn browsing into actual sales instantly.</span>
+                            </li>
+                            <li className="flex items-start gap-3 text-slate-700">
+                                <Check className="w-5 h-5 text-green-500 shrink-0 mt-0.5"/> <span><strong>Edit Anytime:</strong> Change prices or hide items in 1 click from your phone.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </FadeInSection>
+            </div>
         </div>
+      </section>
+
+      {/* --- HOW IT WORKS --- */}
+      <section className="py-10  relative">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-slate-900 mb-4">How it Works</h2>
+            <p className="text-slate-500 text-lg">Automation that feels like magic.</p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8 relative">
+            <div className=" md:block absolute top-12 left-[16%] right-[16%] h-0.5 bg-gradient-to-r from-orange-200 via-orange-400 to-orange-200 border-t-2 border-dashed border-slate-300 z-0"></div>
+
+            {stepsData.map((step, idx) => (
+              <FadeInSection key={idx} delay={`${idx * 150}ms`}>
+                <div className="relative z-10 flex flex-col items-center text-center group">
+                  <div className="w-24 h-24 bg-white rounded-full border-4 border-orange-50 shadow-xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:border-orange-200 transition-all duration-300">
+                    <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-pink-500 rounded-full flex items-center justify-center text-white shadow-inner">
+                      {step.icon}
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-800 mb-3">{step.title}</h3>
+                  <p className="text-slate-600 leading-relaxed max-w-xs">{step.description}</p>
+                </div>
+              </FadeInSection>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* --- USE CASES (Who is this for?) --- */}
+      <section className="py-12 text-white">
+          <div className="max-w-7xl mx-auto px-6">
+              <div className="flex flex-col md:flex-row justify-between items-end mb-12">
+                  <div className="max-w-2xl">
+                    <h2 className="text-3xl md:text-4xl font-bold mb-4 text-slate-900">Built for every food business</h2>
+                    <p className="text-slate-400 text-lg">Whether you run a small cafe or a large hotel, Petoba adapts to your needs.</p>
+                  </div>
+                  <a href="/membership" className=" md:flex text-orange-400 font-semibold items-center gap-2 hover:text-orange-300 transition">View all plans <ArrowRight size={18}/></a>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {useCases.map((item, idx) => (
+                      <FadeInSection key={idx} delay={`${idx * 100}ms`}>
+                        <div className="group relative rounded-2xl  h-80 bg-slate-800">
+                            <img src={item.img} alt={item.title} className="w-full h-full object-cover opacity-60 group-hover:opacity-40 group-hover:scale-100 transition duration-700 rounded-2xl"/>
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-6 flex flex-col justify-end">
+                                <h3 className="text-xl font-bold mb-2">{item.title}</h3>
+                                <p className="text-sm text-slate-300 leading-relaxed translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition duration-300">
+                                    {item.desc}
+                                </p>
+                            </div>
+                        </div>
+                      </FadeInSection>
+                  ))}
+              </div>
+          </div>
+      </section>
+
+      {/* --- GRID FEATURES --- */}
+      <section className="py-24">
+        <div className="max-w-7xl mx-auto px-6">
+           <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">More Than Just a Menu</h2>
+              <p className="text-xl text-slate-600 max-w-2xl mx-auto">Everything you need to modernize your restaurant operations.</p>
+           </div>
+
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {features.map((feature, idx) => (
+                <FadeInSection key={idx} delay={`${idx * 50}ms`}>
+                  <div className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-xl border border-slate-100 hover:border-orange-100 transition-all duration-300 h-full hover:-translate-y-1">
+                    <div className="w-14 h-14 rounded-xl bg-slate-50 flex items-center justify-center mb-6">
+                      {feature.icon}
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-900 mb-3">{feature.title}</h3>
+                    <p className="text-slate-600 font-medium">{feature.desc}</p>
+                  </div>
+                </FadeInSection>
+              ))}
+           </div>
+        </div>
+      </section>
+
+      {/* --- TESTIMONIALS (Social Proof) --- */}
+      <section className="py-10">
+          <div className="max-w-6xl mx-auto px-6">
+              <h2 className="text-3xl font-bold text-center mb-12">What Restaurant Owners Say</h2>
+              <div className="grid md:grid-cols-3 gap-8">
+                  {testimonials.map((t, i) => (
+                      <FadeInSection key={i} delay={`${i*100}ms`}>
+                        <div className="bg-orange-50/50 p-8 rounded-2xl border border-orange-300 relative">
+                             <div className="text-orange-400 mb-4 flex gap-1">
+                                 {[1,2,3,4,5].map(s => <Star key={s} size={16} fill="currentColor"/>)}
+                             </div>
+                             <p className="text-slate-700 italic mb-6">"{t.text}"</p>
+                             <div className="flex items-center gap-3">
+                                 <div className="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center font-bold text-slate-500">{t.name[0]}</div>
+                                 <div>
+                                     <p className="font-bold text-sm text-slate-900">{t.name}</p>
+                                     <p className="text-xs text-slate-500">{t.role}</p>
+                                 </div>
+                             </div>
+                        </div>
+                      </FadeInSection>
+                  ))}
+              </div>
+          </div>
+      </section>
+
+      {/* --- PORTFOLIO --- */}
+      <HomePagePortfolioSection />
+
+      {/* --- FAQ SECTION --- */}
+      <section className="py-24 bg-slate-50">
+        <div className="max-w-3xl mx-auto px-6">
+          <h2 className="text-4xl font-bold text-center text-slate-900 mb-12">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            {faqData.map((faq, index) => (
+              <div key={index} className="border border-slate-200 rounded-2xl  bg-white">
+                <button
+                  className="w-full flex justify-between items-center p-6 text-left hover:bg-slate-50 transition-colors"
+                  onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                >
+                  <span className="text-lg font-semibold text-slate-800">{faq.q}</span>
+                  <span className={`transform transition-transform duration-300 ${openFaq === index ? 'rotate-180' : ''}`}>
+                    <svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </span>
+                </button>
+                <div 
+                  className={`bg-slate-50 px-6  transition-all duration-300 ease-in-out ${openFaq === index ? 'max-h-48 py-6 opacity-100' : 'max-h-0 opacity-0'}`}
+                >
+                  <p className="text-slate-600">{faq.a}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* --- CTA BOTTOM --- */}
+      <section className="py-10 px-6">
+        <div className="max-w-5xl mx-auto bg-gradient-to-r from-orange-500 to-pink-600 rounded-[3rem] p-10 md:p-16 text-center text-white shadow-2xl relative ">
+          <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+          
+          <h2 className="relative z-10 text-4xl md:text-5xl font-bold mb-6">Ready to upgrade your restaurant?</h2>
+          <p className="relative z-10 text-xl text-orange-100 mb-10 max-w-xl mx-auto">Join hundreds of restaurants saving time and getting more reviews today.</p>
+          
+          <div className="relative z-10 flex flex-col sm:flex-row justify-center gap-4">
+             <a href="/membership">
+              <button className="px-10 py-4 bg-white text-orange-600 font-bold text-lg rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all">
+                Get Started for Free
+              </button>
+             </a>
+             <button 
+                onClick={() => setOpen(true)}
+                className="px-10 py-4 bg-orange-700/30 border border-white/30 backdrop-blur-sm text-white font-bold text-lg rounded-full hover:bg-orange-700/50 transition-all"
+             >
+                Chat with Us
+             </button>
+          </div>
+        </div>
+      </section>
+
+      {/* --- FLOATING CHAT WIDGET --- */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+        <div className={`transition-all duration-300 ease-in-out origin-bottom-right transform ${open ? "scale-100 opacity-100 mb-4" : "scale-90 opacity-0 h-0 "}`}>
+          <div className="w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 p-0 ">
+            <div className="bg-[#25D366] p-4 text-white">
+              <h4 className="font-bold flex items-center gap-2"><MessageCircle size={18}/> Chat on WhatsApp</h4>
+              <p className="text-xs text-green-100 mt-1">Typically replies in 5 minutes</p>
+            </div>
+            <div className="p-4 bg-slate-50">
+              <textarea
+                rows={3}
+                placeholder="Hi, I want to know more about Petoba..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                className="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-slate-700 text-sm bg-white resize-none"
+              />
+              <button
+                onClick={sendMessage}
+                className="mt-3 w-full bg-[#25D366] text-white font-bold py-3 rounded-xl hover:brightness-105 transition shadow-lg shadow-green-200"
+              >
+                Start Chat
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={() => setOpen(!open)}
+          className="group flex items-center gap-3 px-2 py-2 md:px-5 md:py-3 rounded-full shadow-xl border border-white/20 bg-[#25D366] hover:bg-[#20bd5a] hover:-translate-y-1 transition-all text-white font-bold"
+        >
+          <div className="flex items-center justify-center">
+             <MessageCircle size={28} fill="white" className="text-transparent" />
+          </div>
+          <span className=" md:block text-sm">Chat with us</span>
+        </button>
       </div>
-    </section>
-<section className=" py-16 sm:py-24">
-  <div className="max-w-6xl mx-auto px-6">
-    <div className="text-center">
-      <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 text-center">
-        Frequently Asked Questions
-      </h2>
-      <p className="mt-4 text-lg text-gray-600">
-        Have questions? We have answers. If you need more help, feel free to contact us.
-      </p>
     </div>
-    <div className="mt-12 rounded-2xl shadow-lg bg-white/80 p-6">
-      {faqData.map((faq, index) => (
-        <FaqItem
-          key={index}
-          question={faq.q}
-          answer={faq.a}
-          isOpen={openFaq === index}
-          onClick={() => setOpenFaq(openFaq === index ? null : index)}
-        />
-      ))}
-    </div>
-  </div>
-</section>
-
- <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
-      {/* Chat Box */}
-      <div
-        className={`transition-all duration-300 ease-in-out overflow-hidden ${
-          open ? "max-h-96 opacity-100 mb-3" : "max-h-0 opacity-0"
-        }`}
-      >
-        <div className="w-72 bg-white rounded-2xl shadow-xl border p-4">
-          <h4 className="text-lg font-semibold text-gray-800 mb-2 flex items-center gap-2">
-            💬 Chat with us
-          </h4>
-          <textarea
-            rows={3}
-            placeholder="Type your message..."
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-400 text-gray-700"
-          />
-          <button
-            onClick={sendMessage}
-            className="mt-3 w-full bg-[#25D366] text-white font-medium py-2 rounded-lg hover:scale-[1.02] active:scale-[0.98] transition"
-          >
-            Send via WhatsApp
-          </button>
-        </div>
-      </div>
-
-      {/* Floating Button with Icon + Text */}
-      <button
-        onClick={() => setOpen(!open)}
-        className="group flex items-center gap-2 px-4 py-3 rounded-full shadow-lg border
-                   bg-[#25D366] hover:scale-105 active:scale-95 transition text-white font-medium"
-      >
-        {/* Icon */}
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20">
-         <svg
-  xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 256 256"
-  className="h-6 w-6 fill-white"
->
-  <path d="M128 20c-59.55 0-108 48.45-108 108 0 19.05 5.05 37.61 14.64 53.89L20 236l55.06-14.22C91.15 230.34 109.35 236 128 236c59.55 0 108-48.45 108-108S187.55 20 128 20zm0 192c-17.05 0-33.66-4.98-47.91-14.38l-3.41-2.29-32.71 8.44 8.75-31.94-2.21-3.47C43.11 156.91 38 142.84 38 128c0-49.61 40.39-90 90-90s90 40.39 90 90-40.39 90-90 90zm44.93-66.02c-2.46-1.23-14.54-7.17-16.8-7.99-2.26-.82-3.9-1.23-5.54 1.23-1.64 2.46-6.35 7.99-7.78 9.63-1.43 1.64-2.87 1.85-5.33.62-2.46-1.23-10.39-3.83-19.79-12.2-7.31-6.52-12.25-14.56-13.68-17.02-1.43-2.46-.15-3.79 1.08-5.02 1.11-1.1 2.46-2.87 3.69-4.3 1.23-1.43 1.64-2.46 2.46-4.1.82-1.64.41-3.08-.21-4.3-.62-1.23-5.54-13.32-7.61-18.23-2.07-4.97-4.16-4.28-5.54-4.34-1.43-.06-3.08-.07-4.72-.07-1.64 0-4.31.62-6.56 2.87-2.25 2.25-8.6 8.39-8.6 20.45s8.8 23.73 10.04 25.37c1.23 1.64 17.3 26.38 41.91 36.96 5.86 2.54 10.43 4.06 14 5.2 5.88 1.87 11.23 1.61 15.45.98 4.71-.7 14.54-5.95 16.59-11.7 2.05-5.75 2.05-10.67 1.43-11.7-.62-1.02-2.25-1.64-4.72-2.87z" />
-</svg>
-
-        </div>
-        <span className="pr-1">Need Help?</span>
-      </button>
-    </div>
-</div>
   );
 };
 
