@@ -309,7 +309,6 @@ const handlePlaceOrder = () => {
             <p className="text-gray-500 text-center mb-4">No items match your search.</p>
           )}
         </div>
-      </div>
          <div>
         
              <CustomFieldsDisplay restaurantId={id} />
@@ -317,6 +316,8 @@ const handlePlaceOrder = () => {
         <div className="flex flex-wrap justify-center">
           <p className="text-gray-500 text-center mt-4">© {new Date().getFullYear()} Petoba. All rights reserved.</p>
         </div>
+        
+      </div>
       {/* ✅ Floating Cart Button */}
       <button
         onClick={() => setShowCart(true)}
