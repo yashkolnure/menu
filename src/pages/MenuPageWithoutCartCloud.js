@@ -22,6 +22,9 @@ function RestaurantMenuPageCloud() {
   const carouselRef = useRef(null);
   const [offers, setOffers] = useState([]);
 
+  // ✅ NEW: Add Loading State
+  const [loading, setLoading] = useState(true);
+
   // ✅ Customer details for delivery
   const [customer, setCustomer] = useState({
     name: "",
@@ -41,10 +44,9 @@ function RestaurantMenuPageCloud() {
     const fetchOffers = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(
-          `/api/admin/${id}/offers`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const res = await fetch(`/api/admin/${id}/offers`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const data = await res.json();
         if (res.ok && Array.isArray(data)) setOffers(data);
       } catch (err) {
@@ -59,10 +61,9 @@ function RestaurantMenuPageCloud() {
     const fetchDetails = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(
-          `/api/admin/${id}/details`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const res = await fetch(`/api/admin/${id}/details`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const data = await res.json();
         setRestaurantDetails(data);
       } catch {
@@ -72,20 +73,22 @@ function RestaurantMenuPageCloud() {
     fetchDetails();
   }, [id]);
 
-  // ✅ Fetch menu
+  // ✅ Fetch menu (UPDATED WITH LOADING LOGIC)
   useEffect(() => {
     const fetchMenu = async () => {
+      setLoading(true); // Start loading
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(
-          `/api/admin/${id}/menu`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const res = await fetch(`/api/admin/${id}/menu`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const data = await res.json();
         if (Array.isArray(data)) setMenuData(data);
         else toast.error("Failed to load menu data.");
       } catch {
         toast.error("Failed to load menu");
+      } finally {
+        setLoading(false); // Stop loading regardless of success or failure
       }
     };
     fetchMenu();
@@ -93,7 +96,10 @@ function RestaurantMenuPageCloud() {
 
   // ✅ Categories
   useEffect(() => {
-    const categoryList = ["All", ...new Set(menuData.map((item) => item.category))];
+    const categoryList = [
+      "All",
+      ...new Set(menuData.map((item) => item.category)),
+    ];
     setCategories(categoryList);
   }, [menuData]);
 
@@ -107,18 +113,22 @@ function RestaurantMenuPageCloud() {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
-const filteredMenu = menuData.filter(item => {
-  // Hide only if explicitly false
-  const isInStock = !(item.inStock === false || item.inStock === "false");
+  const filteredMenu = menuData.filter((item) => {
+    // Hide only if explicitly false
+    const isInStock = !(item.inStock === false || item.inStock === "false");
 
-  const matchCategory = category === "All" || item.category === category;
-  const matchSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchCategory = category === "All" || item.category === category;
+    const matchSearch = item.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
 
-  return isInStock && matchCategory && matchSearch;
-});
+    return isInStock && matchCategory && matchSearch;
+  });
   const updateQty = (itemId, qty) => {
     if (qty <= 0) return removeFromCart(itemId);
-    setCart(cart.map(c => (c._id === itemId ? { ...c, quantity: qty } : c)));
+    setCart(
+      cart.map((c) => (c._id === itemId ? { ...c, quantity: qty } : c))
+    );
   };
 
   // ✅ Cart operations
@@ -136,63 +146,82 @@ const filteredMenu = menuData.filter(item => {
   };
 
   const increaseQty = (id) => {
-    setCart(cart.map((item) => (item._id === id ? { ...item, quantity: item.quantity + 1 } : item)));
+    setCart(
+      cart.map((item) =>
+        item._id === id ? { ...item, quantity: item.quantity + 1 } : item
+      )
+    );
   };
 
   const decreaseQty = (id) => {
     setCart(
       cart.map((item) =>
-        item._id === id && item.quantity > 1 ? { ...item, quantity: item.quantity - 1 } : item
+        item._id === id && item.quantity > 1
+          ? { ...item, quantity: item.quantity - 1 }
+          : item
       )
     );
   };
 
   // ✅ Place order (with delivery details)
-const handlePlaceOrder = () => {
-  if (!customer.name || !customer.phone || !customer.address ) {
-    return toast.error("Please fill all required fields.");
-  }
+  const handlePlaceOrder = () => {
+    if (!customer.name || !customer.phone || !customer.address) {
+      return toast.error("Please fill all required fields.");
+    }
 
-  if (cart.length === 0) {
-    return toast.error("Your cart is empty.");
-  }
+    if (cart.length === 0) {
+      return toast.error("Your cart is empty.");
+    }
 
-  // ✅ Owner WhatsApp Number (you should get this from restaurantDetails or set it manually)
-  const ownerPhone = restaurantDetails?.contact; // Use full country code, e.g., 91XXXXXXXXXX
+    // ✅ Owner WhatsApp Number (you should get this from restaurantDetails or set it manually)
+    const ownerPhone = restaurantDetails?.contact; // Use full country code, e.g., 91XXXXXXXXXX
 
-  // ✅ Order Summary
-  const orderItems = cart
-    .map((item) => `${item.name} x ${item.quantity} = ₹${item.price * item.quantity}`)
-    .join("\n");
+    // ✅ Order Summary
+    const orderItems = cart
+      .map(
+        (item) =>
+          `${item.name} x ${item.quantity} = ₹${item.price * item.quantity}`
+      )
+      .join("\n");
 
-  const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const totalAmount = cart.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
 
-  const message = `🛒 *New Order*\n\n👤 Name: ${customer.name}\n📞 Phone: ${customer.phone}\n🏠 Address: ${customer.address}, ${customer.landmark}, ${customer.pincode}\n\n🍽️ Order:\n${orderItems}\n\n💰 Total: ₹${totalAmount}\n\n✅ Please confirm my order.`;
+    const message = `🛒 *New Order*\n\n👤 Name: ${customer.name}\n📞 Phone: ${customer.phone}\n🏠 Address: ${customer.address}, ${customer.landmark}, ${customer.pincode}\n\n🍽️ Order:\n${orderItems}\n\n💰 Total: ₹${totalAmount}\n\n✅ Please confirm my order.`;
 
-  // ✅ Encode message for URL
-  const whatsappURL = `https://wa.me/${ownerPhone}?text=${encodeURIComponent(message)}`;
+    // ✅ Encode message for URL
+    const whatsappURL = `https://wa.me/${ownerPhone}?text=${encodeURIComponent(
+      message
+    )}`;
 
-  // ✅ Open WhatsApp
-  window.open(whatsappURL, "_blank");
+    // ✅ Open WhatsApp
+    window.open(whatsappURL, "_blank");
 
-  // Reset after placing order
-  setCart([]);
-  setShowModal(false);
-  setShowCart(false);
-  setCustomer({ name: "", phone: "", address: "", landmark: "", pincode: "" });
-  toast.success("Redirecting to WhatsApp...");
-};
+    // Reset after placing order
+    setCart([]);
+    setShowModal(false);
+    setShowCart(false);
+    setCustomer({ name: "", phone: "", address: "", landmark: "", pincode: "" });
+    toast.success("Redirecting to WhatsApp...");
+  };
 
   // Place this check just before your return statement:
   if (restaurantDetails && restaurantDetails.active === false) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
         <div className="bg-white p-8 rounded-xl shadow text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">Restaurant Inactive</h2>
+          <h2 className="text-2xl font-bold text-red-600 mb-4">
+            Restaurant Inactive
+          </h2>
           <p className="text-gray-700 mb-2">
-            This restaurant is Disabled Connect to Petoba Team to Reactivate your Menu.
+            This restaurant is Disabled Connect to Petoba Team to Reactivate
+            your Menu.
           </p>
-          <p className="text-gray-400 text-sm">Powered By Petoba Digital QR Menu</p>
+          <p className="text-gray-400 text-sm">
+            Powered By Petoba Digital QR Menu
+          </p>
         </div>
       </div>
     );
@@ -200,7 +229,7 @@ const handlePlaceOrder = () => {
 
   return (
     <>
-            <Helmet>
+      <Helmet>
         <title>Petoba | Digital QR Menu & Ordering</title>
         <meta
           name="description"
@@ -217,7 +246,10 @@ const handlePlaceOrder = () => {
           content="https://petoba.avenirya.com/wp-content/uploads/2025/09/Untitled-design-6.png"
         />
         <meta property="og:title" content="Petoba - Digital QR Menu" />
-        <meta property="og:description" content="Turn your restaurant’s menu into a digital QR code menu." />
+        <meta
+          property="og:description"
+          content="Turn your restaurant’s menu into a digital QR code menu."
+        />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://petoba.in" />
       </Helmet>
@@ -257,11 +289,17 @@ const handlePlaceOrder = () => {
               setActiveOffer(idx);
             }}
             className="mt-4 w-full max-w-xl mx-auto mb-3 overflow-x-auto scroll-smooth px-4 cursor-grab"
-            style={{ scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}
+            style={{
+              scrollSnapType: "x mandatory",
+              WebkitOverflowScrolling: "touch",
+            }}
           >
             <div className="flex space-x-4">
               {offers.map((o) => (
-                <div key={o._id} className="flex-shrink-0 w-4/5 snap-start first:pl-4 last:pr-4">
+                <div
+                  key={o._id}
+                  className="flex-shrink-0 w-4/5 snap-start first:pl-4 last:pr-4"
+                >
                   <img
                     loading="lazy"
                     src={o.image}
@@ -295,7 +333,9 @@ const handlePlaceOrder = () => {
                 key={cat}
                 onClick={() => setCategory(cat)}
                 className={`px-4 py-2 rounded-xl whitespace-nowrap ${
-                  category === cat ? "bg-orange-500 text-white" : "bg-white text-gray-700 border"
+                  category === cat
+                    ? "bg-orange-500 text-white"
+                    : "bg-white text-gray-700 border"
                 }`}
               >
                 {cat}
@@ -305,31 +345,49 @@ const handlePlaceOrder = () => {
         </div>
 
         <div className="flex flex-wrap justify-center">
-          {filteredMenu.length > 0 ? (
+          {/* ✅ UPDATED: Loading Check */}
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500 mb-4"></div>
+              <p className="text-gray-500 font-medium">Loading Menu...</p>
+            </div>
+          ) : filteredMenu.length > 0 ? (
             filteredMenu.map((item) => (
-              <MenuCard 
-                              key={item._id} 
-                              item={item} 
-                              cartItem={cart.find(c => c._id === item._id)}
-                              addToCart={addToCart}
-                              increaseQty={(item) => updateQty(item._id, (cart.find(c => c._id === item._id)?.quantity || 0) + 1)}
-                              decreaseQty={(item) => updateQty(item._id, (cart.find(c => c._id === item._id)?.quantity || 0) - 1)}
-                              currency={restaurantDetails?.currency }
-                              enableOrdering={restaurantDetails?.enableOrdering  }
-                            />
+              <MenuCard
+                key={item._id}
+                item={item}
+                cartItem={cart.find((c) => c._id === item._id)}
+                addToCart={addToCart}
+                increaseQty={(item) =>
+                  updateQty(
+                    item._id,
+                    (cart.find((c) => c._id === item._id)?.quantity || 0) + 1
+                  )
+                }
+                decreaseQty={(item) =>
+                  updateQty(
+                    item._id,
+                    (cart.find((c) => c._id === item._id)?.quantity || 0) - 1
+                  )
+                }
+                currency={restaurantDetails?.currency}
+                enableOrdering={restaurantDetails?.enableOrdering}
+              />
             ))
           ) : (
-            <p className="text-gray-500 text-center mb-4">No items match your search.</p>
+            <p className="text-gray-500 text-center mb-4">
+              No items match your search.
+            </p>
           )}
         </div>
-         <div>
-        
-             <CustomFieldsDisplay restaurantId={id} />
+        <div>
+          <CustomFieldsDisplay restaurantId={id} />
         </div>
         <div className="flex flex-wrap justify-center">
-          <p className="text-gray-500 text-center mt-4">© {new Date().getFullYear()} Petoba. All rights reserved.</p>
+          <p className="text-gray-500 text-center mt-4">
+            © {new Date().getFullYear()} Petoba. All rights reserved.
+          </p>
         </div>
-        
       </div>
       {/* ✅ Floating Cart Button */}
       <button
@@ -358,12 +416,25 @@ const handlePlaceOrder = () => {
                       <h4 className="font-semibold">{item.name}</h4>
                       <p>₹ {item.price}</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <button className="px-2 bg-gray-300 rounded" onClick={() => decreaseQty(item._id)}>-</button>
+                        <button
+                          className="px-2 bg-gray-300 rounded"
+                          onClick={() => decreaseQty(item._id)}
+                        >
+                          -
+                        </button>
                         <span>{item.quantity}</span>
-                        <button className="px-2 bg-gray-300 rounded" onClick={() => increaseQty(item._id)}>+</button>
+                        <button
+                          className="px-2 bg-gray-300 rounded"
+                          onClick={() => increaseQty(item._id)}
+                        >
+                          +
+                        </button>
                       </div>
                     </div>
-                    <button className="text-red-500" onClick={() => removeFromCart(item._id)}>
+                    <button
+                      className="text-red-500"
+                      onClick={() => removeFromCart(item._id)}
+                    >
                       Remove
                     </button>
                   </div>
@@ -408,7 +479,6 @@ const handlePlaceOrder = () => {
           </div>
         </div>
       )}
-
 
       {/* ✅ Customer Details Modal */}
       {showModal && (
