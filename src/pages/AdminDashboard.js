@@ -154,7 +154,7 @@ function AdminDashboard() {
   // --- 2. FETCH DATA ---
   const fetchMenu = async () => {
     try {
-        const res = await fetch(`http://localhost:5000/api/admin/${restaurantId}/menu`, {
+        const res = await fetch(`/api/admin/${restaurantId}/menu`, {
             headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -167,7 +167,7 @@ function AdminDashboard() {
 
   const fetchOrders = async (isFirstLoad) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/${restaurantId}/orders`, {
+      const res = await fetch(`/api/admin/${restaurantId}/orders`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -209,7 +209,7 @@ function AdminDashboard() {
 
   const fetchRestaurantDetails = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/${restaurantId}/details`, {
+      const res = await fetch(`/api/admin/${restaurantId}/details`, {
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       });
       setRestaurantDetails(await res.json());
@@ -243,7 +243,7 @@ function AdminDashboard() {
       }, 0);
 
       try {
-          const res = await fetch("http://localhost:5000/api/order", {
+          const res = await fetch("/api/order", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -276,7 +276,7 @@ function AdminDashboard() {
     if (!newOrderPopup) return;
     setIsAccepting(true);
     try {
-      await fetch(`http://localhost:5000/api/admin/${restaurantId}/orders/${newOrderPopup._id}`, {
+      await fetch(`/api/admin/${restaurantId}/orders/${newOrderPopup._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ status: "ok" }),
@@ -306,7 +306,7 @@ function AdminDashboard() {
   const handleConfirmClear = async (method) => {
     if (!settleTableData) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/clearTable/${settleTableData.tableNumber}`, {
+      const res = await fetch(`/api/clearTable/${settleTableData.tableNumber}`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({ taxRate, discountRate, additionalCharges, paymentMethod: method })
@@ -418,16 +418,16 @@ function AdminDashboard() {
   const fetchOrderHistory = async () => {
     setLoadingHistory(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/${restaurantId}/order-history`, { headers: { Authorization: `Bearer ${token}` }});
+      const res = await fetch(`/api/admin/${restaurantId}/order-history`, { headers: { Authorization: `Bearer ${token}` }});
       const data = await res.json();
       setOrderHistory(Array.isArray(data) ? data : []);
     } catch (error) { console.error(error); } finally { setLoadingHistory(false); }
   };
 
-  const fetchOffers = async () => { try { const res = await fetch(`http://localhost:5000/api/admin/${restaurantId}/offers`, { headers: { Authorization: `Bearer ${token}` } }); if(res.ok) setOffers(await res.json()); } catch (e) {} };
+  const fetchOffers = async () => { try { const res = await fetch(`/api/admin/${restaurantId}/offers`, { headers: { Authorization: `Bearer ${token}` } }); if(res.ok) setOffers(await res.json()); } catch (e) {} };
   const handleOfferImageUpload = (e) => { const file = e.target.files[0]; if(file) { const reader = new FileReader(); reader.onloadend = () => setNewOffer({image: reader.result, imagePreview: reader.result}); reader.readAsDataURL(file); }};
-  const handleAddOffer = async () => { await fetch(`http://localhost:5000/api/admin/${restaurantId}/offers`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ image: newOffer.image }) }); fetchOffers(); setNewOffer({image:'', imagePreview:''}); alert("Offer Added"); };
-  const handleDeleteOffer = async (id) => { if(!window.confirm("Delete?")) return; await fetch(`http://localhost:5000/api/admin/${restaurantId}/offers/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); fetchOffers(); };
+  const handleAddOffer = async () => { await fetch(`/api/admin/${restaurantId}/offers`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ image: newOffer.image }) }); fetchOffers(); setNewOffer({image:'', imagePreview:''}); alert("Offer Added"); };
+  const handleDeleteOffer = async (id) => { if(!window.confirm("Delete?")) return; await fetch(`/api/admin/${restaurantId}/offers/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); fetchOffers(); };
 
   const getGroupedHistory = () => {
     const groupedMap = {};
@@ -563,7 +563,7 @@ function AdminDashboard() {
                             );
                         })}
                     </div>
-                    
+
                   {/* 🆕 TABLE CONTROLS */}
                     <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                         <h3 className="font-bold text-gray-700 flex items-center gap-2"><Grid size={20} className="text-orange-500"/> Floor Plan</h3>
