@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate } from "react-router-dom"; // 1. Added useNavigate
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import CustomFieldsDisplay from "../components/CustomFieldsDisplay";
@@ -8,6 +8,7 @@ import MenuCard from "../components/MenuCardWp";
 
 function RestaurantMenuPagewp() {
   const { id } = useParams();
+  const navigate = useNavigate(); // 2. Initialize navigation
   const [searchParams] = useSearchParams();
   const tableFromURL = searchParams.get("table");
   const [showModal, setShowModal] = useState(false);
@@ -25,27 +26,35 @@ function RestaurantMenuPagewp() {
   const [fullscreenImage, setFullscreenImage] = useState(null);
   const carouselRef = useRef(null);
 
-
   // show/hide scroll-to-top button
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   const currencies = [
-  { code: "INR", name: "Indian Rupee", symbol: "₹" },
-  { code: "USD", name: "US Dollar", symbol: "$" },
-  { code: "EUR", name: "Euro", symbol: "€" },
-  { code: "GBP", name: "British Pound", symbol: "£" },
-  { code: "AED", name: "UAE Dirham", symbol: "د.إ" },
-  { code: "AUD", name: "Australian Dollar", symbol: "A$" },
-  { code: "CAD", name: "Canadian Dollar", symbol: "CA$" },
-  { code: "SGD", name: "Singapore Dollar", symbol: "S$" },
-  { code: "JPY", name: "Japanese Yen", symbol: "¥" },
-  { code: "CNY", name: "Chinese Yuan", symbol: "¥" },
-];
+    { code: "INR", name: "Indian Rupee", symbol: "₹" },
+    { code: "USD", name: "US Dollar", symbol: "$" },
+    { code: "EUR", name: "Euro", symbol: "€" },
+    { code: "GBP", name: "British Pound", symbol: "£" },
+    { code: "AED", name: "UAE Dirham", symbol: "د.إ" },
+    { code: "AUD", name: "Australian Dollar", symbol: "A$" },
+    { code: "CAD", name: "Canadian Dollar", symbol: "CA$" },
+    { code: "SGD", name: "Singapore Dollar", symbol: "S$" },
+    { code: "JPY", name: "Japanese Yen", symbol: "¥" },
+    { code: "CNY", name: "Chinese Yuan", symbol: "¥" },
+  ];
 
-const selectedCurrency = currencies.find(
-  (c) => c.code === restaurantDetails?.currency
-);
-const currencySymbol = selectedCurrency ? selectedCurrency.symbol : "₹"; 
+  const selectedCurrency = currencies.find(
+    (c) => c.code === restaurantDetails?.currency
+  );
+  const currencySymbol = selectedCurrency ? selectedCurrency.symbol : "₹";
+
+  // 3. NEW REDIRECTION LOGIC
+  // This runs whenever restaurantDetails updates.
+  useEffect(() => {
+    if (restaurantDetails && restaurantDetails.billing === true) {
+      // Use replace: true so the user can't click 'back' to return to the redirecting page
+      navigate(`/restaurant/${id}`, { replace: true });
+    }
+  }, [restaurantDetails, navigate, id]);
 
   useEffect(() => {
     const handleScroll = () => setShowScrollTop(window.scrollY > 300);
@@ -62,10 +71,9 @@ const currencySymbol = selectedCurrency ? selectedCurrency.symbol : "₹";
     const fetchOffers = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(
-          `/api/admin/${id}/offers`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const res = await fetch(`/api/admin/${id}/offers`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const data = await res.json();
         if (res.ok && Array.isArray(data)) setOffers(data);
       } catch {
@@ -111,7 +119,7 @@ const currencySymbol = selectedCurrency ? selectedCurrency.symbol : "₹";
   }, [id]);
 
   useEffect(() => {
-    setCategories(["All", ...new Set(menuData.map(item => item.category))]);
+    setCategories(["All", ...new Set(menuData.map((item) => item.category))]);
   }, [menuData]);
 
   useEffect(() => {
@@ -123,20 +131,24 @@ const currencySymbol = selectedCurrency ? selectedCurrency.symbol : "₹";
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
-const filteredMenu = menuData.filter(item => {
-  // Hide only if explicitly false
-  const isInStock = !(item.inStock === false || item.inStock === "false");
+  const filteredMenu = menuData.filter((item) => {
+    // Hide only if explicitly false
+    const isInStock = !(item.inStock === false || item.inStock === "false");
 
-  const matchCategory = category === "All" || item.category === category;
-  const matchSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchCategory = category === "All" || item.category === category;
+    const matchSearch = item.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
 
-  return isInStock && matchCategory && matchSearch;
-});
+    return isInStock && matchCategory && matchSearch;
+  });
 
-  const addToCart = item => {
-    const exists = cart.find(c => c._id === item._id);
+  const addToCart = (item) => {
+    const exists = cart.find((c) => c._id === item._id);
     if (exists) {
-      const updated = cart.map(c => c._id === item._id ? { ...c, quantity: c.quantity + 1 } : c);
+      const updated = cart.map((c) =>
+        c._id === item._id ? { ...c, quantity: c.quantity + 1 } : c
+      );
       setCart(updated);
     } else {
       setCart([...cart, { ...item, quantity: 1 }]);
@@ -144,33 +156,34 @@ const filteredMenu = menuData.filter(item => {
     toast.success("Added to cart!");
   };
 
-  const removeFromCart = itemId => {
-    const updated = cart.filter(c => c._id !== itemId);
+  const removeFromCart = (itemId) => {
+    const updated = cart.filter((c) => c._id !== itemId);
     setCart(updated);
   };
 
   const updateQty = (itemId, qty) => {
     if (qty <= 0) return removeFromCart(itemId);
-    setCart(cart.map(c => (c._id === itemId ? { ...c, quantity: qty } : c)));
+    setCart(cart.map((c) => (c._id === itemId ? { ...c, quantity: qty } : c)));
   };
 
   const handleTableNumberSubmit = async () => {
     if (!tableNumber) return toast.error("Please enter a valid table number.");
     if (cart.length === 0) return toast.error("Your cart is empty!");
 
-const adminPhone = restaurantDetails?.contact?.replace(/\D/g, ""); // Remove non-digit chars, just in case
+    const adminPhone = restaurantDetails?.contact?.replace(/\D/g, ""); // Remove non-digit chars, just in case
 
-
-
-if (!adminPhone) {
-  return toast.error("Restaurant contact number not available.");
-}
+    if (!adminPhone) {
+      return toast.error("Restaurant contact number not available.");
+    }
 
     const orderSummary = cart
-      .map(item => `• ${item.name} x ${item.quantity}`)
+      .map((item) => `• ${item.name} x ${item.quantity}`)
       .join("%0A");
 
-    const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const total = cart.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
 
     const message = `New Order%0ATable: ${tableNumber}%0A%0A${orderSummary}%0A%0ATotal: ${currencySymbol}${total}`;
     const whatsappURL = `https://wa.me/${adminPhone}?text=${message}`;
@@ -179,16 +192,32 @@ if (!adminPhone) {
     localStorage.removeItem("cart");
     window.location.href = whatsappURL;
   };
-  // Place this check just before your return statement:
+
+  // 4. PREVENT FLASHING: If billing is true, return null (or a spinner) while redirecting
+  if (restaurantDetails?.billing === true) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-gray-100">
+        <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+        <p className="ml-3 text-gray-500 font-semibold">Redirecting to Billing Menu...</p>
+      </div>
+    );
+  }
+
+  // Check for inactive status
   if (restaurantDetails && restaurantDetails.active === false) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
         <div className="bg-white p-8 rounded-xl shadow text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">Restaurant Inactive</h2>
+          <h2 className="text-2xl font-bold text-red-600 mb-4">
+            Restaurant Inactive
+          </h2>
           <p className="text-gray-700 mb-2">
-            This restaurant is Disabled Connect to Petoba Team to Reactivate your Menu.
+            This restaurant is Disabled Connect to Petoba Team to Reactivate
+            your Menu.
           </p>
-          <p className="text-gray-400 text-sm">Powered By Petoba Digital QR Menu</p>
+          <p className="text-gray-400 text-sm">
+            Powered By Petoba Digital QR Menu
+          </p>
         </div>
       </div>
     );
@@ -196,7 +225,7 @@ if (!adminPhone) {
 
   return (
     <>
-            <Helmet>
+      <Helmet>
         <title>Petoba | Digital QR Menu & Ordering</title>
         <meta
           name="description"
@@ -213,7 +242,10 @@ if (!adminPhone) {
           content="https://petoba.avenirya.com/wp-content/uploads/2025/09/Untitled-design-6.png"
         />
         <meta property="og:title" content="Petoba - Digital QR Menu" />
-        <meta property="og:description" content="Turn your restaurant’s menu into a digital QR code menu." />
+        <meta
+          property="og:description"
+          content="Turn your restaurant’s menu into a digital QR code menu."
+        />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://yash.avenirya.com" />
       </Helmet>
@@ -229,13 +261,17 @@ if (!adminPhone) {
         />
         <div className="relative z-10 bg-black/40 w-full h-full flex flex-col items-center justify-center px-4 py-6 space-y-4">
           {restaurantDetails?.logo && (
-            <img src={restaurantDetails.logo} alt="Logo" className="h-24 sm:h-24 object-contain" />
+            <img
+              src={restaurantDetails.logo}
+              alt="Logo"
+              className="h-24 sm:h-24 object-contain"
+            />
           )}
           <input
             type="text"
             placeholder="Search for a dish..."
             value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full max-w-md px-4 py-2 rounded-xl text-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white shadow"
           />
         </div>
@@ -252,7 +288,10 @@ if (!adminPhone) {
               setActiveOffer(idx);
             }}
             className="pt-4 w-full max-w-xl mx-auto mb-3 overflow-x-auto scroll-smooth px-4 cursor-grab"
-            style={{ scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}
+            style={{
+              scrollSnapType: "x mandatory",
+              WebkitOverflowScrolling: "touch",
+            }}
           >
             <div className="flex space-x-4">
               {offers.map((o) => (
@@ -308,12 +347,14 @@ if (!adminPhone) {
       <div className="min-h-screen bg-gray-100 p-3">
         <div className="overflow-x-auto mb-4">
           <div className="flex gap-2 w-max px-2">
-            {categories.map(cat => (
+            {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setCategory(cat)}
                 className={`px-4 py-2 rounded-xl whitespace-nowrap ${
-                  category === cat ? "bg-orange-500 text-white" : "bg-white text-gray-700 border"
+                  category === cat
+                    ? "bg-orange-500 text-white"
+                    : "bg-white text-gray-700 border"
                 }`}
               >
                 {cat}
@@ -329,34 +370,52 @@ if (!adminPhone) {
               <p className="ml-3 text-gray-500 text-sm">Loading menu...</p>
             </div>
           ) : filteredMenu.length > 0 ? (
-            filteredMenu.map(item => (
-              <MenuCard 
-                key={item._id} 
-                item={item} 
-                cartItem={cart.find(c => c._id === item._id)}
+            filteredMenu.map((item) => (
+              <MenuCard
+                key={item._id}
+                item={item}
+                cartItem={cart.find((c) => c._id === item._id)}
                 addToCart={addToCart}
-                increaseQty={(item) => updateQty(item._id, (cart.find(c => c._id === item._id)?.quantity || 0) + 1)}
-                decreaseQty={(item) => updateQty(item._id, (cart.find(c => c._id === item._id)?.quantity || 0) - 1)}
-                currency={restaurantDetails?.currency }
-                enableOrdering={restaurantDetails?.enableOrdering  }
+                increaseQty={(item) =>
+                  updateQty(
+                    item._id,
+                    (cart.find((c) => c._id === item._id)?.quantity || 0) + 1
+                  )
+                }
+                decreaseQty={(item) =>
+                  updateQty(
+                    item._id,
+                    (cart.find((c) => c._id === item._id)?.quantity || 0) - 1
+                  )
+                }
+                currency={restaurantDetails?.currency}
+                enableOrdering={restaurantDetails?.enableOrdering}
               />
             ))
           ) : (
-            <p className="text-gray-500 text-center mb-4">No items match your search.</p>
+            <p className="text-gray-500 text-center mb-4">
+              No items match your search.
+            </p>
           )}
         </div>
         <div>
-        
-             <CustomFieldsDisplay restaurantId={id} />
+          <CustomFieldsDisplay restaurantId={id} />
         </div>
-        
+
         <div className="flex flex-wrap justify-center">
           <p className="text-gray-500 text-center mt-4">
-              Made with ❤️ by <a href="https://yash.avenirya.com" className="text-orange-500" target="_blank" rel="noopener noreferrer">Petoba</a> 
-            </p>
-            </div>
-          </div>
-
+            Made with ❤️ by{" "}
+            <a
+              href="https://yash.avenirya.com"
+              className="text-orange-500"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Petoba
+            </a>
+          </p>
+        </div>
+      </div>
 
       {cart.length > 0 && (
         <div className="fixed bottom-5 right-5">
@@ -372,98 +431,112 @@ if (!adminPhone) {
       {/* Scroll to top button (left-bottom) */}
       {showScrollTop && (
         <button
-  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-  className="fixed bottom-5 left-5 z-50 bg-orange-500 text-white p-2 rounded-full shadow-lg hover:bg-gray-700 transition-transform transform hover:-translate-y-1"
-  aria-label="Scroll to top"
->
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="w-4 h-4"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
-  >
-    <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
-  </svg>
-</button>
-
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="fixed bottom-5 left-5 z-50 bg-orange-500 text-white p-2 rounded-full shadow-lg hover:bg-gray-700 transition-transform transform hover:-translate-y-1"
+          aria-label="Scroll to top"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M5 15l7-7 7 7"
+            />
+          </svg>
+        </button>
       )}
 
       {showCart && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-white rounded-xl max-w-md w-full mx-4 p-5 space-y-4 relative">
-                <button
-                    className="absolute top-2 right-3 text-gray-500 hover:text-red-500 text-xl"
-                    onClick={() => setShowCart(false)}
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl max-w-md w-full mx-4 p-5 space-y-4 relative">
+            <button
+              className="absolute top-2 right-3 text-gray-500 hover:text-red-500 text-xl"
+              onClick={() => setShowCart(false)}
+            >
+              ✕
+            </button>
+
+            <h2 className="text-xl font-bold text-center mb-3">Your Cart</h2>
+
+            <div style={{ maxHeight: 320, overflowY: "auto" }}>
+              {cart.map((item) => (
+                <div
+                  key={item._id}
+                  className="flex justify-between items-center border-b py-2"
                 >
-                    ✕
-                </button>
-
-                <h2 className="text-xl font-bold text-center mb-3">Your Cart</h2>
-
-                <div style={{ maxHeight: 320, overflowY: "auto" }}>
-                  {cart.map(item => (
-                    <div key={item._id} className="flex justify-between items-center border-b py-2">
-                      <div>
-                        <p className="font-semibold">{item.name}</p>
-                        <p className="text-sm text-gray-500">{currencySymbol}{item.price}</p>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => updateQty(item._id, item.quantity - 1)}
-                          className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
-                        >
-                          -
-                        </button>
-                        <span>{item.quantity}</span>
-                        <button
-                          onClick={() => updateQty(item._id, item.quantity + 1)}
-                          className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
-                        >
-                          +
-                        </button>
-                        <button
-                          onClick={() => removeFromCart(item._id)}
-                          className="ml-2 text-red-500 hover:text-red-700 text-xl"
-                        >
-                          🗑
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="pt-3">
-                    <p className="text-right font-semibold">
-                    Total: {currencySymbol}
-                    {cart.reduce((sum, item) => sum + item.price * item.quantity, 0)}
+                  <div>
+                    <p className="font-semibold">{item.name}</p>
+                    <p className="text-sm text-gray-500">
+                      {currencySymbol}
+                      {item.price}
                     </p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => updateQty(item._id, item.quantity - 1)}
+                      className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                    >
+                      -
+                    </button>
+                    <span>{item.quantity}</span>
+                    <button
+                      onClick={() => updateQty(item._id, item.quantity + 1)}
+                      className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                    >
+                      +
+                    </button>
+                    <button
+                      onClick={() => removeFromCart(item._id)}
+                      className="ml-2 text-red-500 hover:text-red-700 text-xl"
+                    >
+                      🗑
+                    </button>
+                  </div>
                 </div>
-
-                <div>
-                    <input
-                    type="text"
-                    value={tableNumber}
-                    onChange={e => setTableNumber(e.target.value)}
-                    placeholder="Enter table number"
-                    className="w-full px-4 py-2 border rounded-lg mt-3"
-                    />
-                </div>
-
-                <button
-                    onClick={handleTableNumberSubmit}
-                    className="bg-green-600 text-white w-full mt-3 py-2 rounded-lg hover:bg-green-700 transition"
-                >
-                    Order via WhatsApp
-                </button>
-                </div>
+              ))}
             </div>
-            )}
 
+            <div className="pt-3">
+              <p className="text-right font-semibold">
+                Total: {currencySymbol}
+                {cart.reduce(
+                  (sum, item) => sum + item.price * item.quantity,
+                  0
+                )}
+              </p>
+            </div>
 
+            <div>
+              <input
+                type="text"
+                value={tableNumber}
+                onChange={(e) => setTableNumber(e.target.value)}
+                placeholder="Enter table number"
+                className="w-full px-4 py-2 border rounded-lg mt-3"
+              />
+            </div>
 
-      <ToastContainer position="bottom-left"  toastClassName="" autoClose={1000} />
+            <button
+              onClick={handleTableNumberSubmit}
+              className="bg-green-600 text-white w-full mt-3 py-2 rounded-lg hover:bg-green-700 transition"
+            >
+              Order via WhatsApp
+            </button>
+          </div>
+        </div>
+      )}
+
+      <ToastContainer
+        position="bottom-left"
+        toastClassName=""
+        autoClose={1000}
+      />
     </>
   );
 }

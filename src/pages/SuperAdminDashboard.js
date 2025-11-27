@@ -14,21 +14,26 @@ const SuperAdminDashboard = () => {
     password: "",
     subadmin_id: "",
     membership_level: "",
-    currency: "INR", // 🆕 Default to INR
-    homeImage: "",  
+    currency: "INR",
+    homeImage: "",
     active: true,
+    billing: true, // 🆕 Added billing to form state
   });
   const [editingId, setEditingId] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(null);
+  
+  // State for dropdowns
+  const [showDropdown, setShowDropdown] = useState(null); // For QR Menu
+  const [showBillingDropdown, setShowBillingDropdown] = useState(null); // 🆕 For Billing
+
   const [loading, setLoading] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const formRef = useRef(null);
   const agencyLevel = parseInt(localStorage.getItem("agencyLevel") || "1", 10);
   const limits = {
-    1: 10,   // Level 1 agency → max 10 restaurants
-    2: 25,   // Level 2 agency → max 25 restaurants
-    3: 10000,  // Level 3 agency → max 50 restaurants
+    1: 10,
+    2: 25,
+    3: 10000,
   };
 
   const API = "/api/admin";
@@ -36,45 +41,45 @@ const SuperAdminDashboard = () => {
   const WP_APP_PASSWORD = "05mq iTLF UvJU dyaz 7KxQ 8pyc";
   const WP_SITE_URL = "https://website.avenirya.com";
 
-const currencies = [
-  { code: "INR", name: "Indian Rupee", symbol: "₹" },
-  { code: "USD", name: "US Dollar", symbol: "$" },
-  { code: "EUR", name: "Euro", symbol: "€" },
-  { code: "GBP", name: "British Pound", symbol: "£" },
-  { code: "AED", name: "UAE Dirham", symbol: "د.إ" },
-  { code: "AUD", name: "Australian Dollar", symbol: "A$" },
-  { code: "CAD", name: "Canadian Dollar", symbol: "CA$" },
-  { code: "SGD", name: "Singapore Dollar", symbol: "S$" },
-  { code: "JPY", name: "Japanese Yen", symbol: "¥" },
-  { code: "CNY", name: "Chinese Yuan", symbol: "¥" },
-];
+  const currencies = [
+    { code: "INR", name: "Indian Rupee", symbol: "₹" },
+    { code: "USD", name: "US Dollar", symbol: "$" },
+    { code: "EUR", name: "Euro", symbol: "€" },
+    { code: "GBP", name: "British Pound", symbol: "£" },
+    { code: "AED", name: "UAE Dirham", symbol: "د.إ" },
+    { code: "AUD", name: "Australian Dollar", symbol: "A$" },
+    { code: "CAD", name: "Canadian Dollar", symbol: "CA$" },
+    { code: "SGD", name: "Singapore Dollar", symbol: "S$" },
+    { code: "JPY", name: "Japanese Yen", symbol: "¥" },
+    { code: "CNY", name: "Chinese Yuan", symbol: "¥" },
+  ];
 
   const [uploadingHome, setUploadingHome] = useState(false);
 
-const uploadHomeImageToWordPress = async (file) => {
-  const formDataImage = new FormData();
-  formDataImage.append("file", file);
-  setUploadingHome(true);
+  const uploadHomeImageToWordPress = async (file) => {
+    const formDataImage = new FormData();
+    formDataImage.append("file", file);
+    setUploadingHome(true);
 
-  try {
-    const response = await axios.post(`${WP_SITE_URL}/wp-json/wp/v2/media`, formDataImage, {
-      headers: {
-        Authorization: "Basic " + btoa(`${WP_USERNAME}:${WP_APP_PASSWORD}`),
-        "Content-Disposition": `attachment; filename="${file.name}"`,
-      },
-    });
+    try {
+      const response = await axios.post(`${WP_SITE_URL}/wp-json/wp/v2/media`, formDataImage, {
+        headers: {
+          Authorization: "Basic " + btoa(`${WP_USERNAME}:${WP_APP_PASSWORD}`),
+          "Content-Disposition": `attachment; filename="${file.name}"`,
+        },
+      });
 
-    const imageUrl = response.data.source_url;
-    setForm((prev) => ({ ...prev, homeImage: imageUrl }));
-    toast.success("Home image uploaded successfully!");
-  } catch (err) {
-    console.error(err);
-    toast.error("Failed to upload home image to WordPress");
-  } finally {
-    setUploadingHome(false);
-  }
-};
-  // Get logged-in agency ID from localStorage
+      const imageUrl = response.data.source_url;
+      setForm((prev) => ({ ...prev, homeImage: imageUrl }));
+      toast.success("Home image uploaded successfully!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to upload home image to WordPress");
+    } finally {
+      setUploadingHome(false);
+    }
+  };
+
   const agencyId = localStorage.getItem("agencyId");
 
   useEffect(() => {
@@ -85,13 +90,12 @@ const uploadHomeImageToWordPress = async (file) => {
   }, [agencyId]);
 
   const fetchRestaurantsByAgency = async () => {
-
-  try {
-    const res = await axios.get(`${API}/restaurants`);
-    setRestaurants(res.data);  // Directly use the fetched restaurant list
-  } catch (err) {
-    alert("Failed to fetch restaurants");
-  }
+    try {
+      const res = await axios.get(`${API}/restaurants`);
+      setRestaurants(res.data);
+    } catch (err) {
+      alert("Failed to fetch restaurants");
+    }
   };
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -99,7 +103,7 @@ const uploadHomeImageToWordPress = async (file) => {
   const handleSubmit = async () => {
     try {
       const payload = { ...form, membership_level: 3 };
-      if (!payload.password) delete payload.password; // Only send password if entered
+      if (!payload.password) delete payload.password;
 
       if (editingId) {
         await axios.put(`${API}/restaurants/${editingId}`, payload);
@@ -116,7 +120,7 @@ const uploadHomeImageToWordPress = async (file) => {
         logo: "",
         contact: "",
         password: "",
-        currency: "INR", // 🆕 Default to INR
+        currency: "INR",
         subadmin_id: agencyId,
         membership_level: "",
       });
@@ -138,9 +142,10 @@ const uploadHomeImageToWordPress = async (file) => {
       contact: restaurant.contact || "",
       password: "",
       subadmin_id: restaurant.subadmin_id || agencyId,
-      homeImage: restaurant.homeImage || "", // <-- add this
-      active: typeof restaurant.active === "boolean" ? restaurant.active : true, // <-- add this
-      currency: restaurant.currency || "INR", // 🆕 Add currency field
+      homeImage: restaurant.homeImage || "",
+      active: typeof restaurant.active === "boolean" ? restaurant.active : true,
+      billing: typeof restaurant.billing === "boolean" ? restaurant.billing : true, // 🆕 Handle billing edit
+      currency: restaurant.currency || "INR",
     });
     setFormOpen(true);
   };
@@ -175,7 +180,7 @@ const uploadHomeImageToWordPress = async (file) => {
       localStorage.setItem("token", data.token);
       localStorage.setItem("restaurantId", data.restaurant._id);
       localStorage.setItem("impersonatedBy", "agency");
-      window.location.href = "/dashboard"; // Redirect to dashboard
+      window.location.href = "/dashboard";
     } catch (err) {
       console.error(err);
       toast.error(err.response?.data?.message || "Failed to login as restaurant");
@@ -214,15 +219,13 @@ const uploadHomeImageToWordPress = async (file) => {
     );
 
   return (
-    <div className="relative min-h-screen  ">
-      {/* Background gradients */}
+    <div className="relative min-h-screen">
       <div className="absolute -top-32 -left-32 w-96 h-96 bg-gradient-to-r from-pink-300 to-purple-300 rounded-full filter blur-3xl opacity-30"></div>
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-gradient-to-r from-green-400 to-blue-500 rounded-full blur-3xl opacity-20"></div>
-      
+
       <Toaster position="top-right" />
 
       <div className="relative p-6 md:p-10 font-sans max-w-6xl mx-auto">
-        {/* Button to open form */}
         <button
           onClick={() => {
             if (restaurants.length >= (limits[agencyLevel] || 0)) {
@@ -236,7 +239,6 @@ const uploadHomeImageToWordPress = async (file) => {
           <Plus size={20} /> Add Restaurant
         </button>
 
-        {/* Popup form */}
         {formOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
             <div className="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 rounded-2xl shadow relative">
@@ -256,6 +258,7 @@ const uploadHomeImageToWordPress = async (file) => {
                 <input name="address" placeholder="Address" value={form.address} onChange={handleChange} className="p-3 border rounded-lg focus:ring focus:ring-blue-300" />
                 <input type="number" name="contact" placeholder="Contact Number" value={form.contact} onChange={handleChange} className="p-3 border rounded-lg focus:ring focus:ring-blue-300" />
                 <input name="password" type="password" placeholder={editingId ? "Change Password (optional)" : "Password"} value={form.password} onChange={handleChange} className="p-3 border rounded-lg focus:ring focus:ring-blue-300" />
+                
                 <div className="md:col-span-2 mt-4">
                   <label className="block mb-2 text-sm font-medium text-gray-600">
                     Upload Home Image
@@ -309,7 +312,6 @@ const uploadHomeImageToWordPress = async (file) => {
                 </select>
               </div>
 
-
               <button
                 onClick={handleSubmit}
                 className="mt-6 w-full px-6 py-3 bg-blue-600 text-white rounded-xl shadow hover:bg-blue-700 flex items-center justify-center gap-2"
@@ -321,7 +323,6 @@ const uploadHomeImageToWordPress = async (file) => {
           </div>
         )}
 
-        {/* Table */}
         <div className="bg-white p-6 rounded-2xl shadow relative z-10">
           <h2 className="text-2xl font-semibold mb-4 text-gray-800">Registered Restaurants ({restaurants.length})</h2>
           {loading ? (
@@ -336,7 +337,8 @@ const uploadHomeImageToWordPress = async (file) => {
                     <th className="p-3 border">Logo</th>
                     <th className="p-3 border">Name</th>
                     <th className="p-3 border">Contact</th>
-                    <th className="p-3 border">Status</th>
+                    <th className="p-3 border">QR Status</th>
+                    <th className="p-3 border">Billing Status</th> {/* 🆕 New Header */}
                     <th className="p-3 border text-center">Actions</th>
                   </tr>
                 </thead>
@@ -348,116 +350,190 @@ const uploadHomeImageToWordPress = async (file) => {
                       </td>
                       <td className="p-3 border">{rest.name}</td>
                       <td className="p-3 border">{rest.contact || "-"}</td>
-                      <td className="p-3 border text-center">
-<div className="relative inline-block">
-  <button
-    onClick={async () => {
-      if (rest.active) {
-        const confirmMsg = `Are you sure you want to deactivate "${rest.name}"?`;
-        if (!window.confirm(confirmMsg)) return;
-
-        try {
-          await axios.put(`${API}/restaurants/${rest._id}`, {
-            active: false,
-            expiresAt: null,
-          });
-          toast.success(`Restaurant deactivated!`);
-          fetchRestaurantsByAgency(agencyId);
-        } catch {
-          toast.error("Failed to deactivate");
-        }
-      } else {
-        // Toggle dropdown visibility
-        setShowDropdown((prev) => (prev === rest._id ? null : rest._id));
-      }
-    }}
-    className={`px-3 py-1 rounded-full font-semibold text-xs ${
-      rest.active
-        ? "bg-green-100 text-green-700 border border-green-300"
-        : "bg-gray-200 text-gray-600 border border-gray-300 hover:bg-gray-300"
-    }`}
-  >
-    {rest.active ? "Active" : "Inactive"}
-  </button>
-
-  {/* dropdown menu for duration */}
-  {showDropdown === rest._id && !rest.active && (
-    <div className="absolute right-0 w-40 mt-2 bg-white border border-gray-200 rounded-lg shadow-md text-sm z-10">
-      <p className="px-3 py-2 text-gray-700 font-semibold border-b">Select Duration</p>
-      {[
-        { label: "7 Days", value: "7d" },
-        { label: "1 Month", value: "1m" },
-        { label: "2 Months", value: "2m" },
-        { label: "6 Months", value: "6m" },
-        { label: "1 Year", value: "1y" },
-        { label: "Lifetime", value: "5y" },
-      ].map((opt) => (
-        <button
-          key={opt.value}
-          onClick={async () => {
-            setShowDropdown(null);
-            const now = new Date();
-            if (opt.value === "7d") now.setDate(now.getDate() + 7);
-            else if (opt.value === "1m") now.setMonth(now.getMonth() + 1);
-            else if (opt.value === "2m") now.setMonth(now.getMonth() + 2);
-            else if (opt.value === "6m") now.setMonth(now.getMonth() + 6);
-            else if (opt.value === "1y") now.setFullYear(now.getFullYear() + 1);
-            else if (opt.value === "5y") now.setFullYear(now.getFullYear() + 5);
-
-            const expiresAt = now;
-            try {
-              await axios.put(`${API}/restaurants/${rest._id}`, {
-                active: true,
-                expiresAt,
-              });
-              toast.success(`"${rest.name}" activated for ${opt.label}!`);
-              fetchRestaurantsByAgency(agencyId);
-            } catch {
-              toast.error("Failed to activate");
-            }
-          }}
-          className="block w-full text-left px-3 py-2 hover:bg-gray-100"
-        >
-          {opt.label}
-        </button>
-      ))}
-    </div>
-  )}
-</div>
-                        
-{rest.expiresAt && (() => {
-  const now = new Date();
-  const expiry = new Date(rest.expiresAt);
-  const diffMs = expiry - now;
-
-  if (diffMs <= 0) {
-    return <span className="text-xs text-gray-500"><br />Expired</span>;
-  }
-
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  const diffMonths = Math.floor(diffDays / 30);
-  const diffYears = Math.floor(diffDays / 365);
-
-  let timeLeft = "";
-
-  if (diffYears >= 1) {
-    timeLeft = `${diffYears}y left`;
-  } else if (diffMonths >= 1) {
-    timeLeft = `${diffMonths}m left`;
-  } else {
-    timeLeft = `${diffDays}d left`;
-  }
-
-  return (
-    <span className="text-xs text-gray-500">
-      <br />
-      {timeLeft}
-    </span>
-  );
-})()}
-
-                      </td>
                       
+                      {/* === ORGINAL QR STATUS COLUMN === */}
+                      <td className="p-3 border text-center">
+                        <div className="relative inline-block">
+                          <button
+                            onClick={async () => {
+                              if (rest.active) {
+                                const confirmMsg = `Are you sure you want to deactivate "${rest.name}"?`;
+                                if (!window.confirm(confirmMsg)) return;
+
+                                try {
+                                  await axios.put(`${API}/restaurants/${rest._id}`, {
+                                    active: false,
+                                    expiresAt: null,
+                                  });
+                                  toast.success(`Restaurant deactivated!`);
+                                  fetchRestaurantsByAgency(agencyId);
+                                } catch {
+                                  toast.error("Failed to deactivate");
+                                }
+                              } else {
+                                setShowDropdown((prev) => (prev === rest._id ? null : rest._id));
+                              }
+                            }}
+                            className={`px-3 py-1 rounded-full font-semibold text-xs ${
+                              rest.active
+                                ? "bg-green-100 text-green-700 border border-green-300"
+                                : "bg-gray-200 text-gray-600 border border-gray-300 hover:bg-gray-300"
+                            }`}
+                          >
+                            {rest.active ? "Active" : "Inactive"}
+                          </button>
+
+                          {showDropdown === rest._id && !rest.active && (
+                            <div className="absolute right-0 w-40 mt-2 bg-white border border-gray-200 rounded-lg shadow-md text-sm z-50">
+                              <p className="px-3 py-2 text-gray-700 font-semibold border-b">Select Duration</p>
+                              {[
+                                { label: "7 Days", value: "7d" },
+                                { label: "1 Month", value: "1m" },
+                                { label: "2 Months", value: "2m" },
+                                { label: "6 Months", value: "6m" },
+                                { label: "1 Year", value: "1y" },
+                                { label: "Lifetime", value: "5y" },
+                              ].map((opt) => (
+                                <button
+                                  key={opt.value}
+                                  onClick={async () => {
+                                    setShowDropdown(null);
+                                    const now = new Date();
+                                    if (opt.value === "7d") now.setDate(now.getDate() + 7);
+                                    else if (opt.value === "1m") now.setMonth(now.getMonth() + 1);
+                                    else if (opt.value === "2m") now.setMonth(now.getMonth() + 2);
+                                    else if (opt.value === "6m") now.setMonth(now.getMonth() + 6);
+                                    else if (opt.value === "1y") now.setFullYear(now.getFullYear() + 1);
+                                    else if (opt.value === "5y") now.setFullYear(now.getFullYear() + 5);
+
+                                    const expiresAt = now;
+                                    try {
+                                      await axios.put(`${API}/restaurants/${rest._id}`, {
+                                        active: true,
+                                        expiresAt,
+                                      });
+                                      toast.success(`"${rest.name}" activated for ${opt.label}!`);
+                                      fetchRestaurantsByAgency(agencyId);
+                                    } catch {
+                                      toast.error("Failed to activate");
+                                    }
+                                  }}
+                                  className="block w-full text-left px-3 py-2 hover:bg-gray-100"
+                                >
+                                  {opt.label}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        
+                        {rest.expiresAt && (() => {
+                          const now = new Date();
+                          const expiry = new Date(rest.expiresAt);
+                          const diffMs = expiry - now;
+                          if (diffMs <= 0) return <span className="text-xs text-gray-500"><br />Expired</span>;
+                          const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                          const diffMonths = Math.floor(diffDays / 30);
+                          const diffYears = Math.floor(diffDays / 365);
+                          let timeLeft = diffYears >= 1 ? `${diffYears}y left` : diffMonths >= 1 ? `${diffMonths}m left` : `${diffDays}d left`;
+                          return <span className="text-xs text-gray-500"><br />{timeLeft}</span>;
+                        })()}
+                      </td>
+
+                      {/* === 🆕 NEW BILLING STATUS COLUMN === */}
+                      <td className="p-3 border text-center">
+                        <div className="relative inline-block">
+                          <button
+                            onClick={async () => {
+                              if (rest.billing) {
+                                const confirmMsg = `Are you sure you want to deactivate Billing for "${rest.name}"?`;
+                                if (!window.confirm(confirmMsg)) return;
+
+                                try {
+                                  // 🆕 Updates billing and billingExpiresAt
+                                  await axios.put(`${API}/restaurants/${rest._id}`, {
+                                    billing: false,
+                                    billingExpiresAt: null,
+                                  });
+                                  toast.success(`Billing deactivated!`);
+                                  fetchRestaurantsByAgency(agencyId);
+                                } catch {
+                                  toast.error("Failed to deactivate billing");
+                                }
+                              } else {
+                                // 🆕 Uses showBillingDropdown
+                                setShowBillingDropdown((prev) => (prev === rest._id ? null : rest._id));
+                              }
+                            }}
+                            className={`px-3 py-1 rounded-full font-semibold text-xs ${
+                              rest.billing
+                                ? "bg-purple-100 text-purple-700 border border-purple-300" // Different color for distinction
+                                : "bg-gray-200 text-gray-600 border border-gray-300 hover:bg-gray-300"
+                            }`}
+                          >
+                            {rest.billing ? "Active" : "Inactive"}
+                          </button>
+
+                          {/* 🆕 Billing Dropdown */}
+                          {showBillingDropdown === rest._id && !rest.billing && (
+                            <div className="absolute right-0 w-40 mt-2 bg-white border border-gray-200 rounded-lg shadow-md text-sm z-50">
+                              <p className="px-3 py-2 text-gray-700 font-semibold border-b">Select Plan</p>
+                              {[
+                                { label: "7 Days", value: "7d" },
+                                { label: "1 Month", value: "1m" },
+                                { label: "2 Months", value: "2m" },
+                                { label: "6 Months", value: "6m" },
+                                { label: "1 Year", value: "1y" },
+                                { label: "Lifetime", value: "5y" },
+                              ].map((opt) => (
+                                <button
+                                  key={opt.value}
+                                  onClick={async () => {
+                                    setShowBillingDropdown(null);
+                                    const now = new Date();
+                                    if (opt.value === "7d") now.setDate(now.getDate() + 7);
+                                    else if (opt.value === "1m") now.setMonth(now.getMonth() + 1);
+                                    else if (opt.value === "2m") now.setMonth(now.getMonth() + 2);
+                                    else if (opt.value === "6m") now.setMonth(now.getMonth() + 6);
+                                    else if (opt.value === "1y") now.setFullYear(now.getFullYear() + 1);
+                                    else if (opt.value === "5y") now.setFullYear(now.getFullYear() + 5);
+
+                                    const billingExpiresAt = now;
+                                    try {
+                                      // 🆕 Updates billing and billingExpiresAt
+                                      await axios.put(`${API}/restaurants/${rest._id}`, {
+                                        billing: true,
+                                        billingExpiresAt,
+                                      });
+                                      toast.success(`Billing activated for ${opt.label}!`);
+                                      fetchRestaurantsByAgency(agencyId);
+                                    } catch {
+                                      toast.error("Failed to activate billing");
+                                    }
+                                  }}
+                                  className="block w-full text-left px-3 py-2 hover:bg-gray-100"
+                                >
+                                  {opt.label}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* 🆕 Billing Expiry Counter */}
+                        {rest.billingExpiresAt && (() => {
+                          const now = new Date();
+                          const expiry = new Date(rest.billingExpiresAt);
+                          const diffMs = expiry - now;
+                          if (diffMs <= 0) return <span className="text-xs text-gray-500"><br />Expired</span>;
+                          const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                          const diffMonths = Math.floor(diffDays / 30);
+                          const diffYears = Math.floor(diffDays / 365);
+                          let timeLeft = diffYears >= 1 ? `${diffYears}y left` : diffMonths >= 1 ? `${diffMonths}m left` : `${diffDays}d left`;
+                          return <span className="text-xs text-gray-500"><br />{timeLeft}</span>;
+                        })()}
+                      </td>
+
                       <td className="p-3 border text-center">
                         <div className="flex justify-center gap-3">
                           <button
@@ -490,7 +566,6 @@ const uploadHomeImageToWordPress = async (file) => {
                             <LogIn size={18} /> Login
                           </button>
                         </div>
-
                       </td>
                     </tr>
                   ))}
