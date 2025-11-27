@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import CustomFieldsDisplay from "../components/CustomFieldsDisplay";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import MenuCard from "../components/MenuCard";
+import MenuCard from "../components/MenuCardWp";
 import { Helmet } from "react-helmet";
 
 function RestaurantMenuPageCloud() {
@@ -116,6 +116,10 @@ const filteredMenu = menuData.filter(item => {
 
   return isInStock && matchCategory && matchSearch;
 });
+  const updateQty = (itemId, qty) => {
+    if (qty <= 0) return removeFromCart(itemId);
+    setCart(cart.map(c => (c._id === itemId ? { ...c, quantity: qty } : c)));
+  };
 
   // ✅ Cart operations
   const addToCart = (item) => {
@@ -215,7 +219,7 @@ const handlePlaceOrder = () => {
         <meta property="og:title" content="Petoba - Digital QR Menu" />
         <meta property="og:description" content="Turn your restaurant’s menu into a digital QR code menu." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://yash.avenirya.com" />
+        <meta property="og:url" content="https://petoba.in" />
       </Helmet>
       <header className="relative h-56 w-full mb-0 overflow-hidden rounded-b-xl shadow-lg">
         <img
@@ -303,7 +307,16 @@ const handlePlaceOrder = () => {
         <div className="flex flex-wrap justify-center">
           {filteredMenu.length > 0 ? (
             filteredMenu.map((item) => (
-              <MenuCard key={item._id} item={item} addToCart={addToCart} />
+              <MenuCard 
+                              key={item._id} 
+                              item={item} 
+                              cartItem={cart.find(c => c._id === item._id)}
+                              addToCart={addToCart}
+                              increaseQty={(item) => updateQty(item._id, (cart.find(c => c._id === item._id)?.quantity || 0) + 1)}
+                              decreaseQty={(item) => updateQty(item._id, (cart.find(c => c._id === item._id)?.quantity || 0) - 1)}
+                              currency={restaurantDetails?.currency }
+                              enableOrdering={restaurantDetails?.enableOrdering  }
+                            />
             ))
           ) : (
             <p className="text-gray-500 text-center mb-4">No items match your search.</p>
@@ -329,8 +342,9 @@ const handlePlaceOrder = () => {
       {/* ✅ Cart Modal */}
       {showCart && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 w-[90%] max-w-md animate-zoomIn">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-[90%] max-w-md max-h-[85vh] overflow-y-auto animate-zoomIn relative">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Your Cart</h2>
+
             {cart.length === 0 ? (
               <p className="text-gray-500">Cart is empty.</p>
             ) : (
@@ -344,33 +358,21 @@ const handlePlaceOrder = () => {
                       <h4 className="font-semibold">{item.name}</h4>
                       <p>₹ {item.price}</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <button
-                          className="px-2 bg-gray-300 rounded"
-                          onClick={() => decreaseQty(item._id)}
-                        >
-                          -
-                        </button>
+                        <button className="px-2 bg-gray-300 rounded" onClick={() => decreaseQty(item._id)}>-</button>
                         <span>{item.quantity}</span>
-                        <button
-                          className="px-2 bg-gray-300 rounded"
-                          onClick={() => increaseQty(item._id)}
-                        >
-                          +
-                        </button>
+                        <button className="px-2 bg-gray-300 rounded" onClick={() => increaseQty(item._id)}>+</button>
                       </div>
                     </div>
-                    <button
-                      className="text-red-500"
-                      onClick={() => removeFromCart(item._id)}
-                    >
+                    <button className="text-red-500" onClick={() => removeFromCart(item._id)}>
                       Remove
                     </button>
                   </div>
                 ))}
+
                 <h3 className="text-lg font-semibold mt-4">
-                  Total: ₹
-                  {cart.reduce((total, item) => total + item.price * item.quantity, 0)}
+                  Total: ₹{cart.reduce((t, i) => t + i.price * i.quantity, 0)}
                 </h3>
+
                 <div className="flex justify-between mt-6 space-x-4">
                   <button
                     onClick={() => setCart([])}
@@ -390,6 +392,7 @@ const handlePlaceOrder = () => {
                 </div>
               </>
             )}
+
             <button
               onClick={() => {
                 setIsCartClosing(true);
@@ -405,6 +408,7 @@ const handlePlaceOrder = () => {
           </div>
         </div>
       )}
+
 
       {/* ✅ Customer Details Modal */}
       {showModal && (

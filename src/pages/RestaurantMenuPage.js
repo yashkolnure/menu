@@ -4,7 +4,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import CustomFieldsDisplay from "../components/CustomFieldsDisplay";
 import { Helmet } from "react-helmet";
-import MenuCard from "../components/MenuCard";
+import MenuCard from "../components/MenuCardWp";
 
 // 🔧 FIX: Use your actual backend URL. 
 
@@ -132,6 +132,11 @@ function RestaurantMenuPage() {
     const matchSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
     return isInStock && matchCategory && matchSearch;
   });
+
+    const updateQty = (itemId, qty) => {
+    if (qty <= 0) return removeFromCart(itemId);
+    setCart(cart.map(c => (c._id === itemId ? { ...c, quantity: qty } : c)));
+  };
 
   const addToCart = (item) => {
     const exists = cart.find((c) => c._id === item._id);
@@ -299,7 +304,16 @@ function RestaurantMenuPage() {
             <p className="text-gray-500 text-center mb-4">Loading menu...</p>
           ) : filteredMenu.length > 0 ? (
             filteredMenu.map((item) => (
-              <MenuCard key={item._id} item={item} addToCart={addToCart} />
+              <MenuCard 
+                key={item._id} 
+                item={item} 
+                cartItem={cart.find(c => c._id === item._id)}
+                addToCart={addToCart}
+                increaseQty={(item) => updateQty(item._id, (cart.find(c => c._id === item._id)?.quantity || 0) + 1)}
+                decreaseQty={(item) => updateQty(item._id, (cart.find(c => c._id === item._id)?.quantity || 0) - 1)}
+                currency={restaurantDetails?.currency }
+                enableOrdering={restaurantDetails?.enableOrdering  }
+              />
             ))
           ) : (
             <p className="text-gray-500 text-center mb-4">No items match your search.</p>

@@ -433,7 +433,7 @@ const HomePage = () => {
       <HomePagePortfolioSection />
 
       {/* --- FAQ SECTION --- */}
-      <section className="py-24 bg-slate-50">
+      <section className="py-10  ">
         <div className="max-w-3xl mx-auto px-6">
           <h2 className="text-4xl font-bold text-center text-slate-900 mb-12">Frequently Asked Questions</h2>
           <div className="space-y-4">
