@@ -9,7 +9,7 @@ import MenuCard from "../components/MenuCard";
 // 🔧 FIX: Use your actual backend URL. 
 
 // If testing on phone, localhost won't work. Use http://localhost:5000
-const API_BASE_URL = "http://localhost:5000"; 
+const API_BASE_URL = ""; 
 
 function RestaurantMenuPage() {
   const { id } = useParams();
