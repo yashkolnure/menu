@@ -57,6 +57,7 @@ function AppWrapper() {
     "/demo/:id",
     "/shop/:id",
     "/dashboard",
+    "/admin/dashboard",
     "/restaurant/:id",
     "/mymenu/:id",
     "/d/:id",

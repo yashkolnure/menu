@@ -21,7 +21,9 @@ const Icons = {
   Plus: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>,
   Hamburger: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>,
   Close: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>, 
-  Logout: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+  Logout: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>,
+  plate: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V4m0 16v-4m0 0H8m4 0h4" /></svg>,
+  food: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0v6m0 0l-2.685-1.579M12 20l2.685-1.579M5.315 7.421L3 8.618m0 0l2.685 1.579M3 8.618v3.764m0 0l2.685 1.579M3 12.382l2.685-1.579M18.685 16.579L21 15.382m0 0l-2.685-1.579M21 15.382v-3.764m0 0l-2.685-1.579M21 11.618l-2.685 1.579" /></svg>,
 };
 
 function Dashboard() {
@@ -78,7 +80,11 @@ function Dashboard() {
         localStorage.clear();
         navigate("/login");
     }
-  };
+  };  
+  const handlemyorders = () => {
+    
+        navigate("/admin/dashboard");
+      };
 
   useEffect(() => {
     if (!restaurantId || !token) return;
@@ -282,7 +288,7 @@ function Dashboard() {
                 <img 
                     src={'https://petoba.avenirya.com/wp-content/uploads/2022/07/Untitled-design-6.png'} 
                     alt="Petoba Logo" 
-                    className="w-32 cursor-pointer hover:opacity-80 transition-opacity" 
+                    className="w-36 cursor-pointer hover:opacity-80 transition-opacity" 
                     onClick={() => {
                         navigate("/");        // Navigates to homepage
                         setActiveTab("overview"); // Resets tab
@@ -301,7 +307,10 @@ function Dashboard() {
             <SidebarItem id="qr" label="QR Code & Marketing" icon={Icons.QR} />
             <SidebarItem id="settings" label="Settings" icon={Icons.Settings} />
             <SidebarItem id="uploads" label="Bulk Import" icon={Icons.Upload} />
-             <div className="mt-auto pt-4">
+             <div className="mt-auto pt-4 gap-2 flex flex-col border-t border-gray-100">
+                <button onClick={handlemyorders} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-600 hover:bg-gray-100">
+                    <Icons.food /><span className="font-medium">Manage Orders</span>
+                </button>
                 <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-500 hover:bg-red-50 transition-colors">
                     <Icons.Logout /><span className="font-medium">Logout</span>
                 </button>

@@ -484,7 +484,6 @@ function AdminDashboard() {
             />
         </div>
         <nav className="mt-0 flex flex-col gap-2 p-4">
-          <SidebarItem id="tables" label="My Tables" icon={Grid} />
           <SidebarItem id="orders" label="Live Dashboard" icon={LayoutDashboard} />
           <SidebarItem id="billing" label="Billing & Tax" icon={Receipt} />
           <SidebarItem id="history" label="Order History" icon={History} />
@@ -527,7 +526,16 @@ function AdminDashboard() {
             {activeTab === "tables" && (
                 <div className="space-y-6">
                     
-
+                    {/* 🆕 TABLE CONTROLS */}
+                    <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                        <h3 className="font-bold text-gray-700 flex items-center gap-2"><Grid size={20} className="text-orange-500"/> Floor Plan</h3>
+                        <div className="flex items-center gap-3 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200">
+                            <span className="text-sm text-gray-500 font-medium">Total Tables:</span>
+                            <button onClick={() => updateTableCount(totalTables - 1)} className="p-1 hover:bg-white rounded shadow-sm text-gray-600 transition"><Minus size={16}/></button>
+                            <span className="font-bold text-gray-800 w-6 text-center">{totalTables}</span>
+                            <button onClick={() => updateTableCount(totalTables + 1)} className="p-1 hover:bg-white rounded shadow-sm text-gray-600 transition"><Plus size={16}/></button>
+                        </div>
+                    </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                         {Array.from({ length: totalTables }, (_, i) => {
@@ -562,17 +570,6 @@ function AdminDashboard() {
                                 </div>
                             );
                         })}
-                    </div>
-                    
-                  {/* 🆕 TABLE CONTROLS */}
-                    <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                        <h3 className="font-bold text-gray-700 flex items-center gap-2"><Grid size={20} className="text-orange-500"/> Floor Plan</h3>
-                        <div className="flex items-center gap-3 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200">
-                            <span className="text-sm text-gray-500 font-medium">Total Tables:</span>
-                            <button onClick={() => updateTableCount(totalTables - 1)} className="p-1 hover:bg-white rounded shadow-sm text-gray-600 transition"><Minus size={16}/></button>
-                            <span className="font-bold text-gray-800 w-6 text-center">{totalTables}</span>
-                            <button onClick={() => updateTableCount(totalTables + 1)} className="p-1 hover:bg-white rounded shadow-sm text-gray-600 transition"><Plus size={16}/></button>
-                        </div>
                     </div>
                 </div>
             )}

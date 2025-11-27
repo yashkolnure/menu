@@ -6,6 +6,11 @@ import CustomFieldsDisplay from "../components/CustomFieldsDisplay";
 import { Helmet } from "react-helmet";
 import MenuCard from "../components/MenuCard";
 
+// 🔧 FIX: Use your actual backend URL. 
+
+// If testing on phone, localhost won't work. Use http://localhost:5000
+const API_BASE_URL = "http://localhost:5000"; 
+
 function RestaurantMenuPage() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
@@ -22,22 +27,23 @@ function RestaurantMenuPage() {
   const [showModal, setShowModal] = useState(false);
   const [showCart, setShowCart] = useState(false);
   const [restaurantDetails, setRestaurantDetails] = useState(null);
-  const [setIsCartClosing] = useState(false);
-const [activeOffer, setActiveOffer] = useState(0);
-  // Offers carousel state
   
-const carouselRef = useRef(null);
+  // 🔧 FIX: Correct State Destructuring
+  const [isCartClosing, setIsCartClosing] = useState(false); 
+  
+  const [activeOffer, setActiveOffer] = useState(0);
+  const carouselRef = useRef(null);
   const [offers, setOffers] = useState([]);
 
-  // Fetch offers
+  // --- 1. Fetch Offers ---
   useEffect(() => {
     const fetchOffers = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(
-          `/api/admin/${id}/offers`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        // 🔧 FIX: Correct URL syntax
+        const res = await fetch(`${API_BASE_URL}/api/admin/${id}/offers`, { 
+            headers: token ? { Authorization: `Bearer ${token}` } : {} 
+        });
         const data = await res.json();
         if (res.ok && Array.isArray(data)) setOffers(data);
       } catch (err) {
@@ -47,69 +53,85 @@ const carouselRef = useRef(null);
     fetchOffers();
   }, [id]);
 
+  // --- 2. Set Table Number ---
   useEffect(() => {
     if (tableFromURL) {
       setTableNumber(tableFromURL);
     }
   }, [tableFromURL]);
 
+  // --- 3. Fetch Restaurant Details ---
   useEffect(() => {
     const fetchDetails = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`/api/admin/${id}/details`, {
-          headers: { Authorization: `Bearer ${token}` },
+        // 🔧 FIX: Correct URL syntax
+        const res = await fetch(`${API_BASE_URL}/api/admin/${id}/details`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         const data = await res.json();
         setRestaurantDetails(data);
       } catch {
-        toast.error("⚠️ Failed to fetch restaurant details");
+        // Silent fail or simple log to avoid spamming toasts on load
+        console.log("Failed to fetch details");
       }
     };
     fetchDetails();
   }, [id]);
 
-useEffect(() => {
-  const fetchMenu = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`/api/admin/${id}/menu`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (Array.isArray(data)) setMenuData(data);
-      else toast.error("Failed to load menu data.");
-    } catch {
-      toast.error("Failed to load menu");
-    }
-    setLoading(false); // <-- set loading to false after fetch
-  };
-  fetchMenu();
-}, [id]);
-
+  // --- 4. Fetch Menu ---
   useEffect(() => {
-    const categoryList = ["All", ...new Set(menuData.map((item) => item.category))];
-    setCategories(categoryList);
+    const fetchMenu = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        // 🔧 FIX: Correct URL syntax
+        const res = await fetch(`${API_BASE_URL}/api/admin/${id}/menu`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        const data = await res.json();
+        if (Array.isArray(data)) {
+            setMenuData(data);
+        } else {
+            console.error("Menu data is not an array");
+        }
+      } catch (e) {
+        console.error("Failed to load menu", e);
+        toast.error("Failed to load menu");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMenu();
+  }, [id]);
+
+  // --- 5. Process Categories ---
+  useEffect(() => {
+    if(menuData.length > 0) {
+        const categoryList = ["All", ...new Set(menuData.map((item) => item.category).filter(Boolean))];
+        setCategories(categoryList);
+    }
   }, [menuData]);
 
+  // --- 6. Load Cart ---
   useEffect(() => {
-    const savedCart = JSON.parse(localStorage.getItem("cart"));
-    if (savedCart) setCart(savedCart);
+    try {
+        const savedCart = JSON.parse(localStorage.getItem("cart"));
+        if (savedCart) setCart(savedCart);
+    } catch(e) { console.error("Cart parse error", e); }
   }, []);
 
+  // --- 7. Save Cart ---
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
-const filteredMenu = menuData.filter(item => {
-  // Hide only if explicitly false
-  const isInStock = !(item.inStock === false || item.inStock === "false");
-
-  const matchCategory = category === "All" || item.category === category;
-  const matchSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
-
-  return isInStock && matchCategory && matchSearch;
-});
+  // Filter Logic
+  const filteredMenu = menuData.filter(item => {
+    const isInStock = !(item.inStock === false || item.inStock === "false");
+    const matchCategory = category === "All" || item.category === category;
+    const matchSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
+    return isInStock && matchCategory && matchSearch;
+  });
 
   const addToCart = (item) => {
     const exists = cart.find((c) => c._id === item._id);
@@ -136,18 +158,20 @@ const filteredMenu = menuData.filter(item => {
 
   const handleTableNumberSubmit = async () => {
     if (!tableNumber) return toast.error("Please enter a valid table number.");
-    if (!/^[6-9]\d{9}$/.test(wpno)) {
-  return toast.error("Please enter a valid 10-digit WhatsApp number.");
-}
+    
+    // Optional: Only validate WP number if user entered one
+    if (wpno && !/^[6-9]\d{9}$/.test(wpno)) {
+        return toast.error("Please enter a valid 10-digit WhatsApp number.");
+    }
 
     try {
-      const res = await fetch("/api/order", {
+      const res = await fetch(`${API_BASE_URL}/api/order`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           restaurantId: id,
           tableNumber,
-           wpno: "91" + wpno,
+          wpno: wpno ? "91" + wpno : "",
           items: cart.map((item) => ({ itemId: item._id, quantity: item.quantity })),
           total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
         }),
@@ -160,36 +184,31 @@ const filteredMenu = menuData.filter(item => {
         setShowModal(false);
         setShowCart(false);
       } else {
-        toast.error("❌ Order failed");
+        toast.error("❌ Order failed: " + (data.message || "Unknown error"));
       }
-    } catch {
+    } catch (e) {
       toast.error("⚠️ Server error");
+      console.error(e);
     }
   };
 
   return (
     <>
-            <Helmet>
+      <Helmet>
         <title>Petoba | Digital QR Menu & Ordering</title>
         <meta
           name="description"
           content="Petoba lets restaurants create digital QR menus. Customers scan, order, and enjoy a contactless dining experience."
         />
-
         <link
           rel="icon"
           href="https://petoba.avenirya.com/wp-content/uploads/2025/09/download-1.png"
           type="image/png"
         />
-        <meta
-          property="og:image"
-          content="https://petoba.avenirya.com/wp-content/uploads/2025/09/Untitled-design-6.png"
-        />
         <meta property="og:title" content="Petoba - Digital QR Menu" />
-        <meta property="og:description" content="Turn your restaurant’s menu into a digital QR code menu." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://yash.avenirya.com" />
       </Helmet>
+
       <header className="relative h-56 w-full mb-0 overflow-hidden rounded-b-xl shadow-lg">
         <img
           src="https://t3.ftcdn.net/jpg/02/97/67/70/360_F_297677001_zX7ZzRq8DObUV5IWTHAIhAae6DuiEQh4.jpg"
@@ -201,7 +220,6 @@ const filteredMenu = menuData.filter(item => {
             <img
               src={restaurantDetails.logo}
               alt="Logo"
-              
               className="h-20 sm:h-20 object-contain"
             />
           )}
@@ -214,49 +232,52 @@ const filteredMenu = menuData.filter(item => {
           />
         </div>
       </header>
-      {/* Offer Carousel (with scroll‑snap & dots) */}
-{offers.length > 0 && (
-  <div className="bg-gray-100">
-    <div
-      ref={carouselRef}
-      onScroll={() => {
-        const container = carouselRef.current;
-        const slideWidth = container.clientWidth * 0.8 + 16; // 80% + gap
-        const idx = Math.round(container.scrollLeft / slideWidth);
-        setActiveOffer(idx);
-      }}
-      className="mt-4 w-full max-w-xl mx-auto mb-3 overflow-x-auto scroll-smooth px-4 cursor-grab"
-      style={{ scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}
-    >
-      <div className="flex space-x-4">
-        {offers.map((o) => (
-          <div key={o._id} className="flex-shrink-0 w-4/5 snap-start first:pl-4 last:pr-4">
-            <img
-              loading="lazy"
-              src={o.image}
-              alt=""
-              className="w-full h-[150px] max-h-[150px] object-cover rounded-lg"
-            />
+
+      {/* Offer Carousel */}
+      {offers.length > 0 && (
+        <div className="bg-gray-100">
+          <div
+            ref={carouselRef}
+            onScroll={() => {
+              if(carouselRef.current) {
+                  const container = carouselRef.current;
+                  const slideWidth = container.clientWidth * 0.8 + 16; 
+                  const idx = Math.round(container.scrollLeft / slideWidth);
+                  setActiveOffer(idx);
+              }
+            }}
+            className="mt-4 w-full max-w-xl mx-auto mb-3 overflow-x-auto scroll-smooth px-4 cursor-grab"
+            style={{ scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}
+          >
+            <div className="flex space-x-4">
+              {offers.map((o) => (
+                <div key={o._id} className="flex-shrink-0 w-4/5 snap-start first:pl-4 last:pr-4">
+                  <img
+                    loading="lazy"
+                    src={o.image}
+                    alt=""
+                    className="w-full h-[150px] max-h-[150px] object-cover rounded-lg"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
-        ))}
-      </div>
-    </div>
 
-    {/* pagination dots */}
-    <div className="flex justify-center space-x-2 pb-6 bg-gray-100">
-      {offers.map((_, idx) => (
-        <span
-          key={idx}
-          className={`block w-2 h-2 rounded-full transition-all ${
-            idx === activeOffer ? "bg-orange-600" : "bg-gray-300"
-          }`}
-        />
-      ))}
-    </div>
-  </div>
-)}
+          {/* Pagination dots */}
+          <div className="flex justify-center space-x-2 pb-6 bg-gray-100">
+            {offers.map((_, idx) => (
+              <span
+                key={idx}
+                className={`block w-2 h-2 rounded-full transition-all ${
+                  idx === activeOffer ? "bg-orange-600" : "bg-gray-300"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
-  <div className="min-h-screen bg-gray-100 p-3">
+      <div className="min-h-screen bg-gray-100 p-3">
         <div className="overflow-x-auto mb-4">
           <div className="flex gap-2 w-max px-2">
             {categories.map((cat) => (
@@ -272,31 +293,31 @@ const filteredMenu = menuData.filter(item => {
             ))}
           </div>
         </div>
-<div className="flex flex-wrap justify-center">
-  {loading ? (
-    <p className="text-gray-500 text-center mb-4">Loading menu...</p>
-  ) : filteredMenu.length > 0 ? (
-    filteredMenu.map((item) => (
-      <MenuCard key={item._id} item={item} addToCart={addToCart} />
-    ))
-  ) : (
-    <p className="text-gray-500 text-center mb-4">No items match your search.</p>
-  )}
-</div>
-        
-     
-      <div>
-             <CustomFieldsDisplay restaurantId={id} />
+
+        <div className="flex flex-wrap justify-center">
+          {loading ? (
+            <p className="text-gray-500 text-center mb-4">Loading menu...</p>
+          ) : filteredMenu.length > 0 ? (
+            filteredMenu.map((item) => (
+              <MenuCard key={item._id} item={item} addToCart={addToCart} />
+            ))
+          ) : (
+            <p className="text-gray-500 text-center mb-4">No items match your search.</p>
+          )}
+        </div>
+
+        <div>
+          <CustomFieldsDisplay restaurantId={id} />
         </div>
         <div className="flex flex-wrap justify-center">
           <p className="text-gray-500 text-center mt-4">© {new Date().getFullYear()} Petoba. All rights reserved.</p>
         </div>
-      {tableNumber && (
-        <p className="text-center text-sm text-gray-600 mt-2 mb-5">
-          Ordering for <strong>Table {tableNumber}</strong>
-        </p>
-      )}
-       </div>
+        {tableNumber && (
+          <p className="text-center text-sm text-gray-600 mt-2 mb-5">
+            Ordering for <strong>Table {tableNumber}</strong>
+          </p>
+        )}
+      </div>
 
       <button
         onClick={() => setShowCart(true)}
@@ -313,20 +334,22 @@ const filteredMenu = menuData.filter(item => {
               <p className="text-gray-500">Cart is empty.</p>
             ) : (
               <>
-                {cart.map((item) => (
-                  <div key={item._id} className="flex items-center justify-between mb-3 border-b pb-2">
-                    <div>
-                      <h4 className="font-semibold">{item.name}</h4>
-                      <p>₹ {item.price}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <button className="px-2 bg-gray-300 rounded" onClick={() => decreaseQty(item._id)}>-</button>
-                        <span>{item.quantity}</span>
-                        <button className="px-2 bg-gray-300 rounded" onClick={() => increaseQty(item._id)}>+</button>
-                      </div>
+                <div className="max-h-[60vh] overflow-y-auto">
+                    {cart.map((item) => (
+                    <div key={item._id} className="flex items-center justify-between mb-3 border-b pb-2">
+                        <div>
+                        <h4 className="font-semibold">{item.name}</h4>
+                        <p>₹ {item.price}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                            <button className="px-2 bg-gray-300 rounded" onClick={() => decreaseQty(item._id)}>-</button>
+                            <span>{item.quantity}</span>
+                            <button className="px-2 bg-gray-300 rounded" onClick={() => increaseQty(item._id)}>+</button>
+                        </div>
+                        </div>
+                        <button className="text-red-500" onClick={() => removeFromCart(item._id)}>Remove</button>
                     </div>
-                    <button className="text-red-500" onClick={() => removeFromCart(item._id)}>Remove</button>
-                  </div>
-                ))}
+                    ))}
+                </div>
                 <h3 className="text-lg font-semibold mt-4">
                   Total: ₹{cart.reduce((total, item) => total + item.price * item.quantity, 0)}
                 </h3>
@@ -350,19 +373,18 @@ const filteredMenu = menuData.filter(item => {
                 </div>
               </>
             )}
-              <button
-                onClick={() => {
-                  setShowModal(true);
-                  setTimeout(() => {
-                    setShowCart(false);
-                    setShowModal(false);
-                  }, 300); // Match animation duration
-                }}
-                className="absolute top-4 right-4 text-gray-500 hover:text-red-500 text-xl"
-              >
-                ✕
-              </button>
-
+            <button
+              onClick={() => {
+                setShowModal(true);
+                setTimeout(() => {
+                  setShowCart(false);
+                  setShowModal(false);
+                }, 300);
+              }}
+              className="absolute top-4 right-4 text-gray-500 hover:text-red-500 text-xl"
+            >
+              ✕
+            </button>
           </div>
         </div>
       )}
@@ -384,7 +406,6 @@ const filteredMenu = menuData.filter(item => {
               type="text"
               value={wpno}
               onChange={e => {
-                // Only allow digits, max 10
                 const val = e.target.value.replace(/\D/g, '').slice(0, 10);
                 setWpno(val);
               }}
