@@ -10,13 +10,13 @@ const Icons = {
   Money: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
   Upload: () => <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>,
   Loading: () => <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z"></path></svg>,
-  Check: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+  Check: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>,
+  ShoppingBag: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
 };
 
 const WP_USERNAME = "yashkolnure58@gmail.com";
 const WP_APP_PASSWORD = "05mq iTLF UvJU dyaz 7KxQ 8pyc";
 const WP_SITE_URL = "https://website.avenirya.com";
-// Fixed API URL to match your Dashboard
 const API_BASE_URL = "/api"; 
 
 const currencies = [
@@ -27,8 +27,7 @@ const currencies = [
   { code: "AED", name: "UAE Dirham", symbol: "د.إ" },
 ];
 
-// --- HELPER COMPONENTS (Moved OUTSIDE AdminSettings) ---
-// Passing value and onChange as props fixes the focus issue
+// --- HELPER COMPONENTS ---
 const TextInput = ({ label, name, value, onChange, type = "text", icon: Icon, placeholder }) => (
   <div className="flex flex-col gap-1.5">
     <label className="text-sm font-semibold text-gray-700">{label}</label>
@@ -206,6 +205,14 @@ const AdminSettings = () => {
     }
   };
 
+  // Helper to toggle ordering status
+  const toggleOrdering = () => {
+    setFormData(prev => ({
+      ...prev,
+      enableOrdering: prev.enableOrdering === "enabled" ? "disabled" : "enabled"
+    }));
+  };
+
   if (loading) return <div className="p-8 text-center text-gray-500 flex flex-col items-center gap-2"><Icons.Loading /> Loading Profile...</div>;
 
   return (
@@ -219,7 +226,7 @@ const AdminSettings = () => {
       )}
 
       {/* Basic Info Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <TextInput 
             label="Restaurant Name" 
             name="name" 
@@ -246,7 +253,8 @@ const AdminSettings = () => {
                 placeholder="Street, City, Zip" 
             />
         </div>
-        <TextInput 
+        <div className="md:col-span-2">
+           <TextInput 
             label="Email Address" 
             name="email" 
             type="email" 
@@ -254,8 +262,10 @@ const AdminSettings = () => {
             onChange={handleChange} 
             icon={Icons.Mail} 
             placeholder="admin@restaurant.com" 
-        />
+          />
+        </div>
         
+        {/* Currency Selector */}
         <div className="flex flex-col gap-1.5">
            <label className="text-sm font-semibold text-gray-700">Currency</label>
            <div className="relative">
@@ -265,11 +275,40 @@ const AdminSettings = () => {
               </select>
            </div>
         </div>
+
+        {/* Enable Ordering Toggle */}
+        <div className="flex flex-col gap-1.5">
+           <label className="text-sm font-semibold text-gray-700">Ordering Status</label>
+           <div 
+             onClick={toggleOrdering}
+             className={`relative w-full h-[42px] rounded-lg border cursor-pointer flex items-center px-4 transition-all ${
+               formData.enableOrdering === 'enabled' 
+                 ? 'bg-green-50 border-green-200 hover:border-green-300' 
+                 : 'bg-red-50 border-red-200 hover:border-red-300'
+             }`}
+           >
+              {/* Icon */}
+              <div className={`mr-3 ${formData.enableOrdering === 'enabled' ? 'text-green-600' : 'text-red-500'}`}>
+                <Icons.ShoppingBag />
+              </div>
+              
+              <div className="flex-1 flex justify-between items-center">
+                <span className={`text-sm font-medium ${formData.enableOrdering === 'enabled' ? 'text-green-800' : 'text-red-800'}`}>
+                  {formData.enableOrdering === 'enabled' ? 'Enabled' : 'Disabled'}
+                </span>
+
+                {/* Switch Visual */}
+                <div className={`w-10 h-5 rounded-full relative transition-colors ${formData.enableOrdering === 'enabled' ? 'bg-green-500' : 'bg-gray-300'}`}>
+                   <div className={`absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm transition-transform duration-200 ${formData.enableOrdering === 'enabled' ? 'left-6' : 'left-1'}`} />
+                </div>
+              </div>
+           </div>
+        </div>
       </div>
 
 
       {/* Branding Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
          <FileUploader 
             label="Restaurant Logo" 
             fieldName="logo" 
@@ -293,7 +332,7 @@ const AdminSettings = () => {
          <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
             <Icons.Lock /> Change Password <span className="text-xs font-normal text-gray-500">(Leave empty to keep current)</span>
          </h4>
-         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <TextInput 
                 label="New Password" 
                 name="password" 
