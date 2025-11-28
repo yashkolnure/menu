@@ -37,6 +37,9 @@ function AdminDashboard() {
   const [menuSearch, setMenuSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
+  const [isLive, setIsLive] = useState(true);
+  const [isTogglingLive, setIsTogglingLive] = useState(false);
+
   const processedOrderIds = useRef(new Set()); 
   
     // --- ICONS ---
@@ -212,8 +215,36 @@ function AdminDashboard() {
       const res = await fetch(`/api/admin/${restaurantId}/details`, {
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       });
-      setRestaurantDetails(await res.json());
+      const data = await res.json();
+      setRestaurantDetails(data);
+      // Set the live status from DB (default to true if undefined)
+      if (data.isLive !== undefined) setIsLive(data.isLive); 
     } catch (error) { console.error(error); }
+  };
+
+  // 🆕 TOGGLE FUNCTION
+  const toggleLiveStatus = async () => {
+    const newStatus = !isLive;
+    setIsLive(newStatus); // Optimistic UI update (feels faster)
+    setIsTogglingLive(true);
+    
+    try {
+      const res = await fetch(`/api/admin/${restaurantId}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ isLive: newStatus })
+      });
+      
+      if (!res.ok) {
+        throw new Error("Failed to update");
+      }
+    } catch (error) {
+      console.error(error);
+      setIsLive(!newStatus); // Revert if API fails
+      alert("Failed to update store status");
+    } finally {
+      setIsTogglingLive(false);
+    }
   };
 
   // --- 3. ADMIN ADD DISH LOGIC (POS) ---
@@ -502,22 +533,48 @@ function AdminDashboard() {
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-gray-50">
         <header className="h-16 sm:h-20 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-8 shadow-sm z-10">
-          <div className="flex items-center gap-4">
-            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="lg:hidden text-gray-600 p-1"><Menu size={24} /></button>
-            <h2 className="text-lg sm:text-xl font-bold text-gray-800 capitalize hidden sm:block">{activeTab.replace(/([A-Z])/g, ' $1').trim()}</h2>
-          </div>
-          <div className="flex items-center gap-3 sm:gap-6">
-             <button onClick={unlockAudio} className={`flex items-center gap-2 px-3 py-2 rounded-full transition-colors shadow-sm border ${soundEnabled ? "bg-blue-50 text-blue-600 border-blue-200" : "bg-gray-100 text-gray-600 border-gray-300"}`} title="Click to allow sound">
-                {soundEnabled ? <Volume2 size={18}/> : <VolumeX size={18}/>}
-                <span className="text-xs font-bold hidden sm:inline">{soundEnabled ? "Sound On" : "Sound Off"}</span>
-             </button>
-             <div className="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold border border-green-200 whitespace-nowrap"><div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div> Live</div>
-             <div className="relative cursor-pointer p-1">
-                <Bell className="text-gray-500 hover:text-orange-500 transition" size={22} />
-                {newOrderQueue.length > 0 && <span className="absolute -top-0 -right-0 w-4 h-4 bg-red-500 rounded-full border-2 border-white text-[10px] text-white flex items-center justify-center">{newOrderQueue.length}</span>}
-             </div>
-          </div>
-        </header>
+  <div className="flex items-center gap-4">
+    <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="lg:hidden text-gray-600 p-1"><Menu size={24} /></button>
+    <h2 className="text-lg sm:text-xl font-bold text-gray-800 capitalize hidden sm:block">{activeTab.replace(/([A-Z])/g, ' $1').trim()}</h2>
+  </div>
+  
+  <div className="flex items-center gap-3 sm:gap-6">
+     {/* SOUND TOGGLE */}
+     <button onClick={unlockAudio} className={`flex items-center gap-2 px-3 py-2 rounded-full transition-colors shadow-sm border ${soundEnabled ? "bg-blue-50 text-blue-600 border-blue-200" : "bg-gray-100 text-gray-600 border-gray-300"}`} title="Click to allow sound">
+        {soundEnabled ? <Volume2 size={18}/> : <VolumeX size={18}/>}
+        <span className="text-xs font-bold hidden sm:inline">{soundEnabled ? "Sound On" : "Sound Off"}</span>
+     </button>
+
+     {/* 🆕 STORE STATUS TOGGLE */}
+     <button 
+        onClick={toggleLiveStatus} 
+        disabled={isTogglingLive}
+        className={`flex items-center gap-3 px-1.5 py-1.5 rounded-full border transition-all duration-300 cursor-pointer ${
+            isLive 
+            ? "bg-green-50 border-green-200 pr-4" 
+            : "bg-gray-100 border-gray-200 pr-4"
+        }`}
+     >
+        {/* Toggle Switch Visual */}
+        <div className={`w-10 h-6 rounded-full relative transition-colors duration-300 flex items-center ${isLive ? "bg-green-500" : "bg-gray-400"}`}>
+            <div className={`w-4 h-4 bg-white rounded-full shadow-md absolute top-1 transition-all duration-300 ${isLive ? "left-5" : "left-1"}`}></div>
+        </div>
+        
+        {/* Text Label */}
+        <div className="flex flex-col items-start leading-none">
+            <span className={`text-xs font-bold uppercase tracking-wider ${isLive ? "text-green-600" : "text-gray-500"}`}>
+                {isLive ? "Restaurant Live" : "Ordering Closed"}
+            </span>
+        </div>
+     </button>
+
+     {/* NOTIFICATIONS */}
+     <div className="relative cursor-pointer p-1">
+        <Bell className="text-gray-500 hover:text-orange-500 transition" size={22} />
+        {newOrderQueue.length > 0 && <span className="absolute -top-0 -right-0 w-4 h-4 bg-red-500 rounded-full border-2 border-white text-[10px] text-white flex items-center justify-center">{newOrderQueue.length}</span>}
+     </div>
+  </div>
+</header>
 
         {isAudioBlocked && <div className="bg-red-500 text-white p-3 text-center text-sm font-bold cursor-pointer flex items-center justify-center gap-2 shadow-md z-50" onClick={unlockAudio}><AlertTriangle size={18} className="animate-bounce" /><span>Tap here to enable notifications!</span></div>}
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useSearchParams, useNavigate } from "react-router-dom"; // 1. Added useNavigate
+import { useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom"; // 1. Added useNavigate
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import CustomFieldsDisplay from "../components/CustomFieldsDisplay";
@@ -8,6 +8,7 @@ import MenuCard from "../components/MenuCardWp";
 
 function RestaurantMenuPagewp() {
   const { id } = useParams();
+  const location = useLocation(); // 2. Get current location (includes ?table=x)
   const navigate = useNavigate(); // 2. Initialize navigation
   const [searchParams] = useSearchParams();
   const tableFromURL = searchParams.get("table");
@@ -50,11 +51,13 @@ function RestaurantMenuPagewp() {
   // 3. NEW REDIRECTION LOGIC
   // This runs whenever restaurantDetails updates.
   useEffect(() => {
-    if (restaurantDetails && restaurantDetails.billing === true) {
+    // Check if restaurant details are loaded and if orderMode is 'billing'
+    if (restaurantDetails && restaurantDetails.orderMode === 'billing') {
       // Use replace: true so the user can't click 'back' to return to the redirecting page
-      navigate(`/restaurant/${id}`, { replace: true });
+      // Ensure the billing app route is correct. Assuming it's /restaurant/:id based on previous context.
+      navigate(`/restaurant/${id}${location.search}`, { replace: true });
     }
-  }, [restaurantDetails, navigate, id]);
+  }, [restaurantDetails, navigate, location.search, id]);
 
   useEffect(() => {
     const handleScroll = () => setShowScrollTop(window.scrollY > 300);
@@ -71,6 +74,7 @@ function RestaurantMenuPagewp() {
     const fetchOffers = async () => {
       try {
         const token = localStorage.getItem("token");
+        // Ensure API URL is correct
         const res = await fetch(`/api/admin/${id}/offers`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -167,6 +171,12 @@ function RestaurantMenuPagewp() {
   };
 
   const handleTableNumberSubmit = async () => {
+    // Check enableOrdering status first
+    if (restaurantDetails?.enableOrdering === "disabled") { // Or false, depending on your schema logic
+        toast.error("🚫 Ordering is currently disabled by the restaurant.");
+        return;
+    }
+
     if (!tableNumber) return toast.error("Please enter a valid table number.");
     if (cart.length === 0) return toast.error("Your cart is empty!");
 
@@ -193,8 +203,8 @@ function RestaurantMenuPagewp() {
     window.location.href = whatsappURL;
   };
 
-  // 4. PREVENT FLASHING: If billing is true, return null (or a spinner) while redirecting
-  if (restaurantDetails?.billing === true) {
+  // 4. PREVENT FLASHING: If orderMode is 'billing', return null (or a spinner) while redirecting
+  if (restaurantDetails?.orderMode === 'billing') {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-100">
         <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
@@ -522,12 +532,20 @@ function RestaurantMenuPagewp() {
               />
             </div>
 
-            <button
-              onClick={handleTableNumberSubmit}
-              className="bg-green-600 text-white w-full mt-3 py-2 rounded-lg hover:bg-green-700 transition"
-            >
-              Order via WhatsApp
-            </button>
+            {/* 🆕 CONDITIONAL BUTTON RENDERING */}
+            {restaurantDetails?.enableOrdering === "disabled" ? ( // Check logic here based on your need
+              <div className="mt-3 p-3 bg-red-100 border border-red-200 text-red-700 rounded-lg text-center font-bold">
+                ⚠️ Ordering is currently closed. <br/>
+                <span className="text-sm font-normal">Please ask a waiter for assistance.</span>
+              </div>
+            ) : (
+              <button
+                onClick={handleTableNumberSubmit}
+                className="bg-green-600 text-white w-full mt-3 py-3 rounded-lg hover:bg-green-700 transition font-bold text-lg shadow-md"
+              >
+                Order via WhatsApp
+              </button>
+            )}
           </div>
         </div>
       )}

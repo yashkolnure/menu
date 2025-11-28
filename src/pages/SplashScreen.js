@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom"; // 1. Import useLocation
 import { motion } from "framer-motion";
 
 const SplashScreen = () => {
   const params = useParams();
+  const location = useLocation(); // 2. Get current location (includes ?table=x)
   const rawParam = params.slug || params.id || params.param || null;
   const [id, setId] = useState(null);
 
@@ -12,11 +13,12 @@ const SplashScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-useEffect(() => {
-  if (rawParam) {
-    setId(rawParam);
-  }
-}, [rawParam]);
+  useEffect(() => {
+    if (rawParam) {
+      setId(rawParam);
+    }
+  }, [rawParam]);
+
   useEffect(() => {
     console.log("Restaurant ID from URL:", id);
 
@@ -35,8 +37,10 @@ useEffect(() => {
 
         // Redirect to menu page after 2.5s
         setTimeout(() => {
-          navigate(`/mymenu/${id}`);
-        }, 3500);
+          // 3. Append location.search to the destination URL
+          // location.search contains "?table=5" (or whatever query params exist)
+          navigate(`/mymenu/${id}${location.search}`); 
+        }, 2500);
       } catch (err) {
         console.error("Error fetching restaurant details:", err);
         setError(err.message);
@@ -45,14 +49,13 @@ useEffect(() => {
     };
 
     if (id) fetchRestaurant();
-  }, [id, navigate]);
+  }, [id, navigate, location.search, rawParam]); // Added dependencies
 
   // 🔍 Debug States
   if (loading)
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-black text-white">
         <p>Loading...</p>
-        
       </div>
     );
 
@@ -74,17 +77,16 @@ useEffect(() => {
   // ✅ Display Splash
   return (
     <div
-        className="relative flex flex-col items-center justify-center h-screen w-screen overflow-hidden text-white"
-        style={{
-            backgroundImage: `url(${
-            restaurant?.homeImage ||
-            "https://petoba.avenirya.com/wp-content/uploads/2025/11/Green-Festive-Photocentric-Inspirational-Phone-Wallpaper-1.jpg"
-            })`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-        }}
-        >
-
+      className="relative flex flex-col items-center justify-center h-screen w-screen overflow-hidden text-white"
+      style={{
+        backgroundImage: `url(${
+          restaurant?.homeImage ||
+          "https://petoba.avenirya.com/wp-content/uploads/2025/11/Green-Festive-Photocentric-Inspirational-Phone-Wallpaper-1.jpg"
+        })`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
 
