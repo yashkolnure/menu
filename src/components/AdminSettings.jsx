@@ -17,7 +17,7 @@ const Icons = {
 const WP_USERNAME = "yashkolnure58@gmail.com";
 const WP_APP_PASSWORD = "05mq iTLF UvJU dyaz 7KxQ 8pyc";
 const WP_SITE_URL = "https://website.avenirya.com";
-const API_BASE_URL = "http://localhost:5000/api"; 
+const API_BASE_URL = "/api"; 
 
 const currencies = [
   { code: "INR", name: "Indian Rupee", symbol: "₹" },
