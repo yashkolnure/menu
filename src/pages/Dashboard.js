@@ -34,6 +34,88 @@ const Icons = {
   Whatsapp: () => <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
 };
 
+const CategoryReorderModal = ({ isOpen, onClose, categories, onSave }) => {
+  const [list, setList] = useState(categories);
+  const dragItem = useRef();
+  const dragOverItem = useRef();
+
+  // Reset list when modal opens
+  useEffect(() => {
+    if (isOpen) setList(categories);
+  }, [isOpen, categories]);
+
+  // Handle Drag Sorting
+  const handleSort = () => {
+    // Duplicate items
+    let _list = [...list];
+    
+    // Remove dragged item
+    const draggedItemContent = _list.splice(dragItem.current, 1)[0];
+    
+    // Switch the position
+    _list.splice(dragOverItem.current, 0, draggedItemContent);
+    
+    // Reset refs
+    dragItem.current = null;
+    dragOverItem.current = null;
+    
+    // Update state
+    setList(_list);
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in-up flex flex-col max-h-[80vh]">
+        
+        {/* Header */}
+        <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 shrink-0">
+          <div>
+            <h3 className="font-bold text-gray-800">Reorder Categories</h3>
+            <p className="text-xs text-gray-500">Drag and drop items to rearrange</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><Icons.Close /></button>
+        </div>
+
+        {/* Draggable List */}
+        <div className="p-4 overflow-y-auto flex-1 space-y-2">
+          {list.map((cat, index) => (
+            <div 
+              key={index} 
+              className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg shadow-sm cursor-grab active:cursor-grabbing hover:border-indigo-300 transition-colors"
+              draggable
+              onDragStart={(e) => (dragItem.current = index)}
+              onDragEnter={(e) => (dragOverItem.current = index)}
+              onDragEnd={handleSort}
+              onDragOver={(e) => e.preventDefault()}
+            >
+              <div className="flex items-center gap-3">
+                {/* Drag Handle Icon */}
+                <span className="text-gray-300">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" /></svg>
+                </span>
+                <span className="font-medium text-gray-700">{index + 1}. {cat}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div className="p-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50 shrink-0">
+          <button onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg text-sm font-medium">Cancel</button>
+          <button 
+            onClick={() => onSave(list)} 
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 shadow-sm"
+          >
+            Save New Order
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 function Dashboard() {
   // --- STATE ---
   const [activeTab, setActiveTab] = useState("overview"); 
@@ -44,6 +126,29 @@ function Dashboard() {
   const [existingItems, setExistingItems] = useState([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile Menu State
   const [isOrderModeDropdownOpen, setIsOrderModeDropdownOpen] = useState(false);
+  const [showBillingAlert, setShowBillingAlert] = useState(false);
+  
+  // Add this new state
+  const [showReorderModal, setShowReorderModal] = useState(false);
+
+  // Add this handler function
+  const handleSaveCategoryOrder = async (newOrder) => {
+    try {
+      // 1. Optimistic Update (Instant UI change)
+      setRestaurant(prev => ({ ...prev, categoryOrder: newOrder }));
+      setShowReorderModal(false);
+      
+      // 2. Save to Backend
+      await axios.put(`/api/admin/${restaurantId}/settings`, 
+        { categoryOrder: newOrder },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setMessage("Category order saved!");
+    } catch (err) {
+      console.error(err);
+      setError("Failed to save order.");
+    }
+  };
   
   // FIX: Ref for scrolling
   const formRef = useRef(null);
@@ -63,6 +168,7 @@ function Dashboard() {
   const [openCategory, setOpenCategory] = useState(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+  
   
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
@@ -115,6 +221,48 @@ function Dashboard() {
   useEffect(() => {
     if (groupedItems.length && !selectedCategory) setSelectedCategory(groupedItems[0].category);
   }, [existingItems]);
+
+  // --- SORTING & GROUPING LOGIC ---
+  const orderedMenuGroups = React.useMemo(() => {
+    if (!existingItems) return [];
+
+    // 1. Extract categories, TRIM whitespace, and ignore empty values
+    // We use a Map to ensure we only get unique category names
+    const categoriesSet = new Set(
+      existingItems
+        .map((item) => (item.category ? item.category.trim() : ""))
+        .filter((cat) => cat !== "")
+    );
+    
+    const uniqueCategories = Array.from(categoriesSet);
+
+    // 2. Sort based on restaurant.categoryOrder
+    const sortedCategories = uniqueCategories.sort((a, b) => {
+      const order = restaurant.categoryOrder || [];
+      const indexA = order.indexOf(a);
+      const indexB = order.indexOf(b);
+
+      // Priority 1: Both are in the saved list -> Sort by index
+      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+      
+      // Priority 2: Only A is in list -> A goes first
+      if (indexA !== -1) return -1;
+      
+      // Priority 3: Only B is in list -> B goes first
+      if (indexB !== -1) return 1;
+
+      // Priority 4: Neither in list -> Sort Alphabetically
+      return a.localeCompare(b);
+    });
+
+    // 3. Build the final groups
+    return sortedCategories.map((cat) => ({
+      category: cat,
+      items: existingItems.filter(
+        (item) => item.category && item.category.trim() === cat
+      ),
+    }));
+  }, [existingItems, restaurant.categoryOrder]);
 
 // 🆕 HANDLER: Toggle between WhatsApp and Billing App
   const toggleOrderMode = async () => {
@@ -329,104 +477,191 @@ function Dashboard() {
                 <Icons.Close />
             </button>
         </div>
+{/* --- BILLING RESTRICTION POPUP --- */}
+{showBillingAlert && (
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+        <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden relative p-6 text-center animate-scale-up border border-gray-100">
+            
+            {/* Close Button */}
+            <button 
+                onClick={() => setShowBillingAlert(false)} 
+                className="absolute top-3 right-3 p-2 bg-gray-50 rounded-full text-gray-400 hover:text-gray-800 hover:bg-gray-100 transition-colors"
+            >
+                <Icons.Close />
+            </button>
 
-        <nav className="flex-1 overflow-y-auto p-4 space-y-2">
-            <SidebarItem id="overview" label="Overview" icon={Icons.Home} />
-            <SidebarItem id="menu" label="Menu Manager" icon={Icons.Menu} />
-            <SidebarItem id="qr" label="QR Code Manage" icon={Icons.QR} />
-            <SidebarItem id="settings" label="Settings" icon={Icons.Settings} />
-            <SidebarItem id="uploads" label="Bulk Import" icon={Icons.Upload} />
-             
-             {/* 🆕 ORDER MODE - DROPDOWN MENU */}
-<div className="mt-6 mb-2 px-3 relative">
-    <label className="text-[12px] px-2 font-bold text-gray-400 uppercase tracking-wider mb-2 block">
-        Order Channel
-    </label>
+            {/* Icon */}
+            <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-5 ring-4 ring-indigo-50/50">
+                <span className="text-indigo-600"><Icons.plate /></span>
+                <div className="absolute -mt-8 -mr-8 bg-orange-500 text-white p-1.5 rounded-full border-2 border-white shadow-sm">
+                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
+                </div>
+            </div>
 
-    {/* Dropdown Trigger Button */}
-    <button
-        onClick={() => setIsOrderModeDropdownOpen(!isOrderModeDropdownOpen)}
-        className="w-full bg-white border border-gray-300 text-gray-700 text-sm font-medium py-2.5 px-3 rounded-xl flex items-center justify-between shadow-sm hover:border-indigo-400 hover:ring-2 hover:ring-indigo-50 transition-all"
-    >
-        <div className="flex items-center gap-2">
-            {restaurant.orderMode === 'billing' ? (
-                <>
-                    <div className="p-1 bg-indigo-100 rounded text-indigo-600"><Icons.plate /></div>
-                    <span className="text-gray-800">Billing App</span>
-                </>
-            ) : (
-                <>
-                    <div className="p-1 bg-green-100 rounded text-green-600"><Icons.Whatsapp /></div>
-                    <span className="text-gray-800">WhatsApp Chat</span>
-                </>
-            )}
+            {/* Content */}
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Activate Billing Terminal</h3>
+            <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+                The Billing App and Order Manager are <b>Premium Features</b>. Connect with our team to unlock your free trial.
+            </p>
+
+            {/* WhatsApp Button */}
+            <button 
+                onClick={() => {
+                    window.open("https://wa.me/919270361329?text=Hi,%20I%20want%20to%20activate%20the%20Billing%20App%20Plan.", "_blank");
+                    setShowBillingAlert(false);
+                }} 
+                className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-green-100 transition-all flex items-center justify-center gap-2"
+            >
+                <Icons.Whatsapp />
+                <span>Connect on WhatsApp</span>
+            </button>
         </div>
-        {/* Chevron Icon */}
-        <svg 
-            className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isOrderModeDropdownOpen ? 'rotate-180' : ''}`} 
-            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+    </div>
+)}
+{/* --- SIDEBAR NAV SECTION --- */}
+<nav className="flex-1 overflow-y-auto p-4 space-y-2">
+    <SidebarItem id="overview" label="Overview" icon={Icons.Home} />
+    <SidebarItem id="menu" label="Menu Manager" icon={Icons.Menu} />
+    <SidebarItem id="qr" label="QR Code Manage" icon={Icons.QR} />
+    <SidebarItem id="settings" label="Settings" icon={Icons.Settings} />
+    <SidebarItem id="uploads" label="Bulk Import" icon={Icons.Upload} />
+
+    {/* 🆕 ORDER MODE - DROPDOWN MENU */}
+    <div className="mt-6 mb-2 px-3 relative">
+        <label className="text-[12px] px-2 font-bold text-gray-400 uppercase tracking-wider mb-2 block">
+            Order Channel
+        </label>
+
+        {/* Dropdown Trigger Button */}
+        <button
+            onClick={() => setIsOrderModeDropdownOpen(!isOrderModeDropdownOpen)}
+            className="w-full bg-white border border-gray-300 text-gray-700 text-sm font-medium py-2.5 px-3 rounded-xl flex items-center justify-between shadow-sm hover:border-indigo-400 hover:ring-2 hover:ring-indigo-50 transition-all"
         >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-    </button>
-
-    {/* Dropdown Menu List */}
-    {isOrderModeDropdownOpen && (
-        <>
-            {/* Invisible Backdrop to close menu when clicking outside */}
-            <div 
-                className="fixed inset-0 z-10 cursor-default" 
-                onClick={() => setIsOrderModeDropdownOpen(false)}
-            ></div>
-
-            <div className="absolute left-4 right-4 top-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-20 overflow-hidden animate-fade-in-up">
-                {/* Option 1: WhatsApp */}
-                <button
-                    onClick={() => {
-                        if (restaurant.orderMode !== 'whatsapp') toggleOrderMode();
-                        setIsOrderModeDropdownOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-50 transition-colors ${
-                        restaurant.orderMode === 'whatsapp' ? 'bg-green-50/50' : ''
-                    }`}
-                >
-                    <span className="text-green-600"><Icons.Whatsapp /></span>
-                    <span className={restaurant.orderMode === 'whatsapp' ? 'font-bold text-gray-800' : 'text-gray-600'}>
-                        WhatsApp
-                    </span>
-                    {restaurant.orderMode === 'whatsapp' && <span className="ml-auto text-green-600 font-bold">✓</span>}
-                </button>
-
-                {/* Option 2: Billing App */}
-                <button
-                    onClick={() => {
-                        if (restaurant.orderMode !== 'billing') toggleOrderMode();
-                        setIsOrderModeDropdownOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-50 transition-colors border-t border-gray-50 ${
-                        restaurant.orderMode === 'billing' ? 'bg-indigo-50/50' : ''
-                    }`}
-                >
-                    <span className="text-indigo-600"><Icons.plate /></span>
-                    <span className={restaurant.orderMode === 'billing' ? 'font-bold text-gray-800' : 'text-gray-600'}>
-                        Billing App
-                    </span>
-                    {restaurant.orderMode === 'billing' && <span className="ml-auto text-indigo-600 font-bold">✓</span>}
-                </button>
+            <div className="flex items-center gap-2">
+                {restaurant.orderMode === 'billing' ? (
+                    <>
+                        <div className="p-1 bg-indigo-100 rounded text-indigo-600"><Icons.plate /></div>
+                        <span className="text-gray-800">Billing App</span>
+                    </>
+                ) : (
+                    <>
+                        <div className="p-1 bg-green-100 rounded text-green-600"><Icons.Whatsapp /></div>
+                        <span className="text-gray-800">WhatsApp Chat</span>
+                    </>
+                )}
             </div>
-        </>
+            {/* Chevron Icon */}
+            <svg 
+                className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isOrderModeDropdownOpen ? 'rotate-180' : ''}`} 
+                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+            >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+        </button>
+
+        {/* Dropdown Menu List */}
+        {isOrderModeDropdownOpen && (
+            <>
+            
+                <div 
+                    className="fixed inset-0 z-10 cursor-default" 
+                    onClick={() => setIsOrderModeDropdownOpen(false)}
+                ></div>
+
+                <div className="absolute left-4 right-4 top-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-20 overflow-hidden animate-fade-in-up">
+                    
+                    {/* Option 1: WhatsApp (ALWAYS AVAILABLE) */}
+                    <button
+                        onClick={() => {
+                            if (restaurant.orderMode !== 'whatsapp') toggleOrderMode();
+                            setIsOrderModeDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-50 transition-colors ${
+                            restaurant.orderMode === 'whatsapp' ? 'bg-green-50/50' : ''
+                        }`}
+                    >
+                        <span className="text-green-600"><Icons.Whatsapp /></span>
+                        <span className={restaurant.orderMode === 'whatsapp' ? 'font-bold text-gray-800' : 'text-gray-600'}>
+                            WhatsApp
+                        </span>
+                        {restaurant.orderMode === 'whatsapp' && <span className="ml-auto text-green-600 font-bold">✓</span>}
+                    </button>
+
+                    {/* Option 2: Billing App (SHOWS POPUP IF NO PLAN) */}
+                    {/* Option 2: Billing App (SHOWS POPUP IF NO PLAN) */}
+<button
+    onClick={async () => {
+        if (!restaurant.billing) {
+            // 🔒 TRIGGER THE POPUP
+            setIsOrderModeDropdownOpen(false);
+            setShowBillingAlert(true);
+        } else {
+            // 1. If not currently billing, toggle it and wait for API to finish
+            if (restaurant.orderMode !== 'billing') {
+                await toggleOrderMode();
+            }
+            
+            // 2. Close dropdown
+            setIsOrderModeDropdownOpen(false);
+
+            // 3. Redirect to Admin Dashboard
+            navigate("/admin/dashboard");
+        }
+    }}
+    className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors border-t border-gray-50 
+        ${restaurant.orderMode === 'billing' ? 'bg-indigo-50/50' : ''}
+        ${!restaurant.billing ? 'bg-gray-50 opacity-80 hover:bg-gray-100' : 'hover:bg-gray-50'}
+    `}
+>
+    <span className={!restaurant.billing ? "text-gray-400" : "text-indigo-600"}><Icons.plate /></span>
+    <div className="flex flex-col items-start">
+        <span className={restaurant.orderMode === 'billing' ? 'font-bold text-gray-800' : 'text-gray-600'}>
+            Billing App
+        </span>
+        {!restaurant.billing && <span className="text-[10px] text-orange-500 font-bold uppercase tracking-wide">Premium</span>}
+    </div>
+
+    {/* Status Icon */}
+    {restaurant.billing ? (
+        restaurant.orderMode === 'billing' && <span className="ml-auto text-indigo-600 font-bold">✓</span>
+    ) : (
+        <span className="ml-auto text-gray-400 text-xs border border-gray-300 rounded px-1.5 py-0.5">🔒</span>
     )}
-</div>
+</button>
+                </div>
+            </>
+        )}
+    </div>
 
-             <div className="pt-2 gap-2 flex flex-col border-t border-gray-100">
-                <button onClick={handlemyorders} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-600 hover:bg-gray-100">
-                    <Icons.food /><span className="font-medium">Manage Orders</span>
-                </button>
-                <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-500 hover:bg-red-50 transition-colors">
-                    <Icons.Logout /><span className="font-medium">Logout</span>
-                </button>
-            </div>
-        </nav>
+    <div className="pt-2 gap-2 flex flex-col border-t border-gray-100 mt-auto">
+        {/* MANAGE ORDERS BUTTON (SHOWS POPUP IF NO PLAN) */}
+        <button 
+            onClick={() => {
+                if (!restaurant.billing) {
+                    // 🔒 TRIGGER THE POPUP
+                    setShowBillingAlert(true);
+                } else {
+                    handlemyorders();
+                }
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors 
+                ${!restaurant.billing 
+                    ? "text-gray-400 bg-gray-50 cursor-pointer hover:bg-gray-100" 
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+        >
+            <Icons.plate />
+            <span className="font-medium">Manage Orders</span>
+            {!restaurant.billing && (
+                 <span className="ml-auto w-5 h-5 rounded-full border border-gray-300 flex items-center justify-center text-[10px] font-bold text-gray-400 font-serif italic">i</span>
+            )}
+        </button>
+
+        <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-500 hover:bg-red-50 transition-colors">
+            <Icons.Logout /><span className="font-medium">Logout</span>
+        </button>
+    </div>
+</nav>
 
         <div className="p-4 border-t border-gray-100">
           <div className={`p-4 rounded-xl border ${daysLeft !== null && daysLeft <= 7 ? 'bg-red-50 border-red-100' : 'bg-gradient-to-r from-orange-100 to-orange-50 border-orange-100'}`}>
@@ -565,170 +800,141 @@ function Dashboard() {
                     </div>
                 )}
                 
-                {/* 2. MENU MANAGER TAB */}
-                {activeTab === 'menu' && (
-                    <div className="space-y-6">
-                        {/* Header Actions */}
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                            <div>
-                                <h2 className="text-2xl font-bold text-gray-800">Manage Your Menu</h2>
-                                <p className="text-gray-500 text-sm">Add attractive dishes and set prices to boost orders.</p>
-                            </div>
-                            <div ref={formRef}></div>
-                            <button 
-                                onClick={() => {
-                                    setShowItemForm(!showItemForm);
-                                    setItemForm({ name: "", category: "", description: "", price: "", image: "", _id: null, inStock: true });
-                                }}
-                                className={`w-full sm:w-auto flex justify-center items-center gap-2 px-5 py-2.5 rounded-lg shadow-sm transition-all ${showItemForm ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
-                            >
-                                {showItemForm ? (<span>Cancel Adding</span>) : (<><Icons.Plus /> <span>Add New Dish</span></>)}
-                            </button>
+ {/* 2. MENU MANAGER TAB */}
+{activeTab === 'menu' && (
+    <div className="space-y-6">
+        {/* Header Actions */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h2 className="text-2xl font-bold text-gray-800">Manage Your Menu</h2>
+                <p className="text-gray-500 text-sm">Add dishes and drag to reorder categories.</p>
+            </div>
+            <div ref={formRef}></div>
+            
+            <div className="flex gap-3 w-full sm:w-auto">
+                {/* REORDER BUTTON */}
+                <button 
+                    onClick={() => setShowReorderModal(true)}
+                    className="flex-1 sm:flex-none flex justify-center items-center gap-2 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg shadow-sm hover:bg-gray-50 transition-all font-medium"
+                >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+                    <span>Reorder</span>
+                </button>
+
+                {/* ADD DISH BUTTON */}
+                <button 
+                    onClick={() => {
+                        setShowItemForm(!showItemForm);
+                        setItemForm({ name: "", category: "", description: "", price: "", image: "", _id: null, inStock: true });
+                    }}
+                    className={`flex-1 sm:flex-none flex justify-center items-center gap-2 px-5 py-2.5 rounded-lg shadow-sm transition-all ${showItemForm ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
+                >
+                    {showItemForm ? (<span>Cancel Adding</span>) : (<><Icons.Plus /> <span>Add Dish</span></>)}
+                </button>
+            </div>
+        </div>
+
+        {/* Add/Edit Form */}
+        {showItemForm && (
+            <div className="bg-white rounded-xl shadow-lg border border-indigo-100 p-4 md:p-6 animate-fade-in-down">
+                <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-lg font-bold text-indigo-900">{itemForm._id ? "Edit Item Details" : "Create New Menu Item"}</h3>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                    {/* ... (Keep your existing Form Input Fields here, I am abbreviating for brevity) ... */}
+                    {/* Dish Name */}
+                    <div className="col-span-1 md:col-span-2">
+                        <label className="block text-sm font-bold text-gray-700 mb-1">Dish Name</label>
+                        <input name="name" value={itemForm.name} onChange={handleItemChange} placeholder="e.g. Signature Butter Chicken" className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
+                    </div>
+                    {/* Price */}
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">Selling Price</label>
+                        <input name="price" value={itemForm.price} onChange={handleItemChange} placeholder="150" className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
+                    </div>
+                    {/* Category */}
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">Menu Category</label>
+                        <select value={itemForm.category || ""} onChange={(e) => {
+                            const val = e.target.value;
+                            setCustomCategory(val === "__custom__" ? val : "");
+                            setItemForm({ ...itemForm, category: val === "__custom__" ? "" : val });
+                        }} className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <option value="">Select Category...</option>
+                            {allCategories.map((cat, i) => <option key={i} value={cat}>{cat}</option>)}
+                            <option value="__custom__">+ Create New Category</option>
+                        </select>
+                    </div>
+                    {/* Custom Category Input */}
+                    {customCategory === "__custom__" && (
+                        <div className="col-span-1 md:col-span-2">
+                            <label className="block text-sm font-bold text-gray-700 mb-1">New Category Name</label>
+                            <input type="text" value={itemForm.category} onChange={(e) => setItemForm({ ...itemForm, category: e.target.value })} className="w-full border border-blue-300 bg-blue-50 p-2.5 rounded-lg" />
                         </div>
+                    )}
+                    {/* Description */}
+                    <div className="col-span-1 md:col-span-4">
+                        <label className="block text-sm font-bold text-gray-700 mb-1">Description</label>
+                        <textarea name="description" value={itemForm.description} onChange={handleItemChange} rows="2" className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
+                    </div>
+                    {/* Buttons */}
+                    <div className="col-span-1 md:col-span-4 flex justify-end gap-3 pt-4 border-t">
+                         <button onClick={() => setShowItemForm(false)} className="px-5 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancel</button>
+                         <button onClick={itemForm._id ? handleUpdate : addItemToList} className="px-6 py-2 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 font-medium">{itemForm._id ? "Update Dish" : "Save & Add to Menu"}</button>
+                    </div>
+                </div>
+            </div>
+        )}
 
-                        {/* Add/Edit Form */}
-                        {showItemForm && (
-                             <div className="bg-white rounded-xl shadow-lg border border-indigo-100 p-4 md:p-6 animate-fade-in-down">
-                                <div className="flex justify-between items-center mb-6">
-                                    <h3 className="text-lg font-bold text-indigo-900">{itemForm._id ? "Edit Item Details" : "Create New Menu Item"}</h3>
-                                </div>
-                                
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-                                    <div className="col-span-1 md:col-span-2">
-                                        <label className="block text-sm font-bold text-gray-700 mb-1">Dish Name</label>
-                                        <input name="name" value={itemForm.name} onChange={handleItemChange} placeholder="e.g. Signature Butter Chicken" className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
-                                        <p className="text-xs text-gray-400 mt-1">Keep it short and appetizing.</p>
+        {/* Menu Grid - THIS WAS MISSING IN YOUR SNIPPET */}
+        <div className="grid grid-cols-1 gap-6">
+            {orderedMenuGroups.map((group, idx) => (
+                <div key={idx} className="bg-white rounded-xl shadow-sm border bg-white overflow-hidden">
+                    <button 
+                        onClick={() => setOpenCategory(openCategory === group.category ? null : group.category)}
+                        className="w-full flex justify-between items-center px-6 py-4 bg-white hover:bg-gray-50 transition-colors"
+                    >
+                        <h4 className="text-lg font-bold text-gray-800">{group.category} <span className="text-sm font-normal text-gray-500 ml-2">({group.items.length} dishes)</span></h4>
+                        <span className="text-gray-400">{openCategory === group.category ? "▲" : "▼"}</span>
+                    </button>
+                    
+                    {openCategory === group.category && (
+                        <div className="p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                            {group.items.map((item) => (
+                                <div key={item._id} className="flex gap-4 p-3 rounded-lg border bg-white border-gray-100 shadow-sm hover:shadow-md transition-all">
+                                    <div className="w-20 h-20 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden relative">
+                                        {item.image ? <img src={item.image} alt={item.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-300"><Icons.Menu /></div>}
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-bold text-gray-700 mb-1">Selling Price</label>
-                                        <input name="price" value={itemForm.price} onChange={handleItemChange} placeholder="150" className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-bold text-gray-700 mb-1">Menu Category</label>
-                                        <select value={itemForm.category || ""} onChange={(e) => {
-                                            const val = e.target.value;
-                                            setCustomCategory(val === "__custom__" ? val : "");
-                                            setItemForm({ ...itemForm, category: val === "__custom__" ? "" : val });
-                                        }} className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
-                                            <option value="">Select Category...</option>
-                                            {allCategories.map((cat, i) => <option key={i} value={cat}>{cat}</option>)}
-                                            <option value="__custom__">+ Create New Category</option>
-                                        </select>
-                                    </div>
-                                    {customCategory === "__custom__" && (
-                                        <div className="col-span-1 md:col-span-2">
-                                            <label className="block text-sm font-bold text-gray-700 mb-1">New Category Name</label>
-                                            <input type="text" placeholder="e.g. Summer Specials" value={itemForm.category} onChange={(e) => setItemForm({ ...itemForm, category: e.target.value })} className="w-full border border-blue-300 bg-blue-50 p-2.5 rounded-lg" />
-                                        </div>
-                                    )}
-                                    <div className="col-span-1 md:col-span-4">
-                                        <label className="block text-sm font-bold text-gray-700 mb-1">Description</label>
-                                        <textarea name="description" value={itemForm.description} onChange={handleItemChange} rows="2" placeholder="Describe ingredients, taste (e.g., Spicy tomato gravy with fresh cream)" className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
-                                        <p className="text-xs text-gray-400 mt-1">Customers order 30% more when dishes have good descriptions.</p>
-                                    </div>
-                                    
-                                    {/* Image Section */}
-                                    <div className="col-span-1 md:col-span-2">
-                                         <label className="block text-sm font-bold text-gray-700 mb-1">Dish Photo</label>
-                                         {restaurant.membership_level === 1 ? (
-                                            <div onClick={() => setShowUpgrade(true)} className="p-3 border-2 border-dashed rounded-lg bg-gray-50 text-center cursor-pointer hover:bg-gray-100 transition-colors">
-                                                <span className="text-xs text-gray-500">Image upload is a <b>Premium Feature</b>. <span className="text-indigo-600 font-bold underline">Click to Upgrade</span></span>
+                                    <div className="flex-1 flex flex-col justify-between">
+                                        <div>
+                                            <div className="flex justify-between items-start">
+                                                <h5 className="font-semibold text-gray-800 line-clamp-1">{item.name}</h5>
+                                                <span className="font-bold text-green-700 text-sm">₹{item.price}</span>
                                             </div>
-                                         ) : (
-                                            <div className="relative">
-                                                <input type="file" accept="image/*" onChange={handleImageChange} className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"/>
-                                            </div>
-                                         )}
-                                    </div>
-                                    
-                                    {/* Stock & Preview */}
-                                    <div className="col-span-1 md:col-span-2 flex items-center gap-6">
-                                        {itemForm._id && (
-                                            <label className="flex items-center gap-2 cursor-pointer select-none">
-                                                <div className={`w-10 h-6 flex items-center rounded-full p-1 duration-300 ease-in-out ${itemForm.inStock ? 'bg-green-500' : 'bg-gray-300'}`}>
-                                                    <div className={`bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${itemForm.inStock ? 'translate-x-4' : ''}`} />
-                                                    <input type="checkbox" className="hidden" checked={itemForm.inStock ?? true} onChange={(e) => setItemForm({ ...itemForm, inStock: e.target.checked })} />
-                                                </div>
-                                                <span className="text-sm font-medium text-gray-700">{itemForm.inStock ? "Available to Order" : "Marked Out of Stock"}</span>
-                                            </label>
-                                        )}
-                                        {itemForm.image && <img src={itemForm.image} alt="Preview" className="h-14 w-14 object-cover rounded-lg border border-gray-200 shadow-sm" />}
-                                    </div>
-                                </div>
-
-                                <div className="mt-6 flex justify-end gap-3 border-t pt-4">
-                                    <button onClick={() => setShowItemForm(false)} className="px-5 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Cancel</button>
-                                    <button 
-                                        onClick={itemForm._id ? handleUpdate : addItemToList} 
-                                        className="px-6 py-2 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 font-medium transition-all"
-                                    >
-                                        {itemForm._id ? "Update Dish" : "Save & Add to Menu"}
-                                    </button>
-                                </div>
-                             </div>
-                        )}
-
-                        {/* Menu Grid */}
-                        <div className="grid grid-cols-1 gap-6 ">
-                            {groupedItems.map((group, idx) => (
-                                <div key={idx} className="bg-white rounded-xl shadow-sm border bg-white overflow-hidden">
-                                    <button 
-                                        onClick={() => setOpenCategory(openCategory === group.category ? null : group.category)}
-                                        className="w-full flex justify-between items-center px-6 py-4 bg-white hover:bg-gray-50 transition-colors"
-                                    >
-                                        <h4 className="text-lg font-bold text-gray-800">{group.category} <span className="text-sm font-normal text-gray-500 ml-2">({group.items.length} dishes)</span></h4>
-                                        <span className="text-gray-400">{openCategory === group.category ? "▲" : "▼"}</span>
-                                    </button>
-                                    
-                                    {openCategory === group.category && (
-                                        <div className="p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                                            {group.items.map((item) => (
-                                                <div key={item._id} className={`flex gap-4 p-3 rounded-lg border ${item.inStock === false ? 'bg-gray-50 border-gray-200 opacity-75' : 'bg-white border-gray-100 shadow-sm hover:shadow-md'} transition-all`}>
-                                                    {/* Image */}
-                                                    <div className="w-20 h-20 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden relative">
-                                                        {item.image ? (
-                                                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                                                        ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-gray-300 bg-gray-50"><Icons.Menu /></div>
-                                                        )}
-                                                        {item.inStock === false && <div className="absolute inset-0 bg-white/80 flex items-center justify-center font-bold text-xs text-red-600 border-2 border-red-500 rounded-lg m-2">SOLD OUT</div>}
-                                                    </div>
-                                                    
-                                                    {/* Content */}
-                                                    <div className="flex-1 flex flex-col justify-between">
-                                                        <div>
-                                                            <div className="flex justify-between items-start">
-                                                                <h5 className="font-semibold text-gray-800 line-clamp-1 text-sm md:text-base">{item.name}</h5>
-                                                                <span className="font-bold text-green-700 text-sm">₹{item.price}</span>
-                                                            </div>
-                                                            <p className="text-xs text-gray-500 line-clamp-2 mt-1">{item.description || "No description provided"}</p>
-                                                        </div>
-                                                        <div className="flex justify-end gap-2 mt-2">
-                                                            <button onClick={() => handleEditItem(item)} className="px-2 py-1 text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded flex items-center gap-1"><Icons.Edit /> Edit</button>
-                                                            <button onClick={() => handleDelete(item._id)} className="px-2 py-1 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded flex items-center gap-1"><Icons.Trash /> Delete</button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
+                                            <p className="text-xs text-gray-500 line-clamp-2 mt-1">{item.description}</p>
                                         </div>
-                                    )}
+                                        <div className="flex justify-end gap-2 mt-2">
+                                            <button onClick={() => handleEditItem(item)} className="px-2 py-1 text-xs font-medium text-indigo-600 bg-indigo-50 rounded flex items-center gap-1"><Icons.Edit /> Edit</button>
+                                            <button onClick={() => handleDelete(item._id)} className="px-2 py-1 text-xs font-medium text-red-600 bg-red-50 rounded flex items-center gap-1"><Icons.Trash /> Delete</button>
+                                        </div>
+                                    </div>
                                 </div>
                             ))}
-                            
-                            {groupedItems.length === 0 && (
-                                 <div className="text-center py-16 bg-white rounded-xl border border-dashed border-gray-300">
-                                    <div className="text-indigo-200 mb-4 flex justify-center"><svg className="w-16 h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg></div>
-                                    <h3 className="text-xl font-bold text-gray-900">Your Menu is Empty</h3>
-                                    <p className="text-gray-500 mb-8 max-w-sm mx-auto">Customers can't order yet. Start by adding your most popular category and a few dishes.</p>
-                                    <button onClick={() => setShowItemForm(true)} className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold shadow-lg transition-all transform hover:scale-105">
-                                        Add Your First Dish
-                                    </button>
-                                 </div>
-                            )}
                         </div>
-                    </div>
-                )}
-                
+                    )}
+                </div>
+            ))}
+            
+            {orderedMenuGroups.length === 0 && (
+                 <div className="text-center py-16 bg-white rounded-xl border border-dashed border-gray-300">
+                    <h3 className="text-xl font-bold text-gray-900">Your Menu is Empty</h3>
+                    <button onClick={() => setShowItemForm(true)} className="mt-4 px-6 py-3 bg-indigo-600 text-white rounded-lg">Add Your First Dish</button>
+                 </div>
+            )}
+        </div>
+    </div>
+)}                
                 {/* 3. QR CODE TAB */}
                 {activeTab === 'qr' && (
                     <div className="space-y-6">
@@ -794,6 +1000,13 @@ function Dashboard() {
 
             </div>
         </div>
+        {/* Add this near the bottom of your return */}
+<CategoryReorderModal 
+    isOpen={showReorderModal} 
+    onClose={() => setShowReorderModal(false)}
+    categories={orderedMenuGroups.map(g => g.category)} 
+    onSave={handleSaveCategoryOrder} 
+/>
 
         {/* Global Loading Overlay */}
         {isLoading && (

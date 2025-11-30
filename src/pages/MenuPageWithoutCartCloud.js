@@ -94,14 +94,39 @@ function RestaurantMenuPageCloud() {
     fetchMenu();
   }, [id]);
 
-  // ✅ Categories
+// ✅ Categories (Sorted by Custom Order)
   useEffect(() => {
-    const categoryList = [
-      "All",
-      ...new Set(menuData.map((item) => item.category)),
+    if (!menuData.length) return;
+
+    // 1. Get unique categories from actual items
+    const uniqueCategories = [
+      ...new Set(
+        menuData
+          .map((item) => (item.category ? item.category.trim() : ""))
+          .filter((cat) => cat !== "")
+      ),
     ];
-    setCategories(categoryList);
-  }, [menuData]);
+
+    // 2. Get the saved order from restaurant details
+    const order = restaurantDetails?.categoryOrder || [];
+
+    // 3. Sort categories based on the saved order
+    uniqueCategories.sort((a, b) => {
+      const indexA = order.indexOf(a);
+      const indexB = order.indexOf(b);
+
+      // If both are in the saved list, sort by their index
+      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+      // If A is in list but B isn't, A comes first
+      if (indexA !== -1) return -1;
+      // If B is in list but A isn't, B comes first
+      if (indexB !== -1) return 1;
+      // If neither, sort alphabetically
+      return a.localeCompare(b);
+    });
+
+    setCategories(["All", ...uniqueCategories]);
+  }, [menuData, restaurantDetails]); // Added restaurantDetails to dependency
 
   // ✅ Cart persistence
   useEffect(() => {
@@ -113,17 +138,33 @@ function RestaurantMenuPageCloud() {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
-  const filteredMenu = menuData.filter((item) => {
-    // Hide only if explicitly false
-    const isInStock = !(item.inStock === false || item.inStock === "false");
+const filteredMenu = menuData
+    .filter((item) => {
+      // Hide only if explicitly false
+      const isInStock = !(item.inStock === false || item.inStock === "false");
 
-    const matchCategory = category === "All" || item.category === category;
-    const matchSearch = item.name
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
+      const matchCategory = category === "All" || item.category === category;
+      const matchSearch = item.name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
 
-    return isInStock && matchCategory && matchSearch;
-  });
+      return isInStock && matchCategory && matchSearch;
+    })
+    .sort((a, b) => {
+      // ✅ Sort items by Category Order so "All" view is organized
+      const order = restaurantDetails?.categoryOrder || [];
+      const indexA = order.indexOf(a.category);
+      const indexB = order.indexOf(b.category);
+
+      // 1. Sort by Category Index
+      if (indexA !== -1 && indexB !== -1 && indexA !== indexB) return indexA - indexB;
+      if (indexA !== -1 && indexB === -1) return -1;
+      if (indexA === -1 && indexB !== -1) return 1;
+
+      // 2. If categories are the same (or neither in list), sort by Name
+      return a.name.localeCompare(b.name);
+    });
+
   const updateQty = (itemId, qty) => {
     if (qty <= 0) return removeFromCart(itemId);
     setCart(
@@ -383,9 +424,17 @@ function RestaurantMenuPageCloud() {
         <div>
           <CustomFieldsDisplay restaurantId={id} />
         </div>
-        <div className="flex flex-wrap justify-center">
+         <div className="flex flex-wrap justify-center">
           <p className="text-gray-500 text-center mt-4">
-            © {new Date().getFullYear()} Petoba. All rights reserved.
+            Made with ❤️ by{" "}
+            <a
+              href="https://petoba.in"
+              className="text-orange-500"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Petoba
+            </a>
           </p>
         </div>
       </div>

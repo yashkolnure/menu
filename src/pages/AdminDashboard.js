@@ -17,6 +17,7 @@ function AdminDashboard() {
   const [orders, setOrders] = useState([]);
   const [menu, setMenu] = useState([]); 
   const [menuCategories, setMenuCategories] = useState([]);
+  const [isWarningDismissed, setIsWarningDismissed] = useState(false);
   
   // 🆕 DYNAMIC TABLE COUNT (Default 12, Saved in LocalStorage)
   const [totalTables, setTotalTables] = useState(() => Number(localStorage.getItem("totalTables")) || 12);
@@ -50,11 +51,90 @@ function AdminDashboard() {
   
   // Data
   const [billingData, setBillingData] = useState([]);
-  const [restaurantDetails, setRestaurantDetails] = useState({ name: "", logo: "", address: "", contact: "" });
+  const [restaurantDetails, setRestaurantDetails] = useState({ name: "", logo: "", address: "", contact: "", billing: "", orderMode: "" });
   const [orderHistory, setOrderHistory] = useState([]);
   const [offers, setOffers] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+    // WhatsApp Support Link
+  const SUPPORT_WA = "https://wa.me/919270361329";
   
+  // 1. Check if Billing is Active (Highest Priority)
+  const showBillingBlocker = restaurantDetails.billing === false;
+  
+
+  const handleGoToSettings = () => {
+    navigate("/dashboard"); // Navigates to the settings page
+  };
+  // 2. Check Order Mode (Only show if Billing is active, but mode is wrong)
+  const showOrderModeWarning = !showBillingBlocker && restaurantDetails.orderMode === 'whatsapp';
+  
+  const isRestrictedMode = showBillingBlocker || showOrderModeWarning;
+
+ const BlockingModal = ({ title, message, buttonText, onAction, isExternal, type = "danger", onClose }) => (
+    <div className="fixed inset-0 z-[200] bg-gray-900/90 backdrop-blur-md flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-300 relative">
+        
+        {/* 🆕 CLOSE BUTTON (X) */}
+        {onClose && (
+            <button 
+                onClick={onClose} 
+                className="absolute top-3 right-3 p-2 bg-white/50 hover:bg-gray-100 rounded-full text-gray-500 hover:text-gray-800 transition-colors z-10"
+                title="Close to view dashboard"
+            >
+                <X size={20} />
+            </button>
+        )}
+
+        {/* Header */}
+        <div className={`px-6 py-6 text-center ${type === 'danger' ? 'bg-red-50' : 'bg-blue-50'}`}>
+          <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 ${type === 'danger' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
+            {type === 'danger' ? <AlertTriangle size={32} /> : <Icons.Settings size={32} />}
+          </div>
+          <h2 className={`text-2xl font-extrabold ${type === 'danger' ? 'text-red-600' : 'text-blue-900'}`}>
+            {title}
+          </h2>
+        </div>
+        
+        {/* Content */}
+        <div className="p-8 text-center">
+          <div className="text-gray-600 font-medium text-lg mb-8 leading-relaxed">
+            {message}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            {isExternal ? (
+              <a 
+                href={onAction} 
+                target="_blank" 
+                rel="noreferrer"
+                className="w-full py-4 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold rounded-xl flex items-center justify-center gap-2 transition transform hover:-translate-y-1 shadow-lg"
+              >
+                <MessageCircle size={24} />
+                {buttonText}
+              </a>
+            ) : (
+              <button 
+                onClick={onAction}
+                className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition transform hover:-translate-y-1 shadow-lg"
+              >
+                <Icons.Settings />
+                {buttonText}
+              </button>
+            )}
+            
+            <button 
+              onClick={handleLogout} 
+              className="w-full py-3 text-gray-400 hover:text-gray-600 font-semibold text-sm transition"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   // UI
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
@@ -131,6 +211,7 @@ function AdminDashboard() {
       setIsAudioBlocked(false);
     } catch (error) { setIsAudioBlocked(true); }
   };
+
 
   const playBell = async () => {
     if (!soundEnabled || !audioRef.current) return;
@@ -248,7 +329,13 @@ function AdminDashboard() {
   };
 
   // --- 3. ADMIN ADD DISH LOGIC (POS) ---
-  const openAddDishModal = (tableNum) => {
+const openAddDishModal = (tableNum) => {
+      // 🛑 BLOCK IF RESTRICTED
+      if (isRestrictedMode) {
+          alert(showBillingBlocker ? "Plan Expired: Cannot place orders." : "Wrong Mode: Switch to Billing App to place orders.");
+          return;
+      }
+
       setAdminCart({});
       setAddDishModal({ isOpen: true, tableNumber: tableNum });
   };
@@ -519,7 +606,6 @@ function AdminDashboard() {
           <SidebarItem id="orders" label="Live Dashboard" icon={LayoutDashboard} />
           <SidebarItem id="billing" label="Billing & Tax" icon={Receipt} />
           <SidebarItem id="history" label="Order History" icon={History} />
-          <SidebarItem id="offers" label="Promotions" icon={Gift} />
           <div className="mt-auto p-2 gap-2 flex flex-col border-t border-gray-100">
               <button onClick={handlemyorders} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-600 hover:bg-gray-100">
                   <Icons.Settings /><span className="font-medium">Admin Settings</span>
@@ -577,13 +663,44 @@ function AdminDashboard() {
 </header>
 
         {isAudioBlocked && <div className="bg-red-500 text-white p-3 text-center text-sm font-bold cursor-pointer flex items-center justify-center gap-2 shadow-md z-50" onClick={unlockAudio}><AlertTriangle size={18} className="animate-bounce" /><span>Tap here to enable notifications!</span></div>}
+{/* --- 🛑 CRITICAL ALERTS --- */}
+      
+    {/* --- 🛑 CRITICAL ALERTS --- */}
+      
+      {/* 1. Billing Expired Popup (Keep WhatsApp) */}
+      {showBillingBlocker && !isWarningDismissed && (
+        <BlockingModal 
+          type="danger"
+          title="Plan Expired"
+          isExternal={true}
+          onAction={SUPPORT_WA}
+          onClose={() => setIsWarningDismissed(true)} // 👈 Allows user to close popup
+          message="Your Billing Plan is Expired or Not Available. To continue using the Billing Dashboard, please subscribe or claim your Free Trial."
+          buttonText="Contact Support on WhatsApp"
+        />
+      )}
 
-        <main className="flex-1 overflow-y-auto p-3 md:p-6 lg:p-8">
-            
-            {/* 0. MY TABLES TAB */}
-            {activeTab === "tables" && (
-                <div className="space-y-6">
-                    
+      {/* 2. WhatsApp Mode Warning (Internal Redirect) */}
+      {showOrderModeWarning && (
+        <BlockingModal 
+          type="warning"
+          title="Change Order Mode"
+          isExternal={false} // Renders blue Settings button
+          onAction={handleGoToSettings}
+          message={
+            <span>
+              Your current order mode is set to <strong>WhatsApp</strong>.<br/><br/>
+              Please go to <strong>Admin Settings</strong> and in the <strong>Order Channel Dropdown</strong>, select <strong>Billing App</strong>.
+            </span>
+          }
+          buttonText="Go to Admin Settings"
+        />
+      )}
+      <main className="flex-1 overflow-y-auto p-3 md:p-6 lg:p-8">
+
+          {/* 0. MY TABLES TAB */}
+          {activeTab === "tables" && (
+              <div className="space-y-6">
 
 
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -615,7 +732,23 @@ function AdminDashboard() {
                                     ) : (
                                         <div className="flex flex-col items-center justify-center h-full pb-4"><p className="text-gray-400 font-medium text-sm">Available</p></div>
                                     )}
-                                    <button onClick={(e) => { e.stopPropagation(); openAddDishModal(tableNum); }} className={`w-full py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1 transition mt-auto ${isOccupied ? "bg-orange-50 text-orange-600 hover:bg-orange-100" : "bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"}`}><Plus size={16} /> Add Items</button>
+                                   <button 
+    disabled={isRestrictedMode} // 👈 Disables clicks
+    onClick={(e) => { 
+        e.stopPropagation(); 
+        openAddDishModal(tableNum); 
+    }} 
+    className={`w-full py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1 transition mt-auto 
+        ${isRestrictedMode 
+            ? "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed opacity-70" // 🔒 Disabled Style
+            : isOccupied 
+                ? "bg-orange-50 text-orange-600 hover:bg-orange-100" 
+                : "bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"
+        }`}
+>
+    {isRestrictedMode ? <Icons.Settings size={16} /> : <Plus size={16} />} 
+    {isRestrictedMode ? "Action Locked" : "Add Items"}
+</button>
                                 </div>
                             );
                         })}

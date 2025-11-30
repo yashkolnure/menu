@@ -1,17 +1,19 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate } from "react-router-dom"; // 1. Added useNavigate
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import CustomFieldsDisplay from "../components/CustomFieldsDisplay";
 import { Helmet } from "react-helmet";
 import MenuCard from "../components/MenuCardWp";
 
-const API_BASE_URL = ""; // Keep your existing URL config
+const API_BASE_URL = ""; 
 
 function RestaurantMenuPage() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate(); // 2. Initialize Hook
   const tableFromURL = searchParams.get("table");
+  
   const [myOrders, setMyOrders] = useState([]);
   const [showMyOrders, setShowMyOrders] = useState(false);
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
@@ -30,6 +32,15 @@ function RestaurantMenuPage() {
   const [activeOffer, setActiveOffer] = useState(0);
   const carouselRef = useRef(null);
   const [offers, setOffers] = useState([]);
+
+  // --- 🆕 REDIRECT LOGIC ---
+  useEffect(() => {
+    // If details are loaded and billing is FALSE, redirect immediately
+    if (restaurantDetails && restaurantDetails.billing === false) {
+       const tableQuery = tableFromURL ? `?table=${tableFromURL}` : "";
+       navigate(`/mymenu/${id}${tableQuery}`, { replace: true });
+    }
+  }, [restaurantDetails, id, tableFromURL, navigate]);
 
   // --- 1. Fetch Offers ---
   useEffect(() => {
@@ -96,13 +107,39 @@ function RestaurantMenuPage() {
     fetchMenu();
   }, [id]);
 
-  // --- 5. Process Categories ---
+// ✅ Categories (Sorted by Custom Order)
   useEffect(() => {
-    if(menuData.length > 0) {
-        const categoryList = ["All", ...new Set(menuData.map((item) => item.category).filter(Boolean))];
-        setCategories(categoryList);
-    }
-  }, [menuData]);
+    if (!menuData.length) return;
+
+    // 1. Get unique categories from actual items
+    const uniqueCategories = [
+      ...new Set(
+        menuData
+          .map((item) => (item.category ? item.category.trim() : ""))
+          .filter((cat) => cat !== "")
+      ),
+    ];
+
+    // 2. Get the saved order from restaurant details
+    const order = restaurantDetails?.categoryOrder || [];
+
+    // 3. Sort categories based on the saved order
+    uniqueCategories.sort((a, b) => {
+      const indexA = order.indexOf(a);
+      const indexB = order.indexOf(b);
+
+      // If both are in the saved list, sort by their index
+      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+      // If A is in list but B isn't, A comes first
+      if (indexA !== -1) return -1;
+      // If B is in list but A isn't, B comes first
+      if (indexB !== -1) return 1;
+      // If neither, sort alphabetically
+      return a.localeCompare(b);
+    });
+
+    setCategories(["All", ...uniqueCategories]);
+  }, [menuData, restaurantDetails]); // Added restaurantDetails to dependency
 
   // --- 6. Load Cart ---
   useEffect(() => {
@@ -118,12 +155,32 @@ function RestaurantMenuPage() {
   }, [cart]);
 
   // Filter Logic
-  const filteredMenu = menuData.filter(item => {
-    const isInStock = !(item.inStock === false || item.inStock === "false");
-    const matchCategory = category === "All" || item.category === category;
-    const matchSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
-    return isInStock && matchCategory && matchSearch;
-  });
+const filteredMenu = menuData
+    .filter((item) => {
+      // Hide only if explicitly false
+      const isInStock = !(item.inStock === false || item.inStock === "false");
+
+      const matchCategory = category === "All" || item.category === category;
+      const matchSearch = item.name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+
+      return isInStock && matchCategory && matchSearch;
+    })
+    .sort((a, b) => {
+      // ✅ Sort items by Category Order so "All" view is organized
+      const order = restaurantDetails?.categoryOrder || [];
+      const indexA = order.indexOf(a.category);
+      const indexB = order.indexOf(b.category);
+
+      // 1. Sort by Category Index
+      if (indexA !== -1 && indexB !== -1 && indexA !== indexB) return indexA - indexB;
+      if (indexA !== -1 && indexB === -1) return -1;
+      if (indexA === -1 && indexB !== -1) return 1;
+
+      // 2. If categories are the same (or neither in list), sort by Name
+      return a.name.localeCompare(b.name);
+    });
 
     const updateQty = (itemId, qty) => {
     if (qty <= 0) return removeFromCart(itemId);
@@ -297,7 +354,6 @@ function RestaurantMenuPage() {
             </div>
           </div>
 
-          {/* Pagination dots */}
           <div className="flex justify-center space-x-2 pb-6 bg-gray-100">
             {offers.map((_, idx) => (
               <span
@@ -341,7 +397,7 @@ function RestaurantMenuPage() {
                 increaseQty={(item) => updateQty(item._id, (cart.find(c => c._id === item._id)?.quantity || 0) + 1)}
                 decreaseQty={(item) => updateQty(item._id, (cart.find(c => c._id === item._id)?.quantity || 0) - 1)}
                 currency={restaurantDetails?.currency }
-                enableOrdering={restaurantDetails?.enableOrdering  }
+                enableOrdering={restaurantDetails?.enableOrdering  }
               />
             ))
           ) : (
@@ -352,8 +408,18 @@ function RestaurantMenuPage() {
         <div>
           <CustomFieldsDisplay restaurantId={id} />
         </div>
-        <div className="flex flex-wrap justify-center">
-          <p className="text-gray-500 text-center mt-4">© {new Date().getFullYear()} Petoba. All rights reserved.</p>
+        < div className="flex flex-wrap justify-center">
+          <p className="text-gray-500 text-center mt-4">
+            Made with ❤️ by{" "}
+            <a
+              href="https://petoba.in"
+              className="text-orange-500"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Petoba
+            </a>
+          </p>
         </div>
         {tableNumber && (
           <p className="text-center text-sm text-gray-600 mt-2 mb-5">
@@ -404,13 +470,7 @@ function RestaurantMenuPage() {
                     Clear Cart
                   </button>
 
-                  {/* 🆕 2. CONDITIONAL BUTTON RENDERING IN CART */}
-                  {restaurantDetails?.isLive === false ? (
-                      <div className="w-1/2 py-2 px-2 bg-red-100 text-red-600 rounded-xl font-bold text-center border border-red-200 text-sm flex items-center justify-center">
-                         Ordering Closed
-                      </div>
-                  ) : (
-                    <button
+                  <button
                       onClick={() => {
                         setShowCart(false);
                         // Check if BOTH Table Number AND WhatsApp Number are present
@@ -425,7 +485,6 @@ function RestaurantMenuPage() {
                     >
                       Order ✔
                     </button>
-                  )}
                 </div>
               </>
             )}
@@ -537,7 +596,7 @@ function RestaurantMenuPage() {
             {/* List */}
             <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
                 {isLoadingOrders ? (
-                     <div className="flex justify-center mt-10"><div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div></div>
+                      <div className="flex justify-center mt-10"><div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div></div>
                 ) : myOrders.length === 0 ? (
                     <div className="text-center mt-10 text-gray-400">
                         <p className="text-4xl mb-2">🍽️</p>

@@ -1,55 +1,22 @@
-// PetobaBillingLanding.jsx
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
-import { motion } from "framer-motion";
+import { 
+  Monitor, Keyboard, Cable, MousePointer2, 
+  BarChart4, Share2, Printer, Zap, 
+  CheckCircle2, MessageCircle, Copy, Eye, EyeOff, LayoutGrid
+} from "lucide-react";
 
-const APK_LINK = "https://avenirya.com/wp-content/uploads/2025/10/Petoba-Billing.apk";
-const WHATSAPP_LINK =
-  "https://wa.me/919270361329?text=Hello%20Petoba%20Team%2C%20I%20want%20to%20subscribe%20to%20Petoba%20Billing%20App.";
+// --- CONSTANTS ---
+const WEB_POS_LINK = "https://petoba.in/login"; // Example link for PC Login
+const PHONE_NUMBER = "919270361329";
 
-const screenshots = [
-  "https://avenirya.com/wp-content/uploads/2025/10/1.png",
-  "https://avenirya.com/wp-content/uploads/2025/10/2.png",
-  "https://avenirya.com/wp-content/uploads/2025/10/3.png",
-  "https://avenirya.com/wp-content/uploads/2025/10/4.png",
-  "https://avenirya.com/wp-content/uploads/2025/10/2-1.png",
-  "https://avenirya.com/wp-content/uploads/2025/10/1-1.png",
-  "https://avenirya.com/wp-content/uploads/2025/10/4-1.png",
-  "https://avenirya.com/wp-content/uploads/2025/10/3-1.png",
-];
+// Helper for WhatsApp
+const getWhatsAppLink = () => {
+  const message = `Hello Petoba Team, I am interested in the PC/Desktop Billing Software.`;
+  return `https://wa.me/${PHONE_NUMBER}?text=${encodeURIComponent(message)}`;
+};
 
-const FEATURES = [
-  {
-    key: "orders",
-    title: "Digital Order Management",
-    desc:
-      "Receive and manage table orders instantly from your Petoba Digital Menu — realtime updates and clear kitchen flow.",
-    img: screenshots[0],
-  },
-  {
-    key: "kot",
-    title: "KOT & Bill Printing",
-    desc:
-      "Print kitchen order tickets (KOTs) and customer bills instantly via Bluetooth printers — fast service, fewer errors.",
-    img: screenshots[1],
-  },
-  {
-    key: "dashboard",
-    title: "Smart Dashboard & Reports",
-    desc:
-      "Daily, weekly, monthly summaries with top-selling items and simple charts to help you make quick decisions.",
-    img: screenshots[2],
-  },
-  {
-    key: "whatsapp",
-    title: "WhatsApp Bill Sharing",
-    desc:
-      "Send bills directly to customers via WhatsApp from the Billing screen — saves paper and speeds checkout.",
-    img: screenshots[3],
-  },
-];
-
-export default function PetobaBillingLanding() {
+export default function PetobaPCFeatures() {
   const [showDemo, setShowDemo] = useState(false);
   const demoEmail = "Demo@gmail.com";
   const demoPassword = "Demo@1234";
@@ -57,445 +24,222 @@ export default function PetobaBillingLanding() {
   const copyToClipboard = async (text) => {
     try {
       await navigator.clipboard.writeText(text);
-      // a simple feedback; you can expand to toast notifications
-      alert("Copied to clipboard!");
+      alert("Copied!");
     } catch (err) {
-      alert("Unable to copy. Please copy manually.");
+      alert("Please copy manually.");
     }
   };
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 antialiased relative isolate">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900">
       <Helmet>
-        <title>Petoba Billing — Smart Restaurant Billing App</title>
-        <meta
-          name="description"
-          content="Petoba Billing App — manage orders, print KOTs, share bills on WhatsApp, view analytics. Download the APK and try demo credentials."
-        />
-        <meta property="og:title" content="Petoba Billing — Smart Restaurant Billing App" />
-        <meta
-          property="og:description"
-          content="An all-in-one mobile billing solution for restaurants with KOT printing, live orders, and WhatsApp bill sharing."
-        />
-        <meta property="og:image" content="https://petoba.avenirya.com/wp-content/uploads/2025/09/Untitled-design-6.png" />
-        <link rel="icon" href="https://petoba.avenirya.com/wp-content/uploads/2025/09/download-1.png" />
+        <title>Petoba Desktop POS | Restaurant Billing for PC</title>
+        <meta name="description" content="Professional PC Billing Software for Restaurants. Keyboard shortcuts, USB Printer support, and large screen dashboard." />
       </Helmet>
 
-      {/* Globe/Illustration Effect */}
-      <div
-        className="absolute inset-x-0 top-0 -z-10 overflow-hidden"
-        aria-hidden="true"
-      >
-        <div className="absolute left-[50%] top-0 h-[800px] w-[1200px] -translate-x-1/2 rounded-full bg-gradient-to-tr from-yellow-200/50 to-orange-300/50 opacity-40 filter blur-3xl"></div>
-      </div>
-
-      {/* HERO */}
-      <section className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 items-center gap-10 py-6 pt-24">
-        <div className="space-y-6">
-          <motion.h1
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45 }}
-            className="text-4xl md:text-5xl font-extrabold leading-tight text-gray-900"
-          >
-            Smart Billing App for Restaurants & Cafes
-            <span className="block text-orange-500 mt-2 text-2xl font-semibold">Fast KOTs/Bills • OR Orders • WhatsApp Bills</span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.15 }}
-            className="text-gray-600 max-w-xl"
-          >
-            Accept table orders via QR, print KOTs and bills over Bluetooth, share bills on WhatsApp and get simple,
-            actionable sales reports — all from a single app built for busy kitchens.
-          </motion.p>
-
-          <div className="flex flex-wrap gap-4">
-            <a
-              href={APK_LINK}
-              className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-semibold shadow hover:scale-[1.02] transition-transform"
-              aria-label="Download Petoba APK"
-            >
-              Download APK
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
-                <path strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" d="M12 3v12" />
-                <path strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" d="M8 11l4 4 4-4" />
-              </svg>
-            </a>
-
-            <button
-              onClick={() => {
-                document.getElementById("demo-section")?.scrollIntoView({ behavior: "smooth" });
-                setShowDemo(true);
-              }}
-              className="px-6 py-3 rounded-full border border-gray-300 hover:bg-gray-100 transition"
-              aria-label="Show demo credentials"
-            >
-              Try Demo
-            </button>
-
-            <a
-              href={WHATSAPP_LINK}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-6 py-3 rounded-full bg-[#25D366] font-semibold text-black shadow"
-              aria-label="Contact via WhatsApp"
-            >
-              Contact on WhatsApp
-            </a>
-          </div>
-
-          <div className="mt-2 text-sm text-gray-500">
-            <strong>Note:</strong> Clicking “Download APK” downloads the installer 
-          </div>
-        </div>
-
-        {/* Right - Device Mockup */}
-        <div className="flex justify-center md:justify-end">
-          <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.4 }}
-            className="relative"
-          >
-            <div className="">
-              <img
-                src="https://avenirya.com/wp-content/uploads/2025/10/Blue-Modern-Money-Managing-Mobile-App-Promotion-Facebook-Ad-700-x-1120-px-700-x-900-px-1.png"
-                alt="App preview"
-                className="w-full h-full object-contain rounded-2xl"
-                style={{width: "400px"}}
-              />
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-<section className="relative  py-6">
-  {/* Background Blobs */}
-  <div className="absolute top-0 left-0 w-72 h-72 bg-gradient-to-r from-orange-300 to-pink-400 rounded-full blur-3xl opacity-20 -z-10"></div>
-  <div className="absolute bottom-0 right-0 w-72 h-72 bg-gradient-to-r from-green-400 to-blue-500 rounded-full blur-3xl opacity-20 -z-10"></div>
-
-
-  {/* Single Feature Card */}
-  <div className="max-w-6xl mx-auto bg-white rounded-3xl shadow-lg p-4">
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-      {/* Feature Item */}
-      {[
-        { icon: "🧾", title: "Instant KOT Printing", desc: "Generate kitchen order tickets immediately for faster service." },
-        { icon: "💳", title: "Print Bills Quickly", desc: "Create and print customer bills in just a few clicks." },
-        { icon: "📲", title: "Send Bills via WhatsApp", desc: "Share bills directly with customers instantly." },
-        { icon: "📡", title: "Real-Time Order Updates", desc: "Track all orders live across multiple devices." },
-        { icon: "📊", title: "Smart Dashboard & Analytics", desc: "Monitor sales, performance, and order stats easily." },
-        { icon: "🗂️", title: "Daily/Weekly/Monthly Reports", desc: "Access organized sales reports anytime for better decision making." },
-        { icon: "📱", title: "Multi-Device Support", desc: "Use the app seamlessly across multiple devices." },
-        { icon: "🔔", title: "Instant Alerts for New Orders", desc: "Receive immediate notifications whenever a new order comes in." },
-        { icon: "🔗", title: "Easy Integration with Petoba Menu", desc: "Connect your digital menu directly for smooth billing." },
-      ].map((feature, index) => (
-        <div key={index} className="flex items-start gap-2 p-2 bg-gray-50 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-          <div className="text-2xl">{feature.icon}</div>
-          <div>
-            <h3 className="font-semibold text-gray-800">{feature.title}</h3>
-            <p className="text-gray-600 text-sm mt-1">{feature.desc}</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-</section>
-      {/* FEATURES - alternating layout */}
-      <section className="max-w-7xl mx-auto px-6 py-6 space-y-6">
-        <h2 className="text-3xl font-bold text-gray-900 text-center">Core Features</h2>
-        <p className="text-gray-600 text-center max-w-2xl mx-auto">
-          We focused on the features restaurants need most: fast service, accurate orders, and easy billing for customers.
-        </p>
-
-        <div className="space-y-10 mt-6">
-          {FEATURES.map((f, idx) => {
-            const isEven = idx % 2 === 0;
-            return (
-              <motion.div
-                key={f.key}
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ duration: 0.45, delay: idx * 0.06 }}
-                className={`grid grid-cols-1 md:grid-cols-12 gap-6 items-center`}
-              >
-                {/* Text */}
-                <div
-                  className={`md:col-span-6 ${isEven ? "md:order-1" : "md:order-2"} px-4`}
-                >
-                  <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm hover:shadow-md transition">
-                    <h3 className="text-2xl font-semibold text-gray-900 mb-2">{f.title}</h3>
-                    <p className="text-gray-600 mb-4">{f.desc}</p>
-                    <ul className="text-sm text-gray-500 space-y-1">
-                      <li>• Fast & reliable</li>
-                      <li>• Minimal learning curve</li>
-                      <li>• Works on low-end devices</li>
-                    </ul>
-                  </div>
-                </div>
-
-                {/* Image */}
-                <div className={`md:col-span-6 ${isEven ? "md:order-2" : "md:order-1"} flex justify-center`}>
-                  <div className="w-[320px] md:w-[360px]  rounded-2xl ">
-                    <img
-                      src={f.img}
-                      alt={`${f.title} screenshot`}
-                      className="w-full  object-cover rounded-xl"
-                      loading="lazy"
-                    />
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Screenshots Carousel (compact) */}
-      <section className="max-w-7xl mx-auto px-6 py-10 bg-gray-50">
-        <h3 className="text-2xl text-gray-900 font-semibold text-center mb-6">More Screenshots</h3>
-        <div className="flex gap-4 overflow-x-auto py-2 px-2 scrollbar-hide">
-          {screenshots.map((s, i) => (
-            <div key={i} className="flex-shrink-0 w-[210px] ">
-              <img src={s} alt={`screenshot-${i}`} className="w-full h-[460px] object-cover" loading="lazy" />
-            </div>
-          ))}
-        </div>
-      </section>
-{/* Demo Credentials - Interactive */}
-<section id="demo-section" className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-  <motion.div
-    initial={{ opacity: 0, y: 10 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true }}
-    transition={{ duration: 0.4 }}
-    className="bg-gray-50 border border-gray-200 rounded-3xl p-6 shadow-lg"
-  >
-    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-      {/* Left: Credentials */}
-      <div className="flex-1">
-        <h3 className="text-2xl font-semibold text-gray-900">Try Demo Credentials</h3>
-        <p className="text-gray-600 mt-2 max-w-xl">
-          Scan the QR code to place an order, then login using these credentials to try printing KOT, sending bills on WhatsApp, and more.
-        </p>
-
-        <div className="mt-6 flex flex-col gap-3">
-          {/* Email */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            <span className="text-sm text-gray-500 w-24">Email</span>
-            <div className="flex-1 bg-white border border-gray-300 rounded-xl p-3 flex items-center justify-between">
-              <div className="truncate text-gray-900">{showDemo ? demoEmail : "•••••••••••"}</div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setShowDemo((s) => !s)}
-                  className="px-3 py-1 rounded-md border border-gray-300 text-sm hover:bg-gray-100"
-                  aria-pressed={showDemo}
-                  aria-label="Toggle show email"
-                >
-                  {showDemo ? "Hide" : "Show"}
-                </button>
-                <button
-                  onClick={() => copyToClipboard(demoEmail)}
-                  className="px-3 py-1 rounded-md border border-gray-300 text-sm hover:bg-gray-100"
-                >
-                  Copy
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Password */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            <span className="text-sm text-gray-500 w-24">Password</span>
-            <div className="flex-1 bg-white border border-gray-300 rounded-xl p-3 flex items-center justify-between">
-              <div className="truncate text-gray-900">{showDemo ? demoPassword : "•••••••••"}</div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setShowDemo((s) => !s)}
-                  className="px-3 py-1 rounded-md border border-gray-300 text-sm hover:bg-gray-100"
-                  aria-pressed={showDemo}
-                  aria-label="Toggle show password"
-                >
-                  {showDemo ? "Hide" : "Show"}
-                </button>
-                <button
-                  onClick={() => copyToClipboard(demoPassword)}
-                  className="px-3 py-1 rounded-md border border-gray-300 text-sm hover:bg-gray-100"
-                >
-                  Copy
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 mt-4">
-            <a
-              href={APK_LINK}
-              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-semibold shadow text-center"
-              aria-label="Open Demo - download APK"
-            >
-              Open Demo (Download APK)
-            </a>
-            <button
-              onClick={() => {
-                const creds = `Email: ${demoEmail}\nPassword: ${demoPassword}`;
-                copyToClipboard(creds);
-              }}
-              className="px-5 py-3 rounded-full border border-gray-300 hover:bg-gray-100 transition"
-            >
-              Copy Both
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Right: Screenshots + QR */}
-      <div className="flex flex-col gap-4 w-full md:w-1/3">
+      {/* --- HERO SECTION --- */}
+      <section className="relative pt-20 pb-24 bg-white">
+        {/* Abstract Background for PC Vibe */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
         
-        {/* QR Code */}
-        <div className="rounded-2xl p-3 bg-white shadow flex justify-center">
-          <img
-            src="https://avenirya.com/wp-content/uploads/2025/10/menu_qr_67efa0c23fd058e3339011df_pro-template2-scaled.jpg" // Replace with your QR code path
-            alt="Demo QR code"
-            className="width={100px} height={200px} object-contain"
-          />
-        </div>
-      </div>
-    </div>
-  </motion.div>
-</section>
+        <div className="max-w-5xl mx-auto px-6 text-center relative z-10">
+          
+          <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 text-blue-700 px-4 py-1.5 rounded-full text-sm font-bold shadow-sm mb-8">
+            <Monitor size={16} /> 
+            Desktop Version Live
+          </div>
+          
+          <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 leading-tight mb-6 tracking-tight">
+            Built for the <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Cashier Counter</span>
+          </h1>
+          
+          <p className="text-xl text-slate-600 leading-relaxed mb-10 max-w-2xl mx-auto">
+            The speed of keyboard shortcuts. The reliability of USB printing. The clarity of a big screen. 
+            Experience the professional Point of Sale (POS) designed for Windows & Mac.
+          </p>
 
-
-{/* Pricing Section */}
-<section id="pricing" className="max-w-7xl mx-auto px-6 py-12 bg-white">
-  <h2 className="text-3xl font-bold text-gray-900 text-center mb-6">Pricing</h2>
-  <p className="text-gray-600 text-center max-w-2xl mx-auto mb-12">
-    Simple plans designed for small restaurants and growing chains. No hidden fees.
-  </p>
-
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-    {/* Monthly Plan */}
-    <div className="border border-gray-200 rounded-3xl p-8 text-center hover:shadow-xl transition-all duration-300">
-      <h3 className="text-xl font-semibold text-gray-900 mb-2">Monthly</h3>
-      <p className="text-gray-500 mb-4">For restaurants starting small</p>
-      <div className="text-3xl font-bold text-gray-900 mb-2">₹199</div>
-      <div className="text-sm text-gray-500 mb-6">/month</div>
-      <ul className="text-gray-700 mb-6 space-y-4 text-left">
-        <li>🧾 Instant KOT Printing</li>
-        <li>💳 Print Bills Quickly</li>
-        <li>📲 Send Bills via WhatsApp</li>
-        <li>📡 Real-Time Order Updates</li>
-        <li>📊 Smart Dashboard & Analytics</li>
-        <li>🗂️ Daily/Weekly/Monthly Reports</li>
-         <li>📱 Multi-Device Support</li>
-        <li>🔔 Instant Alerts for New Orders</li>
-        <li>🔗 Easy Integration with Petoba Menu</li>
-      </ul>
-      <a
-        href={WHATSAPP_LINK}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-block px-6 py-3 rounded-full bg-orange-500 text-gray-900 font-semibold hover:brightness-105 transition"
-      >
-        Subscribe via WhatsApp
-      </a>
-    </div>
-
-    {/* Half-Yearly Plan */}
-    <div className="border-2 border-yellow-500 rounded-3xl p-8 text-center hover:shadow-xl transition-all duration-300">
-      <h3 className="text-xl font-semibold text-gray-900 mb-2">Half-Yearly</h3>
-      <p className="text-gray-500 mb-4">Save by subscribing for 6 months</p>
-      <div className="text-3xl font-bold text-gray-900 mb-2">₹549</div>
-      <div className="text-sm text-gray-500 mb-6">/6 months</div>
-      <ul className="text-gray-700 mb-6 space-y-4 text-left">
-                <li>🧾 Instant KOT Printing</li>
-        <li>💳 Print Bills Quickly</li>
-        <li>📲 Send Bills via WhatsApp</li>
-        <li>📡 Real-Time Order Updates</li>
-        <li>📊 Smart Dashboard & Analytics</li>
-        <li>🗂️ Daily/Weekly/Monthly Reports</li>
-         <li>📱 Multi-Device Support</li>
-        <li>🔔 Instant Alerts for New Orders</li>
-        <li>🔗 Easy Integration with Petoba Menu</li>
-      </ul>
-      <a
-        href={WHATSAPP_LINK}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-block px-6 py-3 rounded-full bg-yellow-500 text-gray-900 font-semibold hover:brightness-105 transition"
-      >
-        Subscribe via WhatsApp
-      </a>
-    </div>
-
-    {/* Yearly Plan */}
-    <div className="border-2 border-green-500 rounded-3xl p-8 text-center hover:shadow-xl transition-all duration-300">
-      <h3 className="text-xl font-semibold text-gray-900 mb-2">Yearly</h3>
-      <p className="text-gray-500 mb-4">Best value for growing restaurants</p>
-      <div className="text-3xl font-bold text-gray-900 mb-2">₹899</div>
-      <div className="text-sm text-gray-500 mb-6">/year</div>
-      <ul className="text-gray-700 mb-6 space-y-4 text-left">
-        <li>🧾 Instant KOT Printing</li>
-        <li>💳 Print Bills Quickly</li>
-        <li>📲 Send Bills via WhatsApp</li>
-        <li>📡 Real-Time Order Updates</li>
-        <li>📊 Smart Dashboard & Analytics</li>
-        <li>🗂️ Daily/Weekly/Monthly Reports</li>
-         <li>📱 Multi-Device Support</li>
-        <li>🔔 Instant Alerts for New Orders</li>
-        <li>🔗 Easy Integration with Petoba Menu</li>
-      </ul>
-      <a
-        href={WHATSAPP_LINK}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-block px-6 py-3 rounded-full bg-green-500 text-white font-semibold hover:brightness-105 transition"
-      >
-        Subscribe via WhatsApp
-      </a>
-    </div>
-  </div>
-</section>
-
-      {/* FAQ */}
-      <section className="max-w-7xl mx-auto px-6 py-6 bg-gray-50">
-        <h2 className="text-3xl text-gray-900 font-bold text-center mb-6">Frequently Asked Questions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[
-            {
-              q: "Do I need to change my QR menu?",
-              a: "No — your existing Petoba Digital Menu QR will continue to work. Just log in to the Billing app using the same credentials.",
-            },
-            {
-              q: "Which printers are supported?",
-              a: "Most Bluetooth mobile printers (ESC/POS compatible) work. We recommend testing with your printer model using the demo credentials.",
-            },
-            {
-              q: "Can I use the app without internet?",
-              a: "No — an active internet connection is required to sync orders and print KOTs/bills.",
-            },
-            {
-              q: "How do I subscribe for multiple outlets?",
-              a: "Contact us on WhatsApp for multi-outlet pricing and setup assistance.",
-            },
-          ].map((f, i) => (
-            <details
-              key={i}
-              className="bg-white border border-gray-200 rounded-xl p-4"
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <a href={WEB_POS_LINK} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-3 px-8 py-4 bg-slate-900 text-white rounded-xl font-bold shadow-xl hover:bg-slate-800 hover:-translate-y-1 transition-all">
+              <Monitor size={20} />
+              Launch Web POS
+            </a>
+            <button 
+              onClick={() => document.getElementById("demo-section")?.scrollIntoView({ behavior: "smooth" })}
+              className="flex items-center justify-center gap-3 px-8 py-4 bg-white border-2 border-slate-200 text-slate-700 rounded-xl font-bold hover:border-blue-300 hover:bg-blue-50 transition-all"
             >
-              <summary className="font-semibold text-gray-900 cursor-pointer">{f.q}</summary>
-              <p className="mt-2 text-gray-600">{f.a}</p>
-            </details>
-          ))}
+              View Demo ID
+            </button>
+          </div>
+          
+          <p className="mt-6 text-sm text-slate-400 font-medium">Works on Chrome, Edge, Safari • Windows 10/11 & macOS</p>
         </div>
       </section>
 
-      
+      {/* --- DESKTOP FEATURES GRID --- */}
+      <section className="py-24 bg-slate-50 border-t border-slate-200">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-slate-900">Why Restaurants Upgrade to PC</h2>
+            <p className="text-slate-500 mt-2">Mobile is great for waiters. Desktop is essential for cashiers.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            
+            {/* Feature 1: Speed */}
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:border-blue-200 hover:shadow-md transition-all">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mb-6">
+                <Keyboard size={28} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Lightning Fast Shortcuts</h3>
+              <p className="text-slate-600 leading-relaxed">
+                Ditch the mouse. Use <b>Enter</b> to print bills, <b>Space</b> to confirm orders, and <b>Esc</b> to go back. Clear lines 3x faster during rush hours.
+              </p>
+            </div>
+
+            {/* Feature 2: Hardware */}
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:border-blue-200 hover:shadow-md transition-all">
+              <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600 mb-6">
+                <Cable size={28} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">USB & LAN Printing</h3>
+              <p className="text-slate-600 leading-relaxed">
+                Bluetooth can be flaky. Connect heavy-duty Thermal Printers via USB or LAN cables for instant, reliable, non-stop KOT printing.
+              </p>
+            </div>
+
+            {/* Feature 3: Big Screen */}
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:border-blue-200 hover:shadow-md transition-all">
+              <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center text-teal-600 mb-6">
+                <LayoutGrid size={28} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Table Map View</h3>
+              <p className="text-slate-600 leading-relaxed">
+                See the status of 50+ tables at a glance. Visualize occupied, free, and reserved tables on a single wide screen without scrolling.
+              </p>
+            </div>
+
+            {/* Feature 4: Multitasking */}
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:border-blue-200 hover:shadow-md transition-all">
+              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 mb-6">
+                <MousePointer2 size={28} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Multi-Tab Operations</h3>
+              <p className="text-slate-600 leading-relaxed">
+                Open "Live Orders" in one tab and "Reports" in another. Manage billing while checking yesterday's sales without losing context.
+              </p>
+            </div>
+
+            {/* Feature 5: Integration */}
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:border-blue-200 hover:shadow-md transition-all">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center text-green-600 mb-6">
+                <Share2 size={28} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">WhatsApp Web Sync</h3>
+              <p className="text-slate-600 leading-relaxed">
+                Since you use WhatsApp Web on PC, our billing software integrates seamlessly to send PDF invoices instantly to customers.
+              </p>
+            </div>
+
+            {/* Feature 6: Analytics */}
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:border-blue-200 hover:shadow-md transition-all">
+              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600 mb-6">
+                <BarChart4 size={28} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Detailed Analytics</h3>
+              <p className="text-slate-600 leading-relaxed">
+                View large charts and data tables. Export sales data to Excel/CSV with one click for your accountant.
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* --- SPECS SECTION (Table Style) --- */}
+      <section className="py-20 bg-white">
+        <div className="max-w-4xl mx-auto px-6">
+          <h2 className="text-3xl font-extrabold text-slate-900 mb-12 text-center">System Requirements</h2>
+          
+          <div className="border border-slate-200 rounded-2xl shadow-sm">
+            {[
+              { icon: <Monitor size={18}/>, label: "Operating System", val: "Windows 10/11, macOS, Linux" },
+              { icon: <Zap size={18}/>, label: "Platform", val: "Web Browser (Chrome / Edge Recommended)" },
+              { icon: <Printer size={18}/>, label: "Printer Support", val: "USB Thermal, LAN/Wifi, Standard Laser" },
+              { icon: <Cable size={18}/>, label: "Hardware Support", val: "Barcode Scanners, Cash Drawers" },
+              { icon: <Share2 size={18}/>, label: "Mobile Sync", val: "Syncs with Petoba Android App instantly" },
+            ].map((item, idx) => (
+              <div key={idx} className={`flex items-center justify-between p-5 bg-slate-50 hover:bg-white transition-colors ${idx !== 4 ? 'border-b border-slate-200' : ''}`}>
+                <div className="flex items-center gap-3 text-slate-600 font-medium">
+                  {item.icon}
+                  <span>{item.label}</span>
+                </div>
+                <span className="font-bold text-slate-900">{item.val}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* --- DEMO SECTION (PC Style) --- */}
+      <section id="demo-section" className="py-20 bg-slate-900 text-white">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="text-center mb-10">
+            <div className="inline-block bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-md mb-4 uppercase tracking-wide">Ready to Login</div>
+            <h2 className="text-3xl font-bold mb-4">Try the PC Dashboard Now</h2>
+            <p className="text-slate-400">
+              Open the Web POS link on your laptop/desktop and use these admin credentials to experience the speed.
+            </p>
+          </div>
+
+          <div className="bg-slate-800 rounded-2xl border border-slate-700 p-8 max-w-xl mx-auto shadow-2xl">
+            <div className="space-y-6">
+              
+              {/* Email */}
+              <div className="bg-slate-900 p-4 rounded-lg flex items-center justify-between border border-slate-600">
+                <div>
+                  <p className="text-xs text-slate-500 uppercase font-bold mb-1">Login Email</p>
+                  <p className="font-mono text-lg text-white tracking-wide">{demoEmail}</p>
+                </div>
+                <button onClick={() => copyToClipboard(demoEmail)} className="bg-slate-800 hover:bg-slate-700 text-blue-400 px-3 py-1.5 rounded text-sm font-semibold transition">Copy</button>
+              </div>
+
+              {/* Password */}
+              <div className="bg-slate-900 p-4 rounded-lg flex items-center justify-between border border-slate-600">
+                <div>
+                  <p className="text-xs text-slate-500 uppercase font-bold mb-1">Password</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-mono text-lg text-white tracking-wide">{showDemo ? demoPassword : "••••••••"}</p>
+                    <button onClick={() => setShowDemo(!showDemo)} className="text-slate-500 hover:text-white ml-2">
+                      {showDemo ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+                <button onClick={() => copyToClipboard(demoPassword)} className="bg-slate-800 hover:bg-slate-700 text-blue-400 px-3 py-1.5 rounded text-sm font-semibold transition">Copy</button>
+              </div>
+
+              <div className="pt-2">
+                <a href={WEB_POS_LINK} target="_blank" rel="noreferrer" className="w-full inline-flex items-center justify-center gap-2 px-8 py-4 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-500 transition-all hover:scale-[1.02]">
+                  <Monitor size={20} /> Open Web POS
+                </a>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* --- FOOTER CTA --- */}
+      <div className="bg-white border-t border-slate-200 py-12 text-center">
+        <h3 className="text-2xl font-bold text-slate-900 mb-2">Need a custom setup?</h3>
+        <p className="text-slate-500 mb-6">We help with hardware selection (Printers/Scanners) and Menu setup.</p>
+        <div className="flex justify-center gap-4">
+          <a href={getWhatsAppLink()} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 bg-green-500 text-white px-8 py-3 rounded-full font-bold hover:bg-green-600 transition shadow-lg shadow-green-100">
+            <MessageCircle size={20} /> Chat on WhatsApp
+          </a>
+        </div>
+      </div>
+
     </div>
   );
 }
