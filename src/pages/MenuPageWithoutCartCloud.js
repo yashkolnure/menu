@@ -168,7 +168,7 @@ function RestaurantMenuPageCloud() {
       return 0; // Keeps the order exactly as it is in your JSON/Database
     });
 
-    
+
   // ✅ Cart operations
   const addToCart = (item) => {
     const exists = cart.find((c) => c._id === item._id);
@@ -178,7 +178,10 @@ function RestaurantMenuPageCloud() {
       toast.success("Added to cart!");
     }
   };
-
+  const updateQty = (itemId, qty) => {
+    if (qty <= 0) return removeFromCart(itemId);
+    setCart(cart.map((c) => (c._id === itemId ? { ...c, quantity: qty } : c)));
+  };
   const removeFromCart = (id) => {
     setCart(cart.filter((item) => item._id !== id));
   };
