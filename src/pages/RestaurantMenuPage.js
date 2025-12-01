@@ -184,7 +184,7 @@ function RestaurantMenuPage() {
       return 0; // Keeps the order exactly as it is in your JSON/Database
     });
 
-    
+
     const updateQty = (itemId, qty) => {
     if (qty <= 0) return removeFromCart(itemId);
     setCart(cart.map(c => (c._id === itemId ? { ...c, quantity: qty } : c)));

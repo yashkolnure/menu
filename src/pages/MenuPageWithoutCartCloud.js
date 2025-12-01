@@ -5,581 +5,385 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import MenuCard from "../components/MenuCardWp";
 import { Helmet } from "react-helmet";
+import { MapPin, Navigation } from "lucide-react";
 
 function RestaurantMenuPageCloud() {
   const { id } = useParams();
+  const carouselRef = useRef(null);
 
-  const [category, setCategory] = useState("All");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [cart, setCart] = useState([]);
+  // --- STATE ---
+  const [restaurantDetails, setRestaurantDetails] = useState(null);
   const [menuData, setMenuData] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [showCart, setShowCart] = useState(false);
-  const [restaurantDetails, setRestaurantDetails] = useState(null);
-  const [isCartClosing, setIsCartClosing] = useState(false);
-  const [activeOffer, setActiveOffer] = useState(0);
-  const carouselRef = useRef(null);
   const [offers, setOffers] = useState([]);
-
-  // ✅ NEW: Add Loading State
+  
+  // UI
   const [loading, setLoading] = useState(true);
+  const [category, setCategory] = useState("All");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeOffer, setActiveOffer] = useState(0);
+  
+  // Cart & Modals
+  const [cart, setCart] = useState([]);
+  const [showCart, setShowCart] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [isCartClosing, setIsCartClosing] = useState(false);
+  const [customer, setCustomer] = useState({ name: "", phone: "", address: "", landmark: "", pincode: "" });
+  const [locationLoading, setLocationLoading] = useState(false);
 
-  // ✅ Customer details for delivery
-  const [customer, setCustomer] = useState({
-    name: "",
-    phone: "",
-    address: "",
-    landmark: "",
-    pincode: "",
-  });
+  // Tracking
+  const [showTrackModal, setShowTrackModal] = useState(false);
+  const [trackPhone, setTrackPhone] = useState("");
+  const [trackedOrders, setTrackedOrders] = useState([]);
+  const [trackLoading, setTrackLoading] = useState(false);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setCustomer((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // ✅ Fetch offers
+  // --- 1. FETCH DATA ---
   useEffect(() => {
-    const fetchOffers = async () => {
+    const fetchData = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(`/api/admin/${id}/offers`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        if (res.ok && Array.isArray(data)) setOffers(data);
-      } catch (err) {
-        console.error("Failed to load offers", err);
-      }
-    };
-    fetchOffers();
-  }, [id]);
+        const headers = { Authorization: `Bearer ${localStorage.getItem("token")}` };
+        
+        // Fetch Details & Offers
+        const [detailsRes, offersRes, menuRes] = await Promise.all([
+          fetch(`/api/admin/${id}/details`, { headers }),
+          fetch(`/api/admin/${id}/offers`, { headers }),
+          fetch(`/api/admin/${id}/menu`, { headers })
+        ]);
 
-  // ✅ Fetch restaurant details
-  useEffect(() => {
-    const fetchDetails = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(`/api/admin/${id}/details`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        setRestaurantDetails(data);
-      } catch {
-        toast.error("⚠️ Failed to fetch restaurant details");
-      }
-    };
-    fetchDetails();
-  }, [id]);
+        const details = await detailsRes.json();
+        setRestaurantDetails(details);
 
-  // ✅ Fetch menu (UPDATED WITH LOADING LOGIC)
-  useEffect(() => {
-    const fetchMenu = async () => {
-      setLoading(true); // Start loading
-      try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(`/api/admin/${id}/menu`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        if (Array.isArray(data)) setMenuData(data);
-        else toast.error("Failed to load menu data.");
-      } catch {
-        toast.error("Failed to load menu");
+        if (offersRes.ok) setOffers(await offersRes.json());
+
+        const menu = await menuRes.json();
+        if (Array.isArray(menu)) {
+          setMenuData(menu);
+          // Sort Categories based on saved order
+          const uniqueCats = [...new Set(menu.map(i => i.category?.trim()).filter(Boolean))];
+          const order = details.categoryOrder || [];
+          uniqueCats.sort((a, b) => {
+             const idxA = order.indexOf(a);
+             const idxB = order.indexOf(b);
+             if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+             if (idxA !== -1) return -1;
+             if (idxB !== -1) return 1;
+             return a.localeCompare(b);
+          });
+          setCategories(["All", ...uniqueCats]);
+        }
+      } catch (e) {
+        console.error(e);
+        toast.error("Error loading menu");
       } finally {
-        setLoading(false); // Stop loading regardless of success or failure
+        setLoading(false);
       }
     };
-    fetchMenu();
+    fetchData();
   }, [id]);
 
-// ✅ Categories (Sorted by Custom Order)
+  // --- 2. CART PERSISTENCE ---
   useEffect(() => {
-    if (!menuData.length) return;
-
-    // 1. Get unique categories from actual items
-    const uniqueCategories = [
-      ...new Set(
-        menuData
-          .map((item) => (item.category ? item.category.trim() : ""))
-          .filter((cat) => cat !== "")
-      ),
-    ];
-
-    // 2. Get the saved order from restaurant details
-    const order = restaurantDetails?.categoryOrder || [];
-
-    // 3. Sort categories based on the saved order
-    uniqueCategories.sort((a, b) => {
-      const indexA = order.indexOf(a);
-      const indexB = order.indexOf(b);
-
-      // If both are in the saved list, sort by their index
-      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-      // If A is in list but B isn't, A comes first
-      if (indexA !== -1) return -1;
-      // If B is in list but A isn't, B comes first
-      if (indexB !== -1) return 1;
-      // If neither, sort alphabetically
-      return a.localeCompare(b);
-    });
-
-    setCategories(["All", ...uniqueCategories]);
-  }, [menuData, restaurantDetails]); // Added restaurantDetails to dependency
-
-  // ✅ Cart persistence
-  useEffect(() => {
-    const savedCart = JSON.parse(localStorage.getItem("cart"));
-    if (savedCart) setCart(savedCart);
+    const saved = JSON.parse(localStorage.getItem("cart"));
+    if (saved) setCart(saved);
   }, []);
 
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
-// Filter Logic
-  const filteredMenu = menuData
-    .filter((item) => {
-      // Hide only if explicitly false
-      const isInStock = !(item.inStock === false || item.inStock === "false");
+  // --- 3. LOCATION LOGIC ---
+  const detectLocation = () => {
+    if (!navigator.geolocation) return toast.error("Geolocation not supported");
+    setLocationLoading(true);
 
-      const matchCategory = category === "All" || item.category === category;
-      const matchSearch = item.name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+          const data = await res.json();
+          if (data?.display_name) {
+            setCustomer(prev => ({ ...prev, address: data.display_name, pincode: data.address.postcode || prev.pincode }));
+            toast.success("Address detected!");
+          }
+        } catch {
+          toast.warn("Location found, but address lookup failed.");
+          setCustomer(prev => ({ ...prev, address: `Lat: ${latitude}, Lon: ${longitude}` }));
+        } finally {
+          setLocationLoading(false);
+        }
+      },
+      () => {
+        setLocationLoading(false);
+        toast.error("Permission denied or location unavailable");
+      },
+      { enableHighAccuracy: true }
+    );
+  };
 
-      return isInStock && matchCategory && matchSearch;
-    })
-    .sort((a, b) => {
-      // ✅ Sort items by Category Order so "All" view is organized
-      const order = restaurantDetails?.categoryOrder || [];
-      const indexA = order.indexOf(a.category);
-      const indexB = order.indexOf(b.category);
-
-      // 1. Sort by Category Index
-      if (indexA !== -1 && indexB !== -1 && indexA !== indexB) return indexA - indexB;
-      if (indexA !== -1 && indexB === -1) return -1;
-      if (indexA === -1 && indexB !== -1) return 1;
-
-      // 2. REMOVED Alphabetical Sorting
-      // return a.name.localeCompare(b.name); <--- THIS LINE WAS DELETED
-      
-      return 0; // Keeps the order exactly as it is in your JSON/Database
-    });
-
-
-  // ✅ Cart operations
+  // --- 4. CART LOGIC ---
   const addToCart = (item) => {
-    const exists = cart.find((c) => c._id === item._id);
-    if (exists) toast.warn("Item already in cart!");
-    else {
-      setCart([...cart, { ...item, quantity: 1 }]);
-      toast.success("Added to cart!");
-    }
-  };
-  const updateQty = (itemId, qty) => {
-    if (qty <= 0) return removeFromCart(itemId);
-    setCart(cart.map((c) => (c._id === itemId ? { ...c, quantity: qty } : c)));
-  };
-  const removeFromCart = (id) => {
-    setCart(cart.filter((item) => item._id !== id));
+    if (cart.find(c => c._id === item._id)) return toast.warn("Already in cart");
+    setCart([...cart, { ...item, quantity: 1 }]);
+    toast.success("Added!");
   };
 
-  const increaseQty = (id) => {
-    setCart(
-      cart.map((item) =>
-        item._id === id ? { ...item, quantity: item.quantity + 1 } : item
-      )
-    );
+  const updateQty = (id, delta) => {
+    setCart(prev => prev.map(item => item._id === id ? { ...item, quantity: Math.max(0, item.quantity + delta) } : item).filter(i => i.quantity > 0));
   };
 
-  const decreaseQty = (id) => {
-    setCart(
-      cart.map((item) =>
-        item._id === id && item.quantity > 1
-          ? { ...item, quantity: item.quantity - 1 }
-          : item
-      )
-    );
-  };
+  const calculateTotal = () => cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  // ✅ Place order (with delivery details)
-  const handlePlaceOrder = () => {
-    if (!customer.name || !customer.phone || !customer.address) {
-      return toast.error("Please fill all required fields.");
+  // --- 5. ORDER LOGIC (WITH VALIDATION) ---
+  const handlePlaceOrder = async () => {
+    // A. Validation
+    const name = customer.name.trim();
+    const phone = customer.phone.trim();
+    const address = customer.address.trim();
+
+    if (!name) return toast.error("Please enter your Name");
+    
+    // Check if phone is digits only and at least 10 chars
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phone || !phoneRegex.test(phone)) {
+      return toast.error("Please enter a valid 10-digit Phone Number");
     }
 
-    if (cart.length === 0) {
-      return toast.error("Your cart is empty.");
+    if (!address || address.length < 5) {
+      return toast.error("Please enter a complete Address");
     }
 
-    // ✅ Owner WhatsApp Number (you should get this from restaurantDetails or set it manually)
-    const ownerPhone = restaurantDetails?.contact; // Use full country code, e.g., 91XXXXXXXXXX
+    if (cart.length === 0) return toast.error("Cart is empty");
 
-    // ✅ Order Summary
-    const orderItems = cart
-      .map(
-        (item) =>
-          `${item.name} x ${item.quantity} = ₹${item.price * item.quantity}`
-      )
-      .join("\n");
+    const totalAmount = calculateTotal();
+    const mode = restaurantDetails?.orderMode || 'whatsapp'; 
 
-    const totalAmount = cart.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
+    // B. WhatsApp Mode
+    if (mode === 'whatsapp') {
+      const itemsList = cart.map(i => `${i.name} x${i.quantity}`).join("\n");
+      const msg = `🛵 *New Delivery Order*\n👤 ${name}\n📞 ${phone}\n🏠 ${address}\n\n🍽️ *Order:*\n${itemsList}\n\n💰 *Total: ₹${totalAmount}*`;
+      
+      const ownerPhone = restaurantDetails?.contact;
+      window.open(`https://wa.me/${ownerPhone}?text=${encodeURIComponent(msg)}`, "_blank");
+      
+      setCart([]);
+      setShowModal(false);
+      setShowCart(false);
+      setCustomer({ name: "", phone: "", address: "", landmark: "", pincode: "" });
+      localStorage.removeItem("cart");
+      toast.success("Redirecting to WhatsApp...");
+    } 
+    
+    // C. Billing (API) Mode
+    else if (mode === 'billing') {
+      const payload = {
+        restaurantId: id,
+        customer: { ...customer, name, phone, address },
+        items: cart.map(i => ({ itemId: i._id, name: i.name, price: i.price, quantity: i.quantity })),
+        totalAmount,
+        subTotal: totalAmount
+      };
 
-    const message = `🛒 *New Order*\n\n👤 Name: ${customer.name}\n📞 Phone: ${customer.phone}\n🏠 Address: ${customer.address}, ${customer.landmark}, ${customer.pincode}\n\n🍽️ Order:\n${orderItems}\n\n💰 Total: ₹${totalAmount}\n\n✅ Please confirm my order.`;
+      try {
+        const res = await fetch("/api/admin/delivery/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
 
-    // ✅ Encode message for URL
-    const whatsappURL = `https://wa.me/${ownerPhone}?text=${encodeURIComponent(
-      message
-    )}`;
-
-    // ✅ Open WhatsApp
-    window.open(whatsappURL, "_blank");
-
-    // Reset after placing order
-    setCart([]);
-    setShowModal(false);
-    setShowCart(false);
-    setCustomer({ name: "", phone: "", address: "", landmark: "", pincode: "" });
-    toast.success("Redirecting to WhatsApp...");
+        if (res.ok) {
+          toast.success(`Order Placed! ID: #${data.data._id.slice(-6).toUpperCase()}`);
+          setCart([]);
+          setShowModal(false);
+          setShowCart(false);
+          setCustomer({ name: "", phone: "", address: "", landmark: "", pincode: "" });
+          localStorage.removeItem("cart");
+        } else {
+          toast.error(data.message || "Order failed");
+        }
+      } catch {
+        toast.error("Network Error");
+      }
+    }
   };
 
-  // Place this check just before your return statement:
-  if (restaurantDetails && restaurantDetails.active === false) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-        <div className="bg-white p-8 rounded-xl shadow text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">
-            Restaurant Inactive
-          </h2>
-          <p className="text-gray-700 mb-2">
-            This restaurant is Disabled Connect to Petoba Team to Reactivate
-            your Menu.
-          </p>
-          <p className="text-gray-400 text-sm">
-            Powered By Petoba Digital QR Menu
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // --- 6. TRACKING LOGIC (WITH VALIDATION) ---
+  const handleTrackOrder = async () => {
+    const cleanPhone = trackPhone.replace(/\D/g, ''); 
+
+    if (!cleanPhone || cleanPhone.length !== 10) {
+      return toast.error("Please enter a valid 10-digit phone number");
+    }
+
+    setTrackLoading(true);
+    setTrackedOrders([]);
+
+    try {
+      const res = await fetch(`/api/admin/delivery/track/${id}/${cleanPhone}`);
+      const data = await res.json();
+      if (data.success && Array.isArray(data.orders)) setTrackedOrders(data.orders);
+      else { setTrackedOrders([]); toast.info("No orders found"); }
+    } catch { toast.error("Tracking failed"); } 
+    finally { setTrackLoading(false); }
+  };
+
+  // --- 7. FILTER LOGIC (THE FIX FOR YOUR ERROR) ---
+  const filteredMenu = menuData.filter(item => {
+    const active = !(item.inStock === false || item.inStock === "false");
+    const catMatch = category === "All" || item.category === category;
+    const searchMatch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
+    return active && catMatch && searchMatch;
+  }).sort((a, b) => {
+    const order = restaurantDetails?.categoryOrder || [];
+    const idxA = order.indexOf(a.category);
+    const idxB = order.indexOf(b.category);
+    if (idxA !== -1 && idxB !== -1 && idxA !== idxB) return idxA - idxB;
+    return 0;
+  });
+
+  if (restaurantDetails?.active === false) return <div className="h-screen flex items-center justify-center text-red-600 font-bold">Restaurant Unavailable</div>;
 
   return (
     <>
-      <Helmet>
-        <title>Petoba | Digital QR Menu & Ordering</title>
-        <meta
-          name="description"
-          content="Petoba lets restaurants create digital QR menus. Customers scan, order, and enjoy a contactless dining experience."
-        />
+      <Helmet><title>Petoba | Menu</title></Helmet>
 
-        <link
-          rel="icon"
-          href="https://petoba.avenirya.com/wp-content/uploads/2025/09/download-1.png"
-          type="image/png"
-        />
-        <meta
-          property="og:image"
-          content="https://petoba.avenirya.com/wp-content/uploads/2025/09/Untitled-design-6.png"
-        />
-        <meta property="og:title" content="Petoba - Digital QR Menu" />
-        <meta
-          property="og:description"
-          content="Turn your restaurant’s menu into a digital QR code menu."
-        />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://petoba.in" />
-      </Helmet>
+      {/* Header */}
       <header className="relative h-56 w-full mb-0 overflow-hidden rounded-b-xl shadow-lg">
-        <img
-          src="https://t3.ftcdn.net/jpg/02/97/67/70/360_F_297677001_zX7ZzRq8DObUV5IWTHAIhAae6DuiEQh4.jpg"
-          alt="Food Background"
-          className="absolute inset-0 w-full h-full object-cover z-0"
-        />
-        <div className="relative z-10 bg-black/40 w-full h-full flex flex-col items-center justify-center px-4 py-6 space-y-4">
-          {restaurantDetails?.logo && (
-            <img
-              src={restaurantDetails.logo}
-              alt="Logo"
-              className="h-20 sm:h-20 object-contain"
-            />
-          )}
-          <input
-            type="text"
-            placeholder="Search for a dish..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full max-w-md px-4 py-2 rounded-xl text-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white shadow"
-          />
+        <img src="https://t3.ftcdn.net/jpg/02/97/67/70/360_F_297677001_zX7ZzRq8DObUV5IWTHAIhAae6DuiEQh4.jpg" className="absolute inset-0 w-full h-full object-cover" alt="bg" />
+        <div className="relative z-10 bg-black/40 h-full flex flex-col items-center justify-center px-4 py-6 gap-4">
+          {restaurantDetails?.logo && <img src={restaurantDetails.logo} alt="Logo" className="h-20 object-contain" />}
+          <input type="text" placeholder="Search dish..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full max-w-md px-4 py-2 rounded-xl text-lg focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white shadow" />
         </div>
       </header>
 
-      {/* ✅ Offer Carousel */}
+      {/* Offers */}
       {offers.length > 0 && (
-        <div className="bg-gray-100">
-          <div
-            ref={carouselRef}
-            onScroll={() => {
-              const container = carouselRef.current;
-              const slideWidth = container.clientWidth * 0.8 + 16;
-              const idx = Math.round(container.scrollLeft / slideWidth);
-              setActiveOffer(idx);
-            }}
-            className="mt-4 w-full max-w-xl mx-auto mb-3 overflow-x-auto scroll-smooth px-4 cursor-grab"
-            style={{
-              scrollSnapType: "x mandatory",
-              WebkitOverflowScrolling: "touch",
-            }}
-          >
-            <div className="flex space-x-4">
-              {offers.map((o) => (
-                <div
-                  key={o._id}
-                  className="flex-shrink-0 w-4/5 snap-start first:pl-4 last:pr-4"
-                >
-                  <img
-                    loading="lazy"
-                    src={o.image}
-                    alt=""
-                    className="w-full h-[150px] max-h-[150px] object-cover rounded-lg"
-                  />
-                </div>
-              ))}
-            </div>
+        <div className="bg-gray-100 pt-4">
+          <div ref={carouselRef} onScroll={(e) => setActiveOffer(Math.round(e.currentTarget.scrollLeft / (e.currentTarget.clientWidth * 0.8 + 16)))} className="w-full max-w-xl mx-auto overflow-x-auto scroll-smooth px-4 flex gap-4 snap-x">
+            {offers.map(o => <img key={o._id} src={o.image} className="w-4/5 flex-shrink-0 snap-start h-[150px] object-cover rounded-lg" alt="offer" />)}
           </div>
-
-          <div className="flex justify-center space-x-2 pb-6 bg-gray-100">
-            {offers.map((_, idx) => (
-              <span
-                key={idx}
-                className={`block w-2 h-2 rounded-full transition-all ${
-                  idx === activeOffer ? "bg-orange-600" : "bg-gray-300"
-                }`}
-              />
-            ))}
+          <div className="flex justify-center gap-2 py-4">
+            {offers.map((_, i) => <span key={i} className={`w-2 h-2 rounded-full transition-all ${i === activeOffer ? "bg-orange-600" : "bg-gray-300"}`} />)}
           </div>
         </div>
       )}
 
-      {/* ✅ Menu */}
-      <div className="min-h-screen bg-gray-100 p-3">
-        <div className="overflow-x-auto mb-4">
+      {/* Main Content */}
+      <div className="min-h-screen bg-gray-100 p-3 pb-24">
+        {/* Categories */}
+        <div className="overflow-x-auto mb-4 hide-scrollbar">
           <div className="flex gap-2 w-max px-2">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setCategory(cat)}
-                className={`px-4 py-2 rounded-xl whitespace-nowrap ${
-                  category === cat
-                    ? "bg-orange-500 text-white"
-                    : "bg-white text-gray-700 border"
-                }`}
-              >
-                {cat}
-              </button>
+            {categories.map(cat => (
+              <button key={cat} onClick={() => setCategory(cat)} className={`px-4 py-2 rounded-xl whitespace-nowrap border ${category === cat ? "bg-orange-500 text-white border-orange-500" : "bg-white text-gray-700 border-gray-200"}`}>{cat}</button>
             ))}
           </div>
         </div>
 
-        <div className="flex flex-wrap justify-center">
-          {/* ✅ UPDATED: Loading Check */}
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500 mb-4"></div>
-              <p className="text-gray-500 font-medium">Loading Menu...</p>
-            </div>
-          ) : filteredMenu.length > 0 ? (
-            filteredMenu.map((item) => (
-              <MenuCard
-                key={item._id}
-                item={item}
-                cartItem={cart.find((c) => c._id === item._id)}
-                addToCart={addToCart}
-                increaseQty={(item) =>
-                  updateQty(
-                    item._id,
-                    (cart.find((c) => c._id === item._id)?.quantity || 0) + 1
-                  )
-                }
-                decreaseQty={(item) =>
-                  updateQty(
-                    item._id,
-                    (cart.find((c) => c._id === item._id)?.quantity || 0) - 1
-                  )
-                }
-                currency={restaurantDetails?.currency}
-                enableOrdering={restaurantDetails?.enableOrdering}
-              />
-            ))
-          ) : (
-            <p className="text-gray-500 text-center mb-4">
-              No items match your search.
-            </p>
-          )}
+        {/* Menu Grid */}
+        <div className="flex flex-wrap justify-center gap-0">
+          {loading ? <div className="py-20 text-gray-500">Loading...</div> : 
+           filteredMenu.length > 0 ? filteredMenu.map(item => (
+             <MenuCard key={item._id} item={item} cartItem={cart.find(c => c._id === item._id)} addToCart={addToCart} increaseQty={() => updateQty(item._id, 1)} decreaseQty={() => updateQty(item._id, -1)} currency={restaurantDetails?.currency} enableOrdering={restaurantDetails?.enableOrdering} />
+           )) : <p className="text-gray-500">No items found.</p>
+          }
         </div>
-        <div>
-          <CustomFieldsDisplay restaurantId={id} />
-        </div>
-         <div className="flex flex-wrap justify-center">
-          <p className="text-gray-500 text-center mt-4">
-            Made with ❤️ by{" "}
-            <a
-              href="https://petoba.in"
-              className="text-orange-500"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Petoba
-            </a>
-          </p>
-        </div>
+        
+        <div className="mt-8"><CustomFieldsDisplay restaurantId={id} /></div>
       </div>
-      {/* ✅ Floating Cart Button */}
-      <button
-        onClick={() => setShowCart(true)}
-        className="fixed bottom-5 right-5 bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-full shadow-lg text-lg z-50 flex items-center gap-2"
-      >
-        View Cart ({cart.length > 0 && <span>{cart.length}</span>} )
+
+      {/* Floating Buttons */}
+      {/* Show Track button ONLY if orderMode is Billing */}
+      {restaurantDetails?.orderMode === 'billing' && (
+        <button onClick={() => setShowTrackModal(true)} className="fixed bottom-5 left-5 bg-white text-gray-800 px-4 py-3 rounded-full shadow-lg font-bold border flex items-center gap-2 z-40"><span>📍</span> Track</button>
+      )}
+      
+      <button onClick={() => setShowCart(true)} className="fixed bottom-5 right-5 bg-orange-500 text-white px-6 py-3 rounded-full shadow-lg font-bold flex items-center gap-2 z-40">
+        View Cart {cart.length > 0 && `(${cart.length})`}
       </button>
 
-      {/* ✅ Cart Modal */}
-      {showCart && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl p-6 w-[90%] max-w-md max-h-[85vh] overflow-y-auto animate-zoomIn relative">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Your Cart</h2>
+      {/* --- MODALS --- */}
 
-            {cart.length === 0 ? (
-              <p className="text-gray-500">Cart is empty.</p>
-            ) : (
-              <>
-                {cart.map((item) => (
-                  <div
-                    key={item._id}
-                    className="flex items-center justify-between mb-3 border-b pb-2"
-                  >
-                    <div>
-                      <h4 className="font-semibold">{item.name}</h4>
-                      <p>₹ {item.price}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <button
-                          className="px-2 bg-gray-300 rounded"
-                          onClick={() => decreaseQty(item._id)}
-                        >
-                          -
-                        </button>
-                        <span>{item.quantity}</span>
-                        <button
-                          className="px-2 bg-gray-300 rounded"
-                          onClick={() => increaseQty(item._id)}
-                        >
-                          +
-                        </button>
-                      </div>
+      {/* 1. Track Order Modal */}
+      {showTrackModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 p-4 animate-in fade-in">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-5 flex flex-col max-h-[80vh]">
+            <div className="flex justify-between items-center mb-4"><h2 className="font-bold text-lg">My Orders</h2><button onClick={() => setShowTrackModal(false)} className="text-gray-400 text-xl">✕</button></div>
+            <div className="flex gap-2 mb-4">
+              <input type="tel" placeholder="Phone Number" value={trackPhone} onChange={e => setTrackPhone(e.target.value)} className="flex-1 px-3 py-2 border rounded-xl bg-gray-50 outline-none focus:ring-2 focus:ring-orange-500"/>
+              <button onClick={handleTrackOrder} disabled={trackLoading} className="bg-orange-500 text-white px-4 rounded-xl font-bold disabled:opacity-50">{trackLoading ? "..." : "Find"}</button>
+            </div>
+            <div className="overflow-y-auto flex-1 space-y-3 custom-scrollbar">
+              {trackedOrders.length === 0 ? <p className="text-center text-gray-400 text-sm">Enter number to see history</p> : 
+                trackedOrders.map(order => (
+                  <div key={order._id} className="border p-3 rounded-xl bg-gray-50">
+                    <div className="flex justify-between mb-1"><span className="font-bold text-xs bg-white border px-2 py-1 rounded">{order.status}</span><span className="text-xs text-gray-400">{new Date(order.createdAt).toLocaleDateString()}</span></div>
+                    <div className="text-sm text-gray-600 mb-2 space-y-1">
+                      {order.items.map((i, idx) => <div key={idx} className="flex justify-between"><span>{i.name}</span><span>x{i.quantity}</span></div>)}
                     </div>
-                    <button
-                      className="text-red-500"
-                      onClick={() => removeFromCart(item._id)}
-                    >
-                      Remove
-                    </button>
+                    <div className="border-t pt-2 flex justify-between font-bold text-sm"><span>Total</span><span>₹{order.totalAmount}</span></div>
                   </div>
-                ))}
-
-                <h3 className="text-lg font-semibold mt-4">
-                  Total: ₹{cart.reduce((t, i) => t + i.price * i.quantity, 0)}
-                </h3>
-
-                <div className="flex justify-between mt-6 space-x-4">
-                  <button
-                    onClick={() => setCart([])}
-                    className="w-1/2 py-3 bg-gray-200 text-gray-800 rounded-xl font-semibold hover:bg-gray-300"
-                  >
-                    Clear Cart
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowCart(false);
-                      setShowModal(true);
-                    }}
-                    className="w-1/2 py-3 bg-green-500 text-white rounded-xl font-semibold hover:bg-green-600"
-                  >
-                    Order ✔
-                  </button>
-                </div>
-              </>
-            )}
-
-            <button
-              onClick={() => {
-                setIsCartClosing(true);
-                setTimeout(() => {
-                  setShowCart(false);
-                  setIsCartClosing(false);
-                }, 300);
-              }}
-              className="absolute top-4 right-4 text-gray-500 hover:text-red-500 text-xl"
-            >
-              ✕
-            </button>
+                ))
+              }
+            </div>
           </div>
         </div>
       )}
 
-      {/* ✅ Customer Details Modal */}
-      {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 w-[90%] max-w-sm animate-zoomIn">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-              Delivery Details
-            </h2>
+      {/* 2. Cart Modal */}
+      {showCart && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 p-4 animate-in fade-in">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 max-h-[85vh] overflow-y-auto relative animate-zoomIn">
+            <button onClick={() => { setIsCartClosing(true); setTimeout(() => { setShowCart(false); setIsCartClosing(false); }, 300); }} className="absolute top-4 right-4 text-gray-400">✕</button>
+            <h2 className="text-2xl font-bold mb-4">Your Cart</h2>
+            
+            {cart.length === 0 ? <p className="text-gray-500">Cart is empty</p> : (
+              <>
+                {cart.map(item => (
+                  <div key={item._id} className="flex justify-between items-center mb-4 border-b pb-2">
+                    <div>
+                      <h4 className="font-semibold">{item.name}</h4>
+                      <p className="text-sm text-gray-500">₹{item.price}</p>
+                      <div className="flex items-center gap-3 mt-1">
+                        <button className="bg-gray-200 px-2 rounded" onClick={() => updateQty(item._id, -1)}>-</button>
+                        <span>{item.quantity}</span>
+                        <button className="bg-gray-200 px-2 rounded" onClick={() => updateQty(item._id, 1)}>+</button>
+                      </div>
+                    </div>
+                    <button className="text-red-500 text-sm" onClick={() => setCart(cart.filter(i => i._id !== item._id))}>Remove</button>
+                  </div>
+                ))}
+                <h3 className="text-lg font-bold text-right mt-4">Total: ₹{calculateTotal()}</h3>
+                <div className="flex gap-3 mt-6"><button onClick={() => setCart([])} className="flex-1 py-3 bg-gray-200 rounded-xl font-bold text-gray-700">Clear</button><button onClick={() => { setShowCart(false); setShowModal(true); }} className="flex-1 py-3 bg-green-500 text-white rounded-xl font-bold">Checkout</button></div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
-            <input
-              type="text"
-              name="name"
-              placeholder="Your Name"
-              value={customer.name}
-              onChange={handleInputChange}
-              className="w-full mb-2 px-3 py-2 border rounded-lg"
-            />
-            <input
-              type="tel"
-              name="phone"
-              placeholder="Phone Number"
-              value={customer.phone}
-              onChange={handleInputChange}
-              className="w-full mb-2 px-3 py-2 border rounded-lg"
-            />
-            <textarea
-              name="address"
-              placeholder="Full Address"
-              value={customer.address}
-              onChange={handleInputChange}
-              className="w-full mb-2 px-3 py-2 border rounded-lg"
-            />
-            <input
-              type="text"
-              name="landmark"
-              placeholder="Landmark (Optional)"
-              value={customer.landmark}
-              onChange={handleInputChange}
-              className="w-full mb-2 px-3 py-2 border rounded-lg"
-            />
-            <div className="flex justify-between space-x-4 mt-4">
-              <button
-                onClick={() => setShowModal(false)}
-                className="w-1/2 py-3 bg-gray-300 text-gray-800 rounded-xl font-semibold hover:bg-gray-400"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handlePlaceOrder}
-                className="w-1/2 py-3 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600"
-              >
-                Place Order
+      {/* 3. Checkout Modal */}
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 p-4 animate-in fade-in">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 animate-zoomIn">
+            <h2 className="text-xl font-bold text-center mb-4">Delivery Details</h2>
+            <div className="space-y-3">
+              <input name="name" placeholder="Your Name" value={customer.name} onChange={(e) => setCustomer({...customer, name: e.target.value})} className="w-full px-3 py-2 border rounded-lg"/>
+              <input name="phone" type="tel" placeholder="Phone Number" value={customer.phone} onChange={(e) => setCustomer({...customer, phone: e.target.value})} className="w-full px-3 py-2 border rounded-lg"/>
+              
+              {/* Location Box */}
+              <div className="relative">
+                <textarea name="address" placeholder="Full Address" value={customer.address} onChange={(e) => setCustomer({...customer, address: e.target.value})} className="w-full px-3 py-2 border rounded-lg min-h-[80px]"/>
+                <button onClick={detectLocation} disabled={locationLoading} className="absolute bottom-2 right-2 bg-blue-100 text-blue-600 p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 hover:bg-blue-200 transition">
+                  {locationLoading ? "..." : <><Navigation size={12} /> Detect</>}
+                </button>
+              </div>
+
+              <input name="landmark" placeholder="Landmark (Optional)" value={customer.landmark} onChange={(e) => setCustomer({...customer, landmark: e.target.value})} className="w-full px-3 py-2 border rounded-lg"/>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setShowModal(false)} className="flex-1 py-3 bg-gray-200 rounded-xl font-bold">Cancel</button>
+              <button onClick={handlePlaceOrder} className="flex-1 py-3 bg-orange-500 text-white rounded-xl font-bold">
+                {restaurantDetails?.orderMode === 'billing' ? "Place Order" : "Send on WhatsApp"}
               </button>
             </div>
           </div>

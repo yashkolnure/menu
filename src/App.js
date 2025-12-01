@@ -44,6 +44,7 @@ import PetobaBillingLanding from "./pages/BillingLanding";
 import RestaurantMenuPageDemo from "./pages/Menudemo";
 import SplashScreen from "./pages/SplashScreen";
 import SplashScreendemo from "./pages/SplashScreendemo";
+import DeliveryDashboard from "./pages/DeliveryDashboard";
 
 // Wrapper to handle conditional Header/Footer
 function AppWrapper() {
@@ -111,6 +112,7 @@ function AppWrapper() {
         <Route path="/portfolio" element={<FeaturesPage />} />
         <Route path="/kolnure" element={<Kolnure />} />
         <Route path="/kolnure1" element={<Kolnuree />} />
+        <Route path="/deliverydashboard" element={<DeliveryDashboard />} />
         <Route path="/MembershipUpgrade" element={<MembershipUpgrade />} />
         <Route path="/upload-menu" element={<UploadMenuPage />} />
         <Route path="/petoba-billing" element={<BillingApp />} />

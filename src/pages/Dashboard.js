@@ -833,62 +833,167 @@ function Dashboard() {
                 </button>
             </div>
         </div>
-
-        {/* Add/Edit Form */}
+{/* Mobile-Friendly Add/Edit Form */}
         {showItemForm && (
-            <div className="bg-white rounded-xl shadow-lg border border-indigo-100 p-4 md:p-6 animate-fade-in-down">
-                <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-lg font-bold text-indigo-900">{itemForm._id ? "Edit Item Details" : "Create New Menu Item"}</h3>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-                    {/* ... (Keep your existing Form Input Fields here, I am abbreviating for brevity) ... */}
-                    {/* Dish Name */}
-                    <div className="col-span-1 md:col-span-2">
-                        <label className="block text-sm font-bold text-gray-700 mb-1">Dish Name</label>
-                        <input name="name" value={itemForm.name} onChange={handleItemChange} placeholder="e.g. Signature Butter Chicken" className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
+            <div className="fixed inset-0 m-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 transition-all">
+                {/* Modal Container */}
+                <div className="bg-white w-full max-w-2xl h-[90vh] sm:h-auto sm:max-h-[90vh] rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-slide-up sm:animate-fade-in-up">
+                    
+                    {/* Header */}
+                    <div className="flex justify-between items-center p-4 border-b border-gray-100 bg-gray-50 shrink-0">
+                        <h3 className="text-lg font-bold text-gray-800">
+                            {itemForm._id ? "Edit Dish" : "Add New Dish"}
+                        </h3>
+                        <button 
+                            onClick={() => setShowItemForm(false)}
+                            className="p-2 bg-white rounded-full text-gray-500 hover:text-gray-800 shadow-sm border border-gray-200"
+                        >
+                            <Icons.Close />
+                        </button>
                     </div>
-                    {/* Price */}
-                    <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-1">Selling Price</label>
-                        <input name="price" value={itemForm.price} onChange={handleItemChange} placeholder="150" className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
-                    </div>
-                    {/* Category */}
-                    <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-1">Menu Category</label>
-                        <select value={itemForm.category || ""} onChange={(e) => {
-                            const val = e.target.value;
-                            setCustomCategory(val === "__custom__" ? val : "");
-                            setItemForm({ ...itemForm, category: val === "__custom__" ? "" : val });
-                        }} className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
-                            <option value="">Select Category...</option>
-                            {allCategories.map((cat, i) => <option key={i} value={cat}>{cat}</option>)}
-                            <option value="__custom__">+ Create New Category</option>
-                        </select>
-                    </div>
-                    {/* Custom Category Input */}
-                    {customCategory === "__custom__" && (
-                        <div className="col-span-1 md:col-span-2">
-                            <label className="block text-sm font-bold text-gray-700 mb-1">New Category Name</label>
-                            <input type="text" value={itemForm.category} onChange={(e) => setItemForm({ ...itemForm, category: e.target.value })} className="w-full border border-blue-300 bg-blue-50 p-2.5 rounded-lg" />
+
+                    {/* Scrollable Content */}
+                    <div className="overflow-y-auto p-4 sm:p-6 space-y-6 bg-white flex-1">
+                        
+                        {/* 1. IMAGE UPLOADER (Big Tappable Area) */}
+                        <div className="flex justify-center">
+                            <label className="relative w-full sm:w-64 h-48 rounded-xl border-2 border-dashed border-gray-300 hover:border-indigo-500 bg-gray-50 flex flex-col items-center justify-center cursor-pointer overflow-hidden transition-all group">
+                                {itemForm.image ? (
+                                    <>
+                                        <img src={itemForm.image} alt="Preview" className="w-full h-full object-cover" />
+                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <span className="text-white font-bold text-sm bg-black/50 px-3 py-1 rounded-full">Tap to Change</span>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="text-center p-4">
+                                        <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                                            <Icons.Upload />
+                                        </div>
+                                        <span className="text-sm font-bold text-gray-600">Tap to upload photo</span>
+                                        <p className="text-xs text-gray-400 mt-1">Accepts JPG/PNG</p>
+                                    </div>
+                                )}
+                                <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                            </label>
                         </div>
-                    )}
-                    {/* Description */}
-                    <div className="col-span-1 md:col-span-4">
-                        <label className="block text-sm font-bold text-gray-700 mb-1">Description</label>
-                        <textarea name="description" value={itemForm.description} onChange={handleItemChange} rows="2" className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
+
+                        {/* 2. FORM FIELDS */}
+                        <div className="space-y-4">
+                            
+                            {/* Name */}
+                            <div>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Dish Name</label>
+                                <input 
+                                    name="name" 
+                                    value={itemForm.name} 
+                                    onChange={handleItemChange} 
+                                    placeholder="e.g. Chicken Burger" 
+                                    className="w-full bg-gray-50 border border-gray-200 text-gray-900 text-lg font-medium p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition-all" 
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                {/* Price */}
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Price (₹)</label>
+                                    <input 
+                                        name="price" 
+                                        type="number"
+                                        value={itemForm.price} 
+                                        onChange={handleItemChange} 
+                                        placeholder="00" 
+                                        className="w-full bg-gray-50 border border-gray-200 text-gray-900 text-lg font-bold p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition-all" 
+                                    />
+                                </div>
+
+                                {/* Stock Toggle */}
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Status</label>
+                                    <button
+                                        onClick={() => setItemForm(prev => ({ ...prev, inStock: !prev.inStock }))}
+                                        className={`w-full h-[54px] px-3 rounded-xl border flex items-center justify-center gap-2 transition-all font-bold text-sm ${
+                                            itemForm.inStock
+                                                ? "bg-green-100 border-green-200 text-green-700"
+                                                : "bg-red-50 border-red-100 text-red-600"
+                                        }`}
+                                    >
+                                        <span className={`w-3 h-3 rounded-full ${itemForm.inStock ? 'bg-green-600' : 'bg-red-500'}`}></span>
+                                        {itemForm.inStock ? "In Stock" : "Sold Out"}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Category */}
+                            <div>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Category</label>
+                                <div className="relative">
+                                    <select 
+                                        value={itemForm.category || ""} 
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setCustomCategory(val === "__custom__" ? val : "");
+                                            setItemForm({ ...itemForm, category: val === "__custom__" ? "" : val });
+                                        }} 
+                                        className="w-full bg-gray-50 border border-gray-200 text-gray-800 p-3 rounded-xl appearance-none focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    >
+                                        <option value="">Select Category...</option>
+                                        {allCategories.map((cat, i) => <option key={i} value={cat}>{cat}</option>)}
+                                        <option value="__custom__">+ Create New Category</option>
+                                    </select>
+                                    <div className="absolute right-3 top-3.5 pointer-events-none text-gray-500">▼</div>
+                                </div>
+                            </div>
+
+                            {/* Custom Category Input */}
+                            {customCategory === "__custom__" && (
+                                <div className="animate-fade-in-down">
+                                    <input 
+                                        type="text" 
+                                        placeholder="Enter new category name"
+                                        value={itemForm.category} 
+                                        onChange={(e) => setItemForm({ ...itemForm, category: e.target.value })} 
+                                        className="w-full border-2 border-indigo-100 bg-indigo-50 p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-indigo-900 font-medium" 
+                                    />
+                                </div>
+                            )}
+
+                            {/* Description */}
+                            <div>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Description</label>
+                                <textarea 
+                                    name="description" 
+                                    value={itemForm.description} 
+                                    onChange={handleItemChange} 
+                                    rows="3" 
+                                    placeholder="Optional: Ingredients, spicy level..."
+                                    className="w-full bg-gray-50 border border-gray-200 text-gray-700 p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none resize-none" 
+                                />
+                            </div>
+                        </div>
                     </div>
-                    {/* Buttons */}
-                    <div className="col-span-1 md:col-span-4 flex justify-end gap-3 pt-4 border-t">
-                         <button onClick={() => setShowItemForm(false)} className="px-5 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancel</button>
-                         <button onClick={itemForm._id ? handleUpdate : addItemToList} className="px-6 py-2 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 font-medium">{itemForm._id ? "Update Dish" : "Save & Add to Menu"}</button>
+
+                    {/* Footer Actions */}
+                    <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0 flex gap-3">
+                        <button 
+                            onClick={() => setShowItemForm(false)} 
+                            className="flex-1 py-3.5 text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl font-bold shadow-sm transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            onClick={itemForm._id ? handleUpdate : addItemToList} 
+                            className="flex-1 py-3.5 bg-indigo-600 text-white rounded-xl shadow-lg hover:bg-indigo-700 font-bold transform active:scale-95 transition-all"
+                        >
+                            {itemForm._id ? "Update Dish" : "Save Dish"}
+                        </button>
                     </div>
+
                 </div>
             </div>
         )}
-
         {/* Menu Grid - THIS WAS MISSING IN YOUR SNIPPET */}
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 ">
             {orderedMenuGroups.map((group, idx) => (
                 <div key={idx} className="bg-white rounded-xl shadow-sm border bg-white overflow-hidden">
                     <button 

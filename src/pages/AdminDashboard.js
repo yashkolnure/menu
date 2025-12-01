@@ -5,8 +5,10 @@ import notificationSound from '../components/notification.mp3';
 import { 
   LayoutDashboard, Receipt, History, Gift, Bell, Search, Printer, Trash2, CheckCircle, 
   Menu, X, ChefHat, Users, Clock, Volume2, VolumeX, TrendingUp, Percent, MessageCircle, 
-  AlertTriangle, Tag, Eye, Coins, CreditCard, Smartphone, Banknote, Grid, Plus, Minus 
+  AlertTriangle, Tag, Eye, Coins, CreditCard, Smartphone, Banknote, Grid, Plus, Minus, Bike,
+  MapPin, Phone // 🆕 Added icons for delivery popup
 } from "lucide-react";
+import DeliveryDashboard from "./DeliveryDashboard";
 
 // 🔗 CONFIGURATION
 const SOCKET_URL = "https://yash.avenirya.com"; 
@@ -19,12 +21,18 @@ function AdminDashboard() {
   const [menuCategories, setMenuCategories] = useState([]);
   const [isWarningDismissed, setIsWarningDismissed] = useState(false);
   
-  // 🆕 DYNAMIC TABLE COUNT (Default 12, Saved in LocalStorage)
+  // 🆕 DYNAMIC TABLE COUNT
   const [totalTables, setTotalTables] = useState(() => Number(localStorage.getItem("totalTables")) || 12);
 
-  // Queue & Popup
+  // --- QUEUES & POPUPS ---
+  // 1. Table Orders
   const [newOrderPopup, setNewOrderPopup] = useState(null);
   const [newOrderQueue, setNewOrderQueue] = useState([]);
+  
+  // 2. 🆕 Delivery Orders
+  const [newDeliveryPopup, setNewDeliveryPopup] = useState(null);
+  const [newDeliveryQueue, setNewDeliveryQueue] = useState([]);
+
   const navigate = useNavigate();
   
   // Modals
@@ -41,8 +49,10 @@ function AdminDashboard() {
   const [isLive, setIsLive] = useState(true);
   const [isTogglingLive, setIsTogglingLive] = useState(false);
 
+  // 🆕 Refs for tracking processed IDs
   const processedOrderIds = useRef(new Set()); 
-  
+  const processedDeliveryIds = useRef(new Set()); // 👈 Track delivery IDs
+
     // --- ICONS ---
   const Icons = {
     Settings: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
@@ -249,45 +259,75 @@ function AdminDashboard() {
     } catch(e) { console.error("Menu fetch failed", e); }
   };
 
+  // ✅ UPDATED FETCH ORDERS (Handles both Tables & Delivery)
   const fetchOrders = async (isFirstLoad) => {
     try {
-      const res = await fetch(`/api/admin/${restaurantId}/orders`, {
+      // 1. Fetch Table Orders
+      const resTable = await fetch(`/api/admin/${restaurantId}/orders`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await res.json();
+      const tableData = await resTable.json();
       
-      const sortedData = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      setOrders(sortedData);
-      updateBillingFromOrders(sortedData);
-
-      const pendingOrders = sortedData.filter(o => o.status === 'pending');
-      let hasNewOrder = false;
-      pendingOrders.forEach(order => {
-        if (!processedOrderIds.current.has(order._id)) {
-          processedOrderIds.current.add(order._id);
-          setNewOrderQueue(prev => [...prev, order]);
-          hasNewOrder = true;
-        }
+      // 2. Fetch Delivery Orders (Assuming new API endpoint)
+      const resDelivery = await fetch(`/api/admin/delivery/all/${restaurantId}`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
+      const deliveryData = await resDelivery.json();
 
-      if (hasNewOrder) {
-        playBell();
-        if ("Notification" in window && Notification.permission === "granted") new Notification("🔔 New Order Received!");
+      // --- Process Table Orders ---
+      if (Array.isArray(tableData)) {
+          const sortedData = tableData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          setOrders(sortedData);
+          updateBillingFromOrders(sortedData);
+
+          const pendingOrders = sortedData.filter(o => o.status === 'pending');
+          let hasNewOrder = false;
+          pendingOrders.forEach(order => {
+            if (!processedOrderIds.current.has(order._id)) {
+              processedOrderIds.current.add(order._id);
+              setNewOrderQueue(prev => [...prev, order]);
+              hasNewOrder = true;
+            }
+          });
+
+          if (hasNewOrder) playBell(); // Ding! 🔔
       }
 
+      // --- Process Delivery Orders ---
+      if (Array.isArray(deliveryData)) {
+          const pendingDeliveries = deliveryData.filter(o => o.status === 'Pending');
+          let hasNewDelivery = false;
+          
+          pendingDeliveries.forEach(order => {
+             if(!processedDeliveryIds.current.has(order._id)) {
+                 processedDeliveryIds.current.add(order._id);
+                 setNewDeliveryQueue(prev => [...prev, order]);
+                 hasNewDelivery = true;
+             }
+          });
+
+          if (hasNewDelivery) playBell(); // Ding! 🔔
+      }
+
+      // --- Manage Queues ---
+      // Table Queue
       setNewOrderQueue(prev => {
-        if (prev.length > 0 && !newOrderPopup) {
+        if (prev.length > 0 && !newOrderPopup && !newDeliveryPopup) { // Only show if no other popup
            setNewOrderPopup(prev[0]);
            return prev.slice(1);
         }
         return prev;
       });
 
-      if(!newOrderPopup && pendingOrders.length > 0 && newOrderQueue.length === 0 && isFirstLoad) {
-         const queue = pendingOrders;
-         setNewOrderPopup(queue[0]);
-         setNewOrderQueue(queue.slice(1));
-      }
+      // Delivery Queue (Only show if no table popup is active)
+      setNewDeliveryQueue(prev => {
+          if (prev.length > 0 && !newDeliveryPopup && !newOrderPopup) {
+              setNewDeliveryPopup(prev[0]);
+              return prev.slice(1);
+          }
+          return prev;
+      });
+
     } catch (err) { console.error(err); }
   };
 
@@ -390,6 +430,8 @@ const openAddDishModal = (tableNum) => {
   });
 
   // --- 4. ACTIONS ---
+  
+  // Table Order Action
   const handleAcceptOrder = async () => {
     if (!newOrderPopup) return;
     setIsAccepting(true);
@@ -400,22 +442,74 @@ const openAddDishModal = (tableNum) => {
         body: JSON.stringify({ status: "ok" }),
       });
       setOrders(prev => prev.map(o => o._id === newOrderPopup._id ? { ...o, status: "ok" } : o));
-      if (newOrderQueue.length > 0) {
-        setNewOrderPopup(newOrderQueue[0]);
-        setNewOrderQueue(prev => prev.slice(1));
-      } else {
-        setNewOrderPopup(null);
-      }
+      // Close popup & show next if available
+      setNewOrderPopup(null);
+      
+      // Give delay for UI then check delivery queue or table queue
+      setTimeout(() => {
+          if (newOrderQueue.length > 0) {
+             setNewOrderPopup(newOrderQueue[0]);
+             setNewOrderQueue(prev => prev.slice(1));
+          } else if (newDeliveryQueue.length > 0) {
+             setNewDeliveryPopup(newDeliveryQueue[0]);
+             setNewDeliveryQueue(prev => prev.slice(1));
+          }
+      }, 300);
+
     } catch (error) { alert("Failed to accept."); } 
     finally { setIsAccepting(false); }
   };
 
+  // 🆕 Delivery Order Action
+  const handleAcceptDelivery = async () => {
+      if(!newDeliveryPopup) return;
+      setIsAccepting(true);
+      try {
+          // Assuming your delivery route for update is this:
+          await fetch(`/api/admin/delivery/status/${newDeliveryPopup._id}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ status: "Confirmed" }),
+          });
+          
+          setNewDeliveryPopup(null);
+
+          setTimeout(() => {
+            if (newOrderQueue.length > 0) {
+                setNewOrderPopup(newOrderQueue[0]);
+                setNewOrderQueue(prev => prev.slice(1));
+            } else if (newDeliveryQueue.length > 0) {
+                setNewDeliveryPopup(newDeliveryQueue[0]);
+                setNewDeliveryQueue(prev => prev.slice(1));
+            }
+          }, 300);
+
+      } catch (e) { alert("Failed to accept delivery"); }
+      finally { setIsAccepting(false); }
+  };
+
   const closePopup = () => {
-    if (newOrderQueue.length > 0) {
-      setNewOrderPopup(newOrderQueue[0]);
-      setNewOrderQueue(prev => prev.slice(1));
-    } else {
-      setNewOrderPopup(null);
+    // If closing Table Popup
+    if (newOrderPopup) {
+        setNewOrderPopup(null);
+        if (newOrderQueue.length > 0) {
+            setNewOrderPopup(newOrderQueue[0]);
+            setNewOrderQueue(prev => prev.slice(1));
+        } else if (newDeliveryQueue.length > 0) {
+            setNewDeliveryPopup(newDeliveryQueue[0]);
+            setNewDeliveryQueue(prev => prev.slice(1));
+        }
+    }
+    // If closing Delivery Popup
+    else if (newDeliveryPopup) {
+        setNewDeliveryPopup(null);
+        if (newDeliveryQueue.length > 0) {
+            setNewDeliveryPopup(newDeliveryQueue[0]);
+            setNewDeliveryQueue(prev => prev.slice(1));
+        } else if (newOrderQueue.length > 0) {
+            setNewOrderPopup(newOrderQueue[0]);
+            setNewOrderQueue(prev => prev.slice(1));
+        }
     }
   };
 
@@ -618,8 +712,10 @@ const handleConfirmClear = async (method) => {
         </div>
         <nav className="mt-0 flex flex-col gap-2 p-4">
           <SidebarItem id="tables" label="My Tables" icon={Grid} />
+          {/* UPDATED LABEL HERE */}
           <SidebarItem id="orders" label="Live Dashboard" icon={LayoutDashboard} />
-          <SidebarItem id="billing" label="Billing & Tax" icon={Receipt} />
+          <SidebarItem id="billing" label="Table Billing" icon={Receipt} />
+          <SidebarItem id="delivery" label="Delivery Orders" icon={Bike} />
           <SidebarItem id="history" label="Order History" icon={History} />
           <div className="mt-auto p-2 gap-2 flex flex-col border-t border-gray-100">
               <button onClick={handlemyorders} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-600 hover:bg-gray-100">
@@ -640,14 +736,14 @@ const handleConfirmClear = async (method) => {
   </div>
   
   <div className="flex items-center gap-3 sm:gap-6">
-     {/* SOUND TOGGLE */}
-     <button onClick={unlockAudio} className={`flex items-center gap-2 px-3 py-2 rounded-full transition-colors shadow-sm border ${soundEnabled ? "bg-blue-50 text-blue-600 border-blue-200" : "bg-gray-100 text-gray-600 border-gray-300"}`} title="Click to allow sound">
+      {/* SOUND TOGGLE */}
+      <button onClick={unlockAudio} className={`flex items-center gap-2 px-3 py-2 rounded-full transition-colors shadow-sm border ${soundEnabled ? "bg-blue-50 text-blue-600 border-blue-200" : "bg-gray-100 text-gray-600 border-gray-300"}`} title="Click to allow sound">
         {soundEnabled ? <Volume2 size={18}/> : <VolumeX size={18}/>}
         <span className="text-xs font-bold hidden sm:inline">{soundEnabled ? "Sound On" : "Sound Off"}</span>
-     </button>
+      </button>
 
-     {/* 🆕 STORE STATUS TOGGLE */}
-     <button 
+      {/* 🆕 STORE STATUS TOGGLE */}
+      <button 
         onClick={toggleLiveStatus} 
         disabled={isTogglingLive}
         className={`flex items-center gap-3 px-1.5 py-1.5 rounded-full border transition-all duration-300 cursor-pointer ${
@@ -655,7 +751,7 @@ const handleConfirmClear = async (method) => {
             ? "bg-green-50 border-green-200 pr-4" 
             : "bg-gray-100 border-gray-200 pr-4"
         }`}
-     >
+      >
         {/* Toggle Switch Visual */}
         <div className={`w-10 h-6 rounded-full relative transition-colors duration-300 flex items-center ${isLive ? "bg-green-500" : "bg-gray-400"}`}>
             <div className={`w-4 h-4 bg-white rounded-full shadow-md absolute top-1 transition-all duration-300 ${isLive ? "left-5" : "left-1"}`}></div>
@@ -667,13 +763,13 @@ const handleConfirmClear = async (method) => {
                 {isLive ? "Restaurant Live" : "Ordering Closed"}
             </span>
         </div>
-     </button>
+      </button>
 
-     {/* NOTIFICATIONS */}
-     <div className="relative cursor-pointer p-1">
+      {/* NOTIFICATIONS */}
+      <div className="relative cursor-pointer p-1">
         <Bell className="text-gray-500 hover:text-orange-500 transition" size={22} />
-        {newOrderQueue.length > 0 && <span className="absolute -top-0 -right-0 w-4 h-4 bg-red-500 rounded-full border-2 border-white text-[10px] text-white flex items-center justify-center">{newOrderQueue.length}</span>}
-     </div>
+        {(newOrderQueue.length + newDeliveryQueue.length) > 0 && <span className="absolute -top-0 -right-0 w-4 h-4 bg-red-500 rounded-full border-2 border-white text-[10px] text-white flex items-center justify-center">{newOrderQueue.length + newDeliveryQueue.length}</span>}
+      </div>
   </div>
 </header>
 
@@ -789,29 +885,29 @@ const handleConfirmClear = async (method) => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition flex items-center justify-between group">
                       <div>
-                         <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Today's Revenue</p>
-                         <h3 className="text-2xl font-extrabold text-gray-800 mt-1">₹{todaysRevenue.toFixed(0)}</h3>
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Today's Revenue</p>
+                          <h3 className="text-2xl font-extrabold text-gray-800 mt-1">₹{todaysRevenue.toFixed(0)}</h3>
                       </div>
                       <div className="p-3 bg-green-50 text-green-600 rounded-xl group-hover:bg-green-100 transition"><TrendingUp size={24} /></div>
                    </div>
                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition flex items-center justify-between group">
                       <div>
-                         <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Active Orders</p>
-                         <h3 className="text-2xl font-extrabold text-gray-800 mt-1">{activeOrdersCount}</h3>
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Active Orders</p>
+                          <h3 className="text-2xl font-extrabold text-gray-800 mt-1">{activeOrdersCount}</h3>
                       </div>
                       <div className="p-3 bg-blue-50 text-blue-600 rounded-xl group-hover:bg-blue-100 transition"><ChefHat size={24} /></div>
                    </div>
                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition flex items-center justify-between group">
                       <div>
-                         <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Occupied Tables</p>
-                         <h3 className="text-2xl font-extrabold text-gray-800 mt-1">{occupiedTablesCount}</h3>
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Occupied Tables</p>
+                          <h3 className="text-2xl font-extrabold text-gray-800 mt-1">{occupiedTablesCount}</h3>
                       </div>
                       <div className="p-3 bg-orange-50 text-orange-600 rounded-xl group-hover:bg-orange-100 transition"><Users size={24} /></div>
                    </div>
                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition flex items-center justify-between group">
                       <div>
-                         <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Pending Action</p>
-                         <h3 className={`text-2xl font-extrabold mt-1 ${pendingOrdersCount > 0 ? "text-red-500" : "text-gray-800"}`}>{pendingOrdersCount}</h3>
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Pending Action</p>
+                          <h3 className={`text-2xl font-extrabold mt-1 ${pendingOrdersCount > 0 ? "text-red-500" : "text-gray-800"}`}>{pendingOrdersCount}</h3>
                       </div>
                       <div className={`p-3 rounded-xl transition ${pendingOrdersCount > 0 ? "bg-red-50 text-red-500 group-hover:bg-red-100" : "bg-gray-50 text-gray-400"}`}><Clock size={24} /></div>
                    </div>
@@ -868,22 +964,22 @@ const handleConfirmClear = async (method) => {
                   <div className="bg-white p-4 rounded-xl border border-gray-200 flex items-center gap-4 shadow-sm flex-1">
                       <div className="bg-purple-50 p-2 rounded-lg text-purple-600 flex-shrink-0"><Percent size={20} /></div>
                       <div className="flex-1">
-                         <label className="text-xs font-bold text-gray-500">Tax Rate (%)</label>
-                         <input type="number" value={taxRate} onChange={handleTaxChange} className="w-full border-b border-gray-300 focus:outline-none font-bold text-lg text-gray-700" placeholder="0" />
+                          <label className="text-xs font-bold text-gray-500">Tax Rate (%)</label>
+                          <input type="number" value={taxRate} onChange={handleTaxChange} className="w-full border-b border-gray-300 focus:outline-none font-bold text-lg text-gray-700" placeholder="0" />
                       </div>
                   </div>
                   <div className="bg-white p-4 rounded-xl border border-gray-200 flex items-center gap-4 shadow-sm flex-1">
                       <div className="bg-blue-50 p-2 rounded-lg text-blue-600 flex-shrink-0"><Tag size={20} /></div>
                       <div className="flex-1">
-                         <label className="text-xs font-bold text-gray-500">Discount (%)</label>
-                         <input type="number" value={discountRate} onChange={handleDiscountChange} className="w-full border-b border-gray-300 focus:outline-none font-bold text-lg text-gray-700" placeholder="0" />
+                          <label className="text-xs font-bold text-gray-500">Discount (%)</label>
+                          <input type="number" value={discountRate} onChange={handleDiscountChange} className="w-full border-b border-gray-300 focus:outline-none font-bold text-lg text-gray-700" placeholder="0" />
                       </div>
                   </div>
                   <div className="bg-white p-4 rounded-xl border border-gray-200 flex items-center gap-4 shadow-sm flex-1">
                       <div className="bg-orange-50 p-2 rounded-lg text-orange-600 flex-shrink-0"><Coins size={20} /></div>
                       <div className="flex-1">
-                         <label className="text-xs font-bold text-gray-500">Extra Charges (₹)</label>
-                         <input type="number" value={additionalCharges} onChange={handleChargesChange} className="w-full border-b border-gray-300 focus:outline-none font-bold text-lg text-gray-700" placeholder="0" />
+                          <label className="text-xs font-bold text-gray-500">Extra Charges (₹)</label>
+                          <input type="number" value={additionalCharges} onChange={handleChargesChange} className="w-full border-b border-gray-300 focus:outline-none font-bold text-lg text-gray-700" placeholder="0" />
                       </div>
                   </div>
                 </div>
@@ -950,134 +1046,139 @@ const handleConfirmClear = async (method) => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                       {/* Total */}
                       <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-                         <div>
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Revenue</p>
-                            <h2 className="text-xl sm:text-2xl font-extrabold text-gray-800 mt-1">₹{earningsStats.total.toFixed(2)}</h2>
-                         </div>
-                         <div className="p-3 bg-gray-100 text-gray-600 rounded-xl"><TrendingUp size={24} /></div>
+                          <div>
+                             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Revenue</p>
+                             <h2 className="text-xl sm:text-2xl font-extrabold text-gray-800 mt-1">₹{earningsStats.total.toFixed(2)}</h2>
+                          </div>
+                          <div className="p-3 bg-gray-100 text-gray-600 rounded-xl"><TrendingUp size={24} /></div>
                       </div>
 
                       {/* Cash */}
                       <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-                         <div>
-                            <p className="text-xs font-bold text-green-600/70 uppercase tracking-wider">Cash</p>
-                            <h2 className="text-xl sm:text-2xl font-extrabold text-green-600 mt-1">₹{earningsStats.cash.toFixed(2)}</h2>
-                         </div>
-                         <div className="p-3 bg-green-50 text-green-600 rounded-xl"><Banknote size={24} /></div>
+                          <div>
+                             <p className="text-xs font-bold text-green-600/70 uppercase tracking-wider">Cash</p>
+                             <h2 className="text-xl sm:text-2xl font-extrabold text-green-600 mt-1">₹{earningsStats.cash.toFixed(2)}</h2>
+                          </div>
+                          <div className="p-3 bg-green-50 text-green-600 rounded-xl"><Banknote size={24} /></div>
                       </div>
 
                       {/* Online */}
                       <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-                         <div>
-                            <p className="text-xs font-bold text-blue-600/70 uppercase tracking-wider">Online</p>
-                            <h2 className="text-xl sm:text-2xl font-extrabold text-blue-600 mt-1">₹{earningsStats.online.toFixed(2)}</h2>
-                         </div>
-                         <div className="p-3 bg-blue-50 text-blue-600 rounded-xl"><Smartphone size={24} /></div>
+                          <div>
+                             <p className="text-xs font-bold text-blue-600/70 uppercase tracking-wider">Online</p>
+                             <h2 className="text-xl sm:text-2xl font-extrabold text-blue-600 mt-1">₹{earningsStats.online.toFixed(2)}</h2>
+                          </div>
+                          <div className="p-3 bg-blue-50 text-blue-600 rounded-xl"><Smartphone size={24} /></div>
                       </div>
 
-                       {/* Others */}
-                       <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-                         <div>
-                            <p className="text-xs font-bold text-purple-600/70 uppercase tracking-wider">Others</p>
-                            <h2 className="text-xl sm:text-2xl font-extrabold text-purple-600 mt-1">₹{earningsStats.others.toFixed(2)}</h2>
-                         </div>
-                         <div className="p-3 bg-purple-50 text-purple-600 rounded-xl"><Coins size={24} /></div>
+                        {/* Others */}
+                        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+                          <div>
+                             <p className="text-xs font-bold text-purple-600/70 uppercase tracking-wider">Others</p>
+                             <h2 className="text-xl sm:text-2xl font-extrabold text-purple-600 mt-1">₹{earningsStats.others.toFixed(2)}</h2>
+                          </div>
+                          <div className="p-3 bg-purple-50 text-purple-600 rounded-xl"><Coins size={24} /></div>
                       </div>
                   </div>
 
                   {/* SEARCH BAR */}
                   <div className="relative">
-                     <Search className="absolute left-4 top-3.5 text-gray-400" size={20}/>
-                     <input 
-                       type="text" 
-                       placeholder="Search invoice #, table..." 
-                       value={searchQuery} 
-                       onChange={e => setSearchQuery(e.target.value)} 
-                       className="pl-12 pr-4 py-3 rounded-xl border border-gray-200 w-full focus:outline-none focus:ring-2 focus:ring-orange-500 shadow-sm" 
-                     />
+                      <Search className="absolute left-4 top-3.5 text-gray-400" size={20}/>
+                      <input 
+                        type="text" 
+                        placeholder="Search invoice #, table..." 
+                        value={searchQuery} 
+                        onChange={e => setSearchQuery(e.target.value)} 
+                        className="pl-12 pr-4 py-3 rounded-xl border border-gray-200 w-full focus:outline-none focus:ring-2 focus:ring-orange-500 shadow-sm" 
+                      />
                   </div>
 
                   {/* HISTORY TABLE */}
                   <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                     <div className="overflow-x-auto w-full">
-                       <table className="min-w-full divide-y divide-gray-100">
-                           <thead className="bg-gray-50">
-                               <tr>
-                                   <th className="px-4 sm:px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase whitespace-nowrap">Invoice</th>
-                                   <th className="px-4 sm:px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase whitespace-nowrap">Date</th>
-                                   <th className="px-4 sm:px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase whitespace-nowrap">Table</th>
-                                   <th className="px-4 sm:px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase whitespace-nowrap">Method</th>
-                                   <th className="px-4 sm:px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase whitespace-nowrap">Total</th>
-                                   <th className="px-4 sm:px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase whitespace-nowrap">Action</th>
-                               </tr>
-                           </thead>
-                           <tbody className="bg-white divide-y divide-gray-100">
-                               {filteredHistory.length === 0 ? (
-                                   <tr><td colSpan="6" className="text-center py-8 text-gray-400">No records found.</td></tr>
-                               ) : filteredHistory.map(o => (
-                               <tr key={o.invoiceNumber} className="hover:bg-gray-50 transition">
-                                   <td className="px-4 sm:px-6 py-4 font-medium text-gray-900 whitespace-nowrap">#{o.invoiceNumber.slice(-6)}</td>
-                                   <td className="px-4 sm:px-6 py-4 text-gray-500 text-sm whitespace-nowrap">
-                                       {new Date(o.timestamp).toLocaleDateString()}
-                                       <div className="text-xs text-gray-400">{new Date(o.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
-                                   </td>
-                                   <td className="px-4 sm:px-6 py-4 text-sm text-gray-700 whitespace-nowrap">Table {o.tableNumber}</td>
-                                   <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
-                                       <span className={`px-2 py-1 rounded text-xs font-bold ${
-                                           o.paymentMethod === 'Cash' ? 'bg-green-100 text-green-700' : 
-                                           o.paymentMethod === 'UPI' ? 'bg-blue-100 text-blue-700' :
-                                           'bg-purple-100 text-purple-700'
-                                       }`}>
-                                           {o.paymentMethod}
-                                       </span>
-                                   </td>
-                                   <td className="px-4 sm:px-6 py-4 text-right font-bold text-gray-900 whitespace-nowrap">₹{(o.finalTotal || o.totalAmount).toFixed(2)}</td>
-                                   <td className="px-4 sm:px-6 py-4 text-right whitespace-nowrap">
-                                       <button onClick={() => setSelectedHistoryView(o)} className="text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-100 border border-blue-100">View Bill</button>
-                                   </td>
-                               </tr>
-                               ))}
-                           </tbody>
-                       </table>
-                     </div>
+                      <div className="overflow-x-auto w-full">
+                        <table className="min-w-full divide-y divide-gray-100">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="px-4 sm:px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase whitespace-nowrap">Invoice</th>
+                                    <th className="px-4 sm:px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase whitespace-nowrap">Date</th>
+                                    <th className="px-4 sm:px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase whitespace-nowrap">Table</th>
+                                    <th className="px-4 sm:px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase whitespace-nowrap">Method</th>
+                                    <th className="px-4 sm:px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase whitespace-nowrap">Total</th>
+                                    <th className="px-4 sm:px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase whitespace-nowrap">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-100">
+                                {filteredHistory.length === 0 ? (
+                                    <tr><td colSpan="6" className="text-center py-8 text-gray-400">No records found.</td></tr>
+                                ) : filteredHistory.map(o => (
+                                <tr key={o.invoiceNumber} className="hover:bg-gray-50 transition">
+                                    <td className="px-4 sm:px-6 py-4 font-medium text-gray-900 whitespace-nowrap">#{o.invoiceNumber.slice(-6)}</td>
+                                    <td className="px-4 sm:px-6 py-4 text-gray-500 text-sm whitespace-nowrap">
+                                        {new Date(o.timestamp).toLocaleDateString()}
+                                        <div className="text-xs text-gray-400">{new Date(o.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                                    </td>
+                                    <td className="px-4 sm:px-6 py-4 text-sm text-gray-700 whitespace-nowrap">Table {o.tableNumber}</td>
+                                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                                        <span className={`px-2 py-1 rounded text-xs font-bold ${
+                                            o.paymentMethod === 'Cash' ? 'bg-green-100 text-green-700' : 
+                                            o.paymentMethod === 'UPI' ? 'bg-blue-100 text-blue-700' :
+                                            'bg-purple-100 text-purple-700'
+                                        }`}>
+                                            {o.paymentMethod}
+                                        </span>
+                                    </td>
+                                    <td className="px-4 sm:px-6 py-4 text-right font-bold text-gray-900 whitespace-nowrap">₹{(o.finalTotal || o.totalAmount).toFixed(2)}</td>
+                                    <td className="px-4 sm:px-6 py-4 text-right whitespace-nowrap">
+                                        <button onClick={() => setSelectedHistoryView(o)} className="text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-100 border border-blue-100">View Bill</button>
+                                    </td>
+                                </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                      </div>
                   </div>
                </div>
             )}
-
+{/* 👇 ADD THIS NEW BLOCK */}
+    {activeTab === "delivery" && (
+        <div className="h-full">
+            <DeliveryDashboard />
+        </div>
+    )}
             {/* 4. OFFERS TAB (Responsive Grid) */}
             {activeTab === "offers" && (
                <div className="space-y-6">
                   <div className="bg-white p-6 sm:p-8 rounded-2xl border border-gray-200 shadow-sm text-center">
-                     <h3 className="text-lg font-bold mb-6 text-gray-800">Create New Promotion</h3>
-                     <div className="flex flex-col items-center gap-4">
-                        <label className="cursor-pointer w-full max-w-md h-40 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center hover:border-orange-500 hover:bg-orange-50 transition bg-gray-50 overflow-hidden">
-                           {newOffer.imagePreview ? <img src={newOffer.imagePreview} className="h-full w-full object-cover" /> : <><Gift className="text-gray-400 mb-2" size={32} /><span className="text-gray-500 font-medium text-sm">Tap to upload banner</span></>}
-                           <input type="file" className="hidden" onChange={handleOfferImageUpload} accept="image/*" />
-                        </label>
-                        <button onClick={handleAddOffer} className="bg-gray-900 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-black transition transform hover:-translate-y-1 w-full sm:w-auto">Upload Offer</button>
-                     </div>
+                      <h3 className="text-lg font-bold mb-6 text-gray-800">Create New Promotion</h3>
+                      <div className="flex flex-col items-center gap-4">
+                         <label className="cursor-pointer w-full max-w-md h-40 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center hover:border-orange-500 hover:bg-orange-50 transition bg-gray-50 overflow-hidden">
+                            {newOffer.imagePreview ? <img src={newOffer.imagePreview} className="h-full w-full object-cover" /> : <><Gift className="text-gray-400 mb-2" size={32} /><span className="text-gray-500 font-medium text-sm">Tap to upload banner</span></>}
+                            <input type="file" className="hidden" onChange={handleOfferImageUpload} accept="image/*" />
+                         </label>
+                         <button onClick={handleAddOffer} className="bg-gray-900 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-black transition transform hover:-translate-y-1 w-full sm:w-auto">Upload Offer</button>
+                      </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                     {offers.map(o => (
-                        <div key={o._id} className="relative group rounded-2xl overflow-hidden shadow-sm border border-gray-100 aspect-video sm:aspect-auto">
-                           <img src={o.image} className="w-full h-full sm:h-48 object-cover" />
-                           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                              <button onClick={() => handleDeleteOffer(o._id)} className="bg-red-500 text-white p-3 rounded-full hover:bg-red-600 shadow-xl transition"><Trash2 size={20}/></button>
-                           </div>
-                        </div>
-                     ))}
+                      {offers.map(o => (
+                         <div key={o._id} className="relative group rounded-2xl overflow-hidden shadow-sm border border-gray-100 aspect-video sm:aspect-auto">
+                            <img src={o.image} className="w-full h-full sm:h-48 object-cover" />
+                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                               <button onClick={() => handleDeleteOffer(o._id)} className="bg-red-500 text-white p-3 rounded-full hover:bg-red-600 shadow-xl transition"><Trash2 size={20}/></button>
+                            </div>
+                         </div>
+                      ))}
                   </div>
                </div>
             )}
         </main>
       </div>
 
-      {/* --- POPUP FOR NEW ORDERS --- */}
+      {/* --- POPUP FOR NEW TABLE ORDERS --- */}
       {newOrderPopup && (
         <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md w-[95%] sm:w-full overflow-hidden transform transition-all scale-100">
              <div className="bg-gradient-to-r from-orange-500 to-red-600 px-6 py-5 flex justify-between items-center">
-                <div className="flex items-center gap-3"><Bell className="animate-bounce" fill="white" color="white" /><h2 className="text-white font-bold text-xl">New Order</h2></div>
+                <div className="flex items-center gap-3"><Bell className="animate-bounce" fill="white" color="white" /><h2 className="text-white font-bold text-xl">New Table Order</h2></div>
                 <button onClick={closePopup} className="text-white/80 hover:text-white transition"><X size={24} /></button>
              </div>
              <div className="p-6 sm:p-8">
@@ -1097,6 +1198,55 @@ const handleConfirmClear = async (method) => {
                    <button onClick={() => printKOT(newOrderPopup)} className="flex-1 py-4 bg-blue-50 text-blue-600 font-bold rounded-xl hover:bg-blue-100 transition flex items-center justify-center gap-2 text-sm sm:text-base"><Printer size={20} /> <span className="hidden sm:inline">Print</span></button>
                    <button onClick={handleAcceptOrder} disabled={isAccepting} className="flex-[2] py-4 bg-gray-900 text-white font-bold rounded-xl shadow-xl hover:bg-black transition flex items-center justify-center gap-2 disabled:opacity-70 transform hover:-translate-y-1 text-sm sm:text-base">
                       {isAccepting ? <span className="animate-pulse">Processing...</span> : <><CheckCircle size={20} /> Accept Order</>}
+                   </button>
+                </div>
+             </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- 🆕 POPUP FOR NEW DELIVERY ORDERS --- */}
+      {newDeliveryPopup && !newOrderPopup && (
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md w-[95%] sm:w-full overflow-hidden transform transition-all scale-100">
+             {/* Header (Different Color for Delivery) */}
+             <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-5 flex justify-between items-center">
+                <div className="flex items-center gap-3"><Bike className="animate-bounce" color="white" /><h2 className="text-white font-bold text-xl">New Delivery Order</h2></div>
+                <button onClick={closePopup} className="text-white/80 hover:text-white transition"><X size={24} /></button>
+             </div>
+             
+             <div className="p-6 sm:p-8">
+                {/* Customer Info */}
+                <div className="flex items-start gap-4 mb-6 pb-6 border-b border-gray-100">
+                   <div className="bg-green-50 p-3 rounded-full text-green-600"><MapPin size={24}/></div>
+                   <div>
+                      <h3 className="font-bold text-gray-800 text-lg">{newDeliveryPopup.customer.name}</h3>
+                      <p className="text-gray-500 text-sm mt-1">{newDeliveryPopup.customer.address}</p>
+                      <div className="flex items-center gap-2 mt-2 text-sm font-medium text-blue-600">
+                         <Phone size={14} /> {newDeliveryPopup.customer.phone}
+                      </div>
+                   </div>
+                </div>
+
+                {/* Items */}
+                <div className="bg-gray-50 rounded-xl p-5 mb-8 max-h-56 overflow-y-auto custom-scrollbar border border-gray-100">
+                   {newDeliveryPopup.items.map((item, idx) => (
+                      <div key={idx} className="flex justify-between py-2 border-b border-dashed border-gray-200 last:border-0 items-center">
+                         <span className="font-bold text-gray-700 text-base sm:text-lg">{item.quantity} <span className="text-gray-400 text-sm font-normal">x</span> {item.name}</span>
+                         <span className="text-gray-500 font-medium">₹{item.price * item.quantity}</span>
+                      </div>
+                   ))}
+                   <div className="flex justify-between pt-3 mt-2 border-t border-gray-200 font-bold text-gray-900 text-lg">
+                      <span>Total Bill</span>
+                      <span>₹{newDeliveryPopup.totalAmount}</span>
+                   </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-3">
+                   <button onClick={closePopup} className="flex-1 py-4 bg-gray-100 text-gray-600 font-bold rounded-xl hover:bg-gray-200 transition text-sm sm:text-base">Later</button>
+                   <button onClick={handleAcceptDelivery} disabled={isAccepting} className="flex-[2] py-4 bg-green-600 text-white font-bold rounded-xl shadow-xl hover:bg-green-700 transition flex items-center justify-center gap-2 disabled:opacity-70 transform hover:-translate-y-1 text-sm sm:text-base">
+                      {isAccepting ? <span className="animate-pulse">Processing...</span> : <><CheckCircle size={20} /> Accept Delivery</>}
                    </button>
                 </div>
              </div>
@@ -1177,7 +1327,7 @@ const handleConfirmClear = async (method) => {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md w-[95%] sm:w-full overflow-hidden animate-in fade-in zoom-in duration-200">
              <div className="bg-gray-900 px-6 py-5 flex justify-between items-center">
                 <h2 className="text-white font-bold text-xl">Settle Bill</h2>
-                <button onClick={() => setSettleTableData(null)} className="text-gray-400 hover:text-white"><X size={24} /></button>
+                <button onClick={() => setSettleTableData(null)} className="text-gray-400 hover:text-white"><X size={24}/></button>
              </div>
              <div className="p-6">
                 <div className="mb-6 text-center">
