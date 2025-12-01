@@ -423,27 +423,36 @@ const openAddDishModal = (tableNum) => {
 
 const handleConfirmClear = async (method) => {
     if (!settleTableData) return;
+    const safeTableParam = encodeURIComponent(settleTableData.tableNumber);
+
     try {
-      // Keep your API call exactly as is
-      const res = await fetch(`/api/clearTable/${settleTableData.tableNumber}`, {
+      const res = await fetch(`/api/clearTable/${safeTableParam}`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({ taxRate, discountRate, additionalCharges, paymentMethod: method })
       });
 
       if (res.ok) {
-        // ✅ FIX 1: Ensure both sides are Strings before comparing in setOrders
         setOrders(prev => prev.filter(o => String(o.tableNumber) !== String(settleTableData.tableNumber)));
-        
-        // ✅ FIX 2: Ensure both sides are Strings before comparing in setBillingData
-        // This was likely where the logic was failing for text-based tables
         setBillingData(prev => prev.filter(b => String(b.tableNumber) !== String(settleTableData.tableNumber)));
-        
         setSettleTableData(null); 
         fetchOrderHistory(); 
+      } else {
+        if (res.status === 404) {
+            alert("This table was not found in the database (Bad Data), removing from screen...");
+            setOrders(prev => prev.filter(o => String(o.tableNumber) !== String(settleTableData.tableNumber)));
+            setBillingData(prev => prev.filter(b => String(b.tableNumber) !== String(settleTableData.tableNumber)));
+            setSettleTableData(null); 
+        } else {
+            alert("Server Error: " + res.status);
+        }
       }
-    } catch (error) { alert("Failed to clear table."); }
+    } catch (error) { 
+        console.error(error);
+        alert("Network error."); 
+    }
   };
+  
   // --- 5. UTILS ---
   const getAggregatedTableItems = (tableOrders) => {
     const itemMap = {};
