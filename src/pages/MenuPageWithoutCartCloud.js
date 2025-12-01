@@ -138,7 +138,8 @@ function RestaurantMenuPageCloud() {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
-const filteredMenu = menuData
+// Filter Logic
+  const filteredMenu = menuData
     .filter((item) => {
       // Hide only if explicitly false
       const isInStock = !(item.inStock === false || item.inStock === "false");
@@ -161,17 +162,13 @@ const filteredMenu = menuData
       if (indexA !== -1 && indexB === -1) return -1;
       if (indexA === -1 && indexB !== -1) return 1;
 
-      // 2. If categories are the same (or neither in list), sort by Name
-      return a.name.localeCompare(b.name);
+      // 2. REMOVED Alphabetical Sorting
+      // return a.name.localeCompare(b.name); <--- THIS LINE WAS DELETED
+      
+      return 0; // Keeps the order exactly as it is in your JSON/Database
     });
 
-  const updateQty = (itemId, qty) => {
-    if (qty <= 0) return removeFromCart(itemId);
-    setCart(
-      cart.map((c) => (c._id === itemId ? { ...c, quantity: qty } : c))
-    );
-  };
-
+    
   // ✅ Cart operations
   const addToCart = (item) => {
     const exists = cart.find((c) => c._id === item._id);

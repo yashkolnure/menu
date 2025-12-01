@@ -165,7 +165,8 @@ function RestaurantMenuPagewp() {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
-const filteredMenu = menuData
+// Filter Logic
+  const filteredMenu = menuData
     .filter((item) => {
       // Hide only if explicitly false
       const isInStock = !(item.inStock === false || item.inStock === "false");
@@ -188,10 +189,9 @@ const filteredMenu = menuData
       if (indexA !== -1 && indexB === -1) return -1;
       if (indexA === -1 && indexB !== -1) return 1;
 
-      // 2. If categories are the same (or neither in list), sort by Name
-      return a.name.localeCompare(b.name);
+      return 0; // Keeps the order exactly as it is in your JSON/Database
     });
-
+    
   const addToCart = (item) => {
     const exists = cart.find((c) => c._id === item._id);
     if (exists) {
