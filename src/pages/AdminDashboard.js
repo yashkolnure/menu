@@ -421,23 +421,29 @@ const openAddDishModal = (tableNum) => {
 
   const handleInitiateClear = (tableData) => setSettleTableData(tableData);
 
-  const handleConfirmClear = async (method) => {
+const handleConfirmClear = async (method) => {
     if (!settleTableData) return;
     try {
+      // Keep your API call exactly as is
       const res = await fetch(`/api/clearTable/${settleTableData.tableNumber}`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({ taxRate, discountRate, additionalCharges, paymentMethod: method })
       });
+
       if (res.ok) {
-        setOrders(prev => prev.filter(o => o.tableNumber.toString() !== settleTableData.tableNumber.toString()));
-        setBillingData(prev => prev.filter(b => b.tableNumber !== settleTableData.tableNumber));
+        // ✅ FIX 1: Ensure both sides are Strings before comparing in setOrders
+        setOrders(prev => prev.filter(o => String(o.tableNumber) !== String(settleTableData.tableNumber)));
+        
+        // ✅ FIX 2: Ensure both sides are Strings before comparing in setBillingData
+        // This was likely where the logic was failing for text-based tables
+        setBillingData(prev => prev.filter(b => String(b.tableNumber) !== String(settleTableData.tableNumber)));
+        
         setSettleTableData(null); 
         fetchOrderHistory(); 
       }
     } catch (error) { alert("Failed to clear table."); }
   };
-
   // --- 5. UTILS ---
   const getAggregatedTableItems = (tableOrders) => {
     const itemMap = {};
