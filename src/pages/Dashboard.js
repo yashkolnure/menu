@@ -995,7 +995,7 @@ function Dashboard() {
         {/* Menu Grid - THIS WAS MISSING IN YOUR SNIPPET */}
         <div className="grid grid-cols-1 ">
             {orderedMenuGroups.map((group, idx) => (
-                <div key={idx} className="bg-white rounded-xl shadow-sm border bg-white overflow-hidden">
+                <div key={idx} className="bg-white rounded-xl shadow-sm border bg-white overflow-hidden m-1">
                     <button 
                         onClick={() => setOpenCategory(openCategory === group.category ? null : group.category)}
                         className="w-full flex justify-between items-center px-6 py-4 bg-white hover:bg-gray-50 transition-colors"

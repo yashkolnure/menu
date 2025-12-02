@@ -26,7 +26,6 @@ Here are the instructions:
 - category: The category of the item (e.g., NON VEG STARTERS, PURE VEG, BREADS, RICE, VEG STARTERS) (string)
 - description: A short descriptive line about the item (you can create it if needed) (string)
 - price: The item price in numbers (use the FULL price if multiple sizes are shown; if possible, list multiple sizes as separate objects)
-- image: Use "data:image/webp;base64,..." as a placeholder (string)
 - restaurantId: Use "${restaurantId}" as the placeholder value (string)
 
 2. Do not skip any items from the menu. Even if an item has multiple sizes (Full/Half/Quarter), create separate JSON objects for each variant.
@@ -46,7 +45,6 @@ I will now provide the menu card image. Please extract all items and return the 
     "category": "Main Course",
     "description": "Delicious aromatic rice with chicken",
     "price": 250,
-    "image": "data:image/webp;base64,...",
     "restaurantId": "${restaurantId}"
   },
   {
@@ -54,7 +52,6 @@ I will now provide the menu card image. Please extract all items and return the 
     "category": "Starters",
     "description": "Grilled paneer cubes with spices",
     "price": 180,
-    "image": "data:image/webp;base64,...",
     "restaurantId": "${restaurantId}"
   }
 ]`;
