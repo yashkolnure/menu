@@ -197,10 +197,12 @@ function RestaurantMenuPage() {
     try {
       // 🔧 Ensure this matches your backend route
       const res = await fetch(`${API_BASE_URL}/api/admin/orders/table/${id}/${tableNum}`);
+      
       if (res.ok) {
         const data = await res.json();
         setMyOrders(data);
       }
+
     } catch (e) {
       console.error("Error fetching table orders", e);
     } finally {

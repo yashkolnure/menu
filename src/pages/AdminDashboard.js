@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Receipt, History, Gift, Bell, Search, Printer, Trash2, CheckCircle, 
   Menu, X, ChefHat, Users, Clock, Volume2, VolumeX, TrendingUp, Percent, MessageCircle, 
   AlertTriangle, Tag, Eye, Coins, CreditCard, Smartphone, Banknote, Grid, Plus, Minus, Bike,
-  MapPin, Phone // 🆕 Added icons for delivery popup
+  MapPin, Phone, XCircle // 🆕 Added XCircle for Reject Button
 } from "lucide-react";
 import DeliveryDashboard from "./DeliveryDashboard";
 
@@ -268,7 +268,7 @@ function AdminDashboard() {
       });
       const tableData = await resTable.json();
       
-      // 2. Fetch Delivery Orders (Assuming new API endpoint)
+      // 2. Fetch Delivery Orders
       const resDelivery = await fetch(`/api/admin/delivery/all/${restaurantId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -277,10 +277,19 @@ function AdminDashboard() {
       // --- Process Table Orders ---
       if (Array.isArray(tableData)) {
           const sortedData = tableData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-          setOrders(sortedData);
-          updateBillingFromOrders(sortedData);
+          
+          // ✅ FIX: Filter out Cancelled AND Completed/Paid orders
+          const activeOrders = sortedData.filter(o => 
+              o.status !== 'cancelled' && 
+              o.status !== 'completed' && 
+              o.status !== 'paid'
+          );
+          
+          setOrders(activeOrders);
+          updateBillingFromOrders(activeOrders); // Update the table view
 
-          const pendingOrders = sortedData.filter(o => o.status === 'pending');
+          // Check for new pending orders
+          const pendingOrders = activeOrders.filter(o => o.status === 'pending');
           let hasNewOrder = false;
           pendingOrders.forEach(order => {
             if (!processedOrderIds.current.has(order._id)) {
@@ -290,7 +299,7 @@ function AdminDashboard() {
             }
           });
 
-          if (hasNewOrder) playBell(); // Ding! 🔔
+          if (hasNewOrder) playBell(); 
       }
 
       // --- Process Delivery Orders ---
@@ -306,20 +315,18 @@ function AdminDashboard() {
              }
           });
 
-          if (hasNewDelivery) playBell(); // Ding! 🔔
+          if (hasNewDelivery) playBell(); 
       }
 
       // --- Manage Queues ---
-      // Table Queue
       setNewOrderQueue(prev => {
-        if (prev.length > 0 && !newOrderPopup && !newDeliveryPopup) { // Only show if no other popup
+        if (prev.length > 0 && !newOrderPopup && !newDeliveryPopup) { 
            setNewOrderPopup(prev[0]);
            return prev.slice(1);
         }
         return prev;
       });
 
-      // Delivery Queue (Only show if no table popup is active)
       setNewDeliveryQueue(prev => {
           if (prev.length > 0 && !newDeliveryPopup && !newOrderPopup) {
               setNewDeliveryPopup(prev[0]);
@@ -431,7 +438,7 @@ const openAddDishModal = (tableNum) => {
 
   // --- 4. ACTIONS ---
   
-  // Table Order Action
+  // Table Order Action: ACCEPT
   const handleAcceptOrder = async () => {
     if (!newOrderPopup) return;
     setIsAccepting(true);
@@ -460,12 +467,45 @@ const openAddDishModal = (tableNum) => {
     finally { setIsAccepting(false); }
   };
 
-  // 🆕 Delivery Order Action
+// ✅ CHANGE 2: Updated Reject Logic
+  const handleRejectOrder = async () => {
+    if (!newOrderPopup) return;
+    if (!window.confirm("Are you sure you want to REJECT this table order?")) return;
+
+    setIsAccepting(true);
+    try {
+        await fetch(`/api/admin/${restaurantId}/orders/${newOrderPopup._id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ status: "cancelled" }), 
+        });
+        
+        // ✅ KEY FIX: Remove the order from state instead of just changing status
+        const updatedOrders = orders.filter(o => o._id !== newOrderPopup._id);
+        setOrders(updatedOrders);
+        
+        // ✅ KEY FIX: Immediately recalculate table status so it shows as empty
+        updateBillingFromOrders(updatedOrders); 
+
+        setNewOrderPopup(null);
+        setTimeout(() => {
+            if (newOrderQueue.length > 0) {
+                setNewOrderPopup(newOrderQueue[0]);
+                setNewOrderQueue(prev => prev.slice(1));
+            } else if (newDeliveryQueue.length > 0) {
+                setNewDeliveryPopup(newDeliveryQueue[0]);
+                setNewDeliveryQueue(prev => prev.slice(1));
+            }
+        }, 300);
+    } catch (error) { alert("Failed to reject."); }
+    finally { setIsAccepting(false); }
+  };
+
+  // Delivery Order Action: ACCEPT
   const handleAcceptDelivery = async () => {
       if(!newDeliveryPopup) return;
       setIsAccepting(true);
       try {
-          // Assuming your delivery route for update is this:
           await fetch(`/api/admin/delivery/status/${newDeliveryPopup._id}`, {
               method: "PUT",
               headers: { "Content-Type": "application/json" },
@@ -485,6 +525,35 @@ const openAddDishModal = (tableNum) => {
           }, 300);
 
       } catch (e) { alert("Failed to accept delivery"); }
+      finally { setIsAccepting(false); }
+  };
+
+  // ✅ Delivery Order Action: REJECT
+  const handleRejectDelivery = async () => {
+      if(!newDeliveryPopup) return;
+      if (!window.confirm("Are you sure you want to REJECT this delivery order?")) return;
+
+      setIsAccepting(true);
+      try {
+          await fetch(`/api/admin/delivery/status/${newDeliveryPopup._id}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ status: "Cancelled" }),
+          });
+          
+          setNewDeliveryPopup(null);
+
+          setTimeout(() => {
+            if (newOrderQueue.length > 0) {
+                setNewOrderPopup(newOrderQueue[0]);
+                setNewOrderQueue(prev => prev.slice(1));
+            } else if (newDeliveryQueue.length > 0) {
+                setNewDeliveryPopup(newDeliveryQueue[0]);
+                setNewDeliveryQueue(prev => prev.slice(1));
+            }
+          }, 300);
+
+      } catch (e) { alert("Failed to reject delivery"); }
       finally { setIsAccepting(false); }
   };
 
@@ -527,15 +596,21 @@ const handleConfirmClear = async (method) => {
       });
 
       if (res.ok) {
-        setOrders(prev => prev.filter(o => String(o.tableNumber) !== String(settleTableData.tableNumber)));
-        setBillingData(prev => prev.filter(b => String(b.tableNumber) !== String(settleTableData.tableNumber)));
+        // ✅ FIX: Filter orders locally and immediately update the grid
+        const remainingOrders = orders.filter(o => String(o.tableNumber) !== String(settleTableData.tableNumber));
+        
+        setOrders(remainingOrders);
+        updateBillingFromOrders(remainingOrders); // This clears the table in the UI
+        
         setSettleTableData(null); 
         fetchOrderHistory(); 
       } else {
         if (res.status === 404) {
-            alert("This table was not found in the database (Bad Data), removing from screen...");
-            setOrders(prev => prev.filter(o => String(o.tableNumber) !== String(settleTableData.tableNumber)));
-            setBillingData(prev => prev.filter(b => String(b.tableNumber) !== String(settleTableData.tableNumber)));
+            alert("Table already cleared or not found.");
+            // Force clear local state anyway just in case
+            const remainingOrders = orders.filter(o => String(o.tableNumber) !== String(settleTableData.tableNumber));
+            setOrders(remainingOrders);
+            updateBillingFromOrders(remainingOrders);
             setSettleTableData(null); 
         } else {
             alert("Server Error: " + res.status);
@@ -546,7 +621,7 @@ const handleConfirmClear = async (method) => {
         alert("Network error."); 
     }
   };
-  
+    
   // --- 5. UTILS ---
   const getAggregatedTableItems = (tableOrders) => {
     const itemMap = {};
@@ -1194,10 +1269,16 @@ const handleConfirmClear = async (method) => {
                       </div>
                    ))}
                 </div>
+                {/* 🆕 UPDATED FOOTER ACTIONS WITH CANCEL */}
                 <div className="flex gap-3">
-                   <button onClick={() => printKOT(newOrderPopup)} className="flex-1 py-4 bg-blue-50 text-blue-600 font-bold rounded-xl hover:bg-blue-100 transition flex items-center justify-center gap-2 text-sm sm:text-base"><Printer size={20} /> <span className="hidden sm:inline">Print</span></button>
+                   <button onClick={handleRejectOrder} disabled={isAccepting} className="flex-1 py-4 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition flex items-center justify-center gap-2 border border-red-200">
+                      <XCircle size={20}/> <span className="hidden sm:inline">Reject</span>
+                   </button>
+                   <button onClick={() => printKOT(newOrderPopup)} className="flex-1 py-4 bg-blue-50 text-blue-600 font-bold rounded-xl hover:bg-blue-100 transition flex items-center justify-center gap-2 text-sm sm:text-base border border-blue-200">
+                      <Printer size={20} /> <span className="hidden sm:inline">Print</span>
+                   </button>
                    <button onClick={handleAcceptOrder} disabled={isAccepting} className="flex-[2] py-4 bg-gray-900 text-white font-bold rounded-xl shadow-xl hover:bg-black transition flex items-center justify-center gap-2 disabled:opacity-70 transform hover:-translate-y-1 text-sm sm:text-base">
-                      {isAccepting ? <span className="animate-pulse">Processing...</span> : <><CheckCircle size={20} /> Accept Order</>}
+                      {isAccepting ? <span className="animate-pulse">Processing...</span> : <><CheckCircle size={20} /> Accept</>}
                    </button>
                 </div>
              </div>
@@ -1242,9 +1323,14 @@ const handleConfirmClear = async (method) => {
                    </div>
                 </div>
 
-                {/* Actions */}
+                {/* 🆕 UPDATED DELIVERY ACTIONS WITH CANCEL */}
                 <div className="flex gap-3">
-                   <button onClick={closePopup} className="flex-1 py-4 bg-gray-100 text-gray-600 font-bold rounded-xl hover:bg-gray-200 transition text-sm sm:text-base">Later</button>
+                   <button onClick={handleRejectDelivery} disabled={isAccepting} className="flex-1 py-4 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition text-sm sm:text-base border border-red-200 flex items-center justify-center gap-1">
+                      <XCircle size={18}/> Reject
+                   </button>
+                   <button onClick={closePopup} className="flex-1 py-4 bg-gray-100 text-gray-600 font-bold rounded-xl hover:bg-gray-200 transition text-sm sm:text-base">
+                      Later
+                   </button>
                    <button onClick={handleAcceptDelivery} disabled={isAccepting} className="flex-[2] py-4 bg-green-600 text-white font-bold rounded-xl shadow-xl hover:bg-green-700 transition flex items-center justify-center gap-2 disabled:opacity-70 transform hover:-translate-y-1 text-sm sm:text-base">
                       {isAccepting ? <span className="animate-pulse">Processing...</span> : <><CheckCircle size={20} /> Accept Delivery</>}
                    </button>
