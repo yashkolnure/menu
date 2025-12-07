@@ -91,6 +91,63 @@ const RegisterFreePage = () => {
     }
   };
 
+  // Helper to calculate expiry dates based on Plan
+const getFeatureAccess = (planType, cycle) => {
+  const now = new Date();
+  
+  // 1. FREE TRIAL (7 Days for BOTH)
+  if (planType === 'trial') {
+    const trialExpiry = new Date(now);
+    trialExpiry.setDate(trialExpiry.getDate() + 7); // Add 7 Days
+    
+    return {
+      planName: 'Free Trial',
+      qrAccess: true,
+      qrExpiresAt: trialExpiry.toISOString(),
+      billingAccess: true, // User requested both for trial
+      billingExpiresAt: trialExpiry.toISOString(),
+      expiresAt: trialExpiry.toISOString() // Global account expiry
+    };
+  }
+
+  // 2. PAID PLANS
+  // Calculate Paid Expiry (Monthly or Yearly)
+  const paidExpiry = new Date(now);
+  if (cycle === 'monthly') {
+    paidExpiry.setMonth(paidExpiry.getMonth() + 1);
+  } else {
+    paidExpiry.setFullYear(paidExpiry.getFullYear() + 1);
+  }
+
+  // Define access based on specific plan
+  const access = {
+    planName: planType,
+    expiresAt: paidExpiry.toISOString(),
+    qrAccess: false,
+    qrExpiresAt: null,
+    billingAccess: false,
+    billingExpiresAt: null
+  };
+
+  // Enable features based on plan type
+  if (planType === 'qr') {
+    access.qrAccess = true;
+    access.qrExpiresAt = paidExpiry.toISOString();
+  } 
+  else if (planType === 'billing') {
+    access.billingAccess = true;
+    access.billingExpiresAt = paidExpiry.toISOString();
+  } 
+  else if (planType === 'combo') {
+    access.qrAccess = true;
+    access.qrExpiresAt = paidExpiry.toISOString();
+    access.billingAccess = true;
+    access.billingExpiresAt = paidExpiry.toISOString();
+  }
+
+  return access;
+};
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) uploadImageToWordPress(file);
@@ -124,18 +181,21 @@ const RegisterFreePage = () => {
       if (formData.planType === "trial") expiryDate.setDate(expiryDate.getDate() + 7);
       else if (formData.billingCycle === "monthly") expiryDate.setMonth(expiryDate.getMonth() + 1);
       else expiryDate.setFullYear(expiryDate.getFullYear() + 1);
-      
-      const payload = { ...formData, expiresAt: expiryDate.toISOString() };
 
-      // 3. Free/Trial Flow
+      const payload = { ...formData, expiresAt: expiryDate.toISOString(), ...featureDetails };
+      const featureDetails = getFeatureAccess(formData.planType, formData.billingCycle);
+
+    // 3. Free/Trial Flow
       if (formData.planType === "trial" || payableAmount === 0) {
+        // Send the payload with the 7-day expiry included
         await axios.post("/api/admin/restaurants", payload);
-        setMessage("✅ Registered successfully!");
+        
+        setMessage("✅ Registered! 7-Day Trial Activated.");
         setTimeout(() => navigate("/login"), 1500);
         return;
       }
 
-      // 4. Paid Flow
+      // 4. Paid Flow (Razorpay)
       const { data } = await axios.post("/api/create-order", {
         amount: payableAmount,
         currency: "INR",
@@ -157,7 +217,12 @@ const RegisterFreePage = () => {
             });
 
             if (verifyRes.data.success) {
-              await axios.post("/api/admin/restaurants", { ...payload, paymentStatus: 'paid', transactionId: response.razorpay_payment_id });
+              // Create account with Paid status
+              await axios.post("/api/admin/restaurants", { 
+                  ...payload, 
+                  paymentStatus: 'paid', 
+                  transactionId: response.razorpay_payment_id 
+              });
               setMessage("✅ Payment Successful! Account Created.");
               setTimeout(() => navigate("/login"), 1500);
             } else {
@@ -179,6 +244,7 @@ const RegisterFreePage = () => {
       rzp1.open();
 
     } catch (err) {
+      console.error(err);
       setErrors({ general: err.response?.data?.message || "❌ Registration failed." });
     }
   };
