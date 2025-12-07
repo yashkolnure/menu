@@ -213,7 +213,11 @@ function Loginfree() {
               </button>
             </form>
 
-            <div className="mt-8 pt-6 border-t border-gray-100 text-center">
+            <div className="mt-8 pt-4 border-t border-gray-100 text-center">
+               <Link to="/membership" className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-gray-800 transition-colors group">
+                 Not a member? Register now <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform"/>
+               </Link>
+            <br></br>
                <Link to="/agency-login" className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-gray-800 transition-colors group">
                   Login as Agency <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform"/>
                </Link>
