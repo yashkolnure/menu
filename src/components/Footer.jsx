@@ -18,7 +18,7 @@ const Footer = () => {
               />
               <p className="text-gray-600 text-sm leading-relaxed">
                 Petoba KOT & Billing — a smart kitchen order ticket and billing solution by{" "}
-                <span className="font-semibold">Avenirya Solutions OPC Pvt Ltd</span>.
+                <span className="font-semibold">Yaash Nivrutti Kolnure</span>.
               </p>
             </div>
 
@@ -26,7 +26,7 @@ const Footer = () => {
             <div>
               <h3 className="font-semibold text-gray-800 mb-3 text-lg">Company</h3>
               <ul className="space-y-2 text-gray-600 text-sm">
-                <li>Avenirya Solutions OPC Pvt Ltd</li>
+                <li>Yaash Nivrutti Kolnure</li>
                 <li>109, Kohinoor Emerald</li>
                 <li>Sus - Pashan Road, Pune</li>
               </ul>
@@ -56,7 +56,7 @@ const Footer = () => {
           {/* Divider */}
           <div className="border-t border-gray-200 mt-8 pt-6 text-center">
             <p className="text-sm text-gray-500">
-              © 2025 Petoba KOT & Billing · Avenirya Solutions OPC Pvt Ltd · All rights reserved.
+              © 2025 Petoba KOT & Billing · Yaash Nivrutti Kolnure · All rights reserved.
             </p>
           </div>
         </div>
