@@ -206,84 +206,89 @@ const HomePage = () => {
           </div>
 
           
-               {/* Right Image & Floating Badges */}
-          <div className="relative flex justify-center z-10">
-             <div className="relative w-80 md:w-[28rem] animate-float">
-                {/* Background Glow */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-orange-100 to-pink-100 rounded-[2rem] rotate-6 opacity-40 blur-xl transform scale-95"></div>
-                
-                {/* Main Phone Image */}
-                <img 
-                  src="https://data.avenirya.com/wp-content/uploads/2025/10/Untitled-design-8.png" 
-                  alt="Petoba App Interface" 
-                  className="relative z-10 "
-                />
-                
-                {/* --- FLOATING BADGES START --- */}
+{/* Right Image & Floating Badges */}
+<div className="relative flex justify-center z-10 mt-8 lg:mt-0">
+  {/* 1. Container Width: Reduced to 'w-64' on mobile to create space on sides for badges. 
+      2. 'md:w-[28rem]' keeps it large on desktop.
+  */}
+  <div className="relative w-64 md:w-[28rem] animate-float">
+    
+    {/* Background Glow */}
+    <div className="absolute inset-0 bg-gradient-to-tr from-orange-100 to-pink-100 rounded-[2rem] rotate-6 opacity-40 blur-xl transform scale-95"></div>
+    
+    {/* Main Phone Image */}
+    <img 
+      src="https://data.avenirya.com/wp-content/uploads/2025/10/Untitled-design-8.png" 
+      alt="Petoba App Interface" 
+      className="relative z-10 w-full drop-shadow-2xl"
+    />
+    
+    {/* --- FLOATING BADGES START --- */}
+    {/* Global Badge Style: Smaller on mobile (scale-75), Glassmorphism, specific positioning */}
 
-                {/* 1. WhatsApp New Order (Top Left) */}
-                <div className="absolute -left-10 top-12 bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-xl flex items-center gap-3 z-20 animate-bounce border border-white/40 hidden md:flex" style={{animationDuration: '3s'}}>
-                    <div className="bg-green-100 p-2 rounded-full"><BsWhatsapp className="text-green-600 text-xl"/></div>
-                    <div>
-                        <p className="text-xs text-slate-500 font-semibold">New Order</p>
-                        <p className="text-sm font-bold text-slate-800">₹ 850.00</p>
-                    </div>
-                </div>
+    {/* 1. WhatsApp New Order (Top Left) */}
+    <div className="absolute -left-6 top-4 md:-left-10 md:top-12 bg-white/95 backdrop-blur-md p-2 md:p-3 rounded-2xl shadow-lg shadow-orange-500/10 flex items-center gap-2 md:gap-3 z-20 animate-bounce border border-white/50 scale-75 md:scale-100 origin-right" style={{animationDuration: '3s'}}>
+        <div className="bg-green-100 p-1.5 md:p-2 rounded-full"><BsWhatsapp className="text-green-600 text-lg md:text-xl"/></div>
+        <div>
+            <p className="text-[10px] md:text-xs text-slate-500 font-semibold leading-tight">New Order</p>
+            <p className="text-xs md:text-sm font-bold text-slate-800">₹ 850.00</p>
+        </div>
+    </div>
 
-                {/* 2. KOT Printed (Top Right - High) */}
-                <div className="absolute -right-12 top-20 bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-xl flex items-center gap-3 z-20 animate-bounce border border-white/40 hidden md:flex" style={{animationDuration: '4.5s', animationDelay: '1s'}}>
-                    <div className="bg-slate-100 p-2 rounded-full"><Printer className="text-slate-600 text-xl"/></div>
-                    <div>
-                        <p className="text-xs text-slate-500 font-semibold">Kitchen KOT</p>
-                        <p className="text-sm font-bold text-slate-800 flex items-center gap-1">Printed <CheckCircle2 size={12} className="text-green-500"/></p>
-                    </div>
-                </div>
+    {/* 2. KOT Printed (Top Right - slightly lower than left to avoid symmetry) */}
+    <div className="absolute -right-6 top-16 md:-right-12 md:top-20 bg-white/95 backdrop-blur-md p-2 md:p-3 rounded-2xl shadow-lg shadow-slate-400/10 flex items-center gap-2 md:gap-3 z-20 animate-bounce border border-white/50 scale-75 md:scale-100 origin-left" style={{animationDuration: '4.5s', animationDelay: '1s'}}>
+        <div className="bg-slate-100 p-1.5 md:p-2 rounded-full"><Printer className="text-slate-600 text-lg md:text-xl"/></div>
+        <div>
+            <p className="text-[10px] md:text-xs text-slate-500 font-semibold leading-tight">Kitchen KOT</p>
+            <p className="text-xs md:text-sm font-bold text-slate-800 flex items-center gap-1">Printed <CheckCircle2 size={10} className="text-green-500"/></p>
+        </div>
+    </div>
 
-                {/* 3. Table Order (Mid Left) */}
-                <div className="absolute -left-14 top-80 bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-xl flex items-center gap-3 z-20 animate-bounce border border-white/40 hidden md:flex" style={{animationDuration: '5s', animationDelay: '0.5s'}}>
-                    <div className="bg-orange-100 p-2 rounded-full"><UtensilsCrossed className="text-orange-500 text-xl"/></div>
-                    <div>
-                        <p className="text-xs text-slate-500 font-semibold">Table #4</p>
-                        <p className="text-sm font-bold text-slate-800">Ordering... 🥘</p>
-                    </div>
-                </div>
+    {/* 3. Table Order (Middle Left) */}
+    <div className="absolute -left-8 top-[45%] md:-left-14 md:top-80 bg-white/95 backdrop-blur-md p-2 md:p-3 rounded-2xl shadow-lg shadow-orange-500/10 flex items-center gap-2 md:gap-3 z-20 animate-bounce border border-white/50 scale-75 md:scale-100 origin-right" style={{animationDuration: '5s', animationDelay: '0.5s'}}>
+        <div className="bg-orange-100 p-1.5 md:p-2 rounded-full"><UtensilsCrossed className="text-orange-500 text-lg md:text-xl"/></div>
+        <div>
+            <p className="text-[10px] md:text-xs text-slate-500 font-semibold leading-tight">Table #4</p>
+            <p className="text-xs md:text-sm font-bold text-slate-800">Ordering...</p>
+        </div>
+    </div>
 
-                {/* 4. Delivery Order (Mid Right) */}
-                <div className="absolute -right-16 bottom-40 bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-xl flex items-center gap-3 z-20 animate-bounce border border-white/40 hidden md:flex" style={{animationDuration: '3.5s', animationDelay: '1.5s'}}>
-                    <div className="bg-blue-100 p-2 rounded-full"><Bike className="text-blue-600 text-xl"/></div>
-                    <div>
-                        <p className="text-xs text-slate-500 font-semibold">Delivery</p>
-                        <p className="text-sm font-bold text-slate-800">Order Received</p>
-                    </div>
-                </div>
+    {/* 4. Delivery Order (Middle Right) */}
+    <div className="absolute -right-8 top-[60%] md:-right-16 md:bottom-40 bg-white/95 backdrop-blur-md p-2 md:p-3 rounded-2xl shadow-lg shadow-blue-500/10 flex items-center gap-2 md:gap-3 z-20 animate-bounce border border-white/50 scale-75 md:scale-100 origin-left" style={{animationDuration: '3.5s', animationDelay: '1.5s'}}>
+        <div className="bg-blue-100 p-1.5 md:p-2 rounded-full"><Bike className="text-blue-600 text-lg md:text-xl"/></div>
+        <div>
+            <p className="text-[10px] md:text-xs text-slate-500 font-semibold leading-tight">Delivery</p>
+            <p className="text-xs md:text-sm font-bold text-slate-800">Received</p>
+        </div>
+    </div>
 
-                 {/* 5. 5-Star Review (Bottom Left) */}
-                 <div className="absolute -left-4 bottom-20 bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-xl flex items-center gap-3 z-20 animate-bounce border border-white/40 hidden md:flex" style={{animationDuration: '4s', animationDelay: '2s'}}>
-                    <div className="bg-yellow-100 p-2 rounded-full"><Star className="text-yellow-500 text-xl fill-yellow-500"/></div>
-                    <div>
-                        <p className="text-xs text-slate-500 font-semibold">Google Review</p>
-                        <p className="text-sm font-bold text-slate-800">5.0 Stars ⭐</p>
-                    </div>
-                </div>
+     {/* 5. 5-Star Review (Bottom Left) */}
+     <div className="absolute -left-4 bottom-12 md:-left-4 md:bottom-20 bg-white/95 backdrop-blur-md p-2 md:p-3 rounded-2xl shadow-lg shadow-yellow-500/10 flex items-center gap-2 md:gap-3 z-20 animate-bounce border border-white/50 scale-75 md:scale-100 origin-right" style={{animationDuration: '4s', animationDelay: '2s'}}>
+        <div className="bg-yellow-100 p-1.5 md:p-2 rounded-full"><Star className="text-yellow-500 text-lg md:text-xl fill-yellow-500"/></div>
+        <div>
+            <p className="text-[10px] md:text-xs text-slate-500 font-semibold leading-tight">Google Review</p>
+            <p className="text-xs md:text-sm font-bold text-slate-800">5.0 Stars</p>
+        </div>
+    </div>
 
-                {/* 6. Payment Received (Bottom Right) */}
-                <div className="absolute -right-6 bottom-10 bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-xl flex items-center gap-3 z-20 animate-bounce border border-white/40 hidden md:flex" style={{animationDuration: '6s'}}>
-                    <div className="bg-purple-100 p-2 rounded-full"><CreditCard className="text-purple-500 text-xl"/></div>
-                    <div>
-                        <p className="text-xs text-slate-500 font-semibold">Bill Paid</p>
-                        <p className="text-sm font-bold text-slate-800">₹ 1,200 (UPI)</p>
-                    </div>
-                </div>
+    {/* 6. Payment Received (Bottom Right) */}
+    <div className="absolute -right-4 bottom-4 md:-right-6 md:bottom-10 bg-white/95 backdrop-blur-md p-2 md:p-3 rounded-2xl shadow-lg shadow-purple-500/10 flex items-center gap-2 md:gap-3 z-20 animate-bounce border border-white/50 scale-75 md:scale-100 origin-left" style={{animationDuration: '6s'}}>
+        <div className="bg-purple-100 p-1.5 md:p-2 rounded-full"><CreditCard className="text-purple-500 text-lg md:text-xl"/></div>
+        <div>
+            <p className="text-[10px] md:text-xs text-slate-500 font-semibold leading-tight">Bill Paid</p>
+            <p className="text-xs md:text-sm font-bold text-slate-800">₹ 1,200</p>
+        </div>
+    </div>
 
-                {/* --- FLOATING BADGES END --- */}
-             </div>
-          </div>
+    {/* --- FLOATING BADGES END --- */}
+  </div>
+</div>
         </div>
       </section>
 
       {/* --- STATS BAR --- */}
-      <div className="border-y border-slate-100 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-6 py-8 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+      <div className=" ">
+        <div className="max-w-6xl mx-auto px-6 py-8 grid grid-cols-2 md:grid-cols-4 gap-8 text-center border-y border-slate-400 shadow-sm bg-white/80 glass-card rounded-2xl">
             {[
                 { label: "Restaurants Trusted", val: "1,000+" },
                 { label: "Orders Processed", val: "10k+" },

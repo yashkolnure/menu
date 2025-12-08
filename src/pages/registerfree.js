@@ -4,14 +4,14 @@ import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { 
   CheckCircle, AlertCircle, User, Mail, Phone, 
-  MapPin, Lock, UploadCloud, CreditCard, ShieldCheck, Zap, Receipt
+  MapPin, Lock, UploadCloud, ShieldCheck, Zap, Receipt, Calendar
 } from "lucide-react";
 
 const RegisterFreePage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
-  // ✅ Get Plan Details from URL
+  // ✅ 1. Get Plan & Cycle from URL (Defaults to trial)
   const selectedPlan = (searchParams.get("plan") || "trial").toLowerCase();
   const selectedCycle = (searchParams.get("cycle") || "monthly").toLowerCase();
 
@@ -23,7 +23,7 @@ const RegisterFreePage = () => {
     logo: "",
     password: "",
     retypePassword: "",
-    membership_level: 3, 
+    membership_level: selectedPlan === 'trial' ? 1 : 2, // 1=Trial, 2=Pro
     currency: "INR",
     planType: selectedPlan,
     billingCycle: selectedCycle
@@ -39,6 +39,7 @@ const RegisterFreePage = () => {
   const WP_APP_PASSWORD = "05mq iTLF UvJU dyaz 7KxQ 8pyc"; 
   const WP_SITE_URL = "https://website.avenirya.com";
 
+  // ✅ 2. Pricing Configuration (Matches Membership Page)
   const pricingMap = {
     qr: { monthly: 199, yearly: 899, name: "QR Menu Plan" },
     billing: { monthly: 199, yearly: 899, name: "Billing App Plan" },
@@ -47,6 +48,7 @@ const RegisterFreePage = () => {
   };
 
   useEffect(() => {
+    // Load Razorpay
     if (!window.Razorpay) {
       const script = document.createElement("script");
       script.src = "https://checkout.razorpay.com/v1/checkout.js";
@@ -54,6 +56,7 @@ const RegisterFreePage = () => {
       document.body.appendChild(script);
     }
     
+    // Set Amount
     if (selectedPlan === 'trial') {
       setPayableAmount(0);
     } else if (pricingMap[selectedPlan]) {
@@ -80,8 +83,7 @@ const RegisterFreePage = () => {
           "Content-Disposition": `attachment; filename="${file.name}"`,
         },
       });
-      const imageUrl = res.data.source_url;
-      setFormData((prev) => ({ ...prev, logo: imageUrl }));
+      setFormData((prev) => ({ ...prev, logo: res.data.source_url }));
       setMessage("✅ Logo uploaded successfully.");
     } catch (err) {
       setErrors({ logo: "❌ Logo upload failed." });
@@ -91,62 +93,50 @@ const RegisterFreePage = () => {
     }
   };
 
-  // Helper to calculate expiry dates based on Plan
-const getFeatureAccess = (planType, cycle) => {
-  const now = new Date();
-  
-  // 1. FREE TRIAL (7 Days for BOTH)
-  if (planType === 'trial') {
-    const trialExpiry = new Date(now);
-    trialExpiry.setDate(trialExpiry.getDate() + 7); // Add 7 Days
-    
+  // ✅ 3. LOGIC: Calculate Expiry & Features
+  const calculatePlanDetails = (planType, cycle) => {
+    const now = new Date();
+    let expiryDate = new Date();
+    let isQrEnabled = false;
+    let isBillingEnabled = false;
+
+    // --- A. Expiry Calculation ---
+    if (planType === 'trial') {
+      expiryDate.setDate(now.getDate() + 7); // 7 Days
+    } else if (cycle === 'monthly') {
+      expiryDate.setMonth(now.getMonth() + 1); // 1 Month
+    } else if (cycle === 'yearly') {
+      expiryDate.setFullYear(now.getFullYear() + 1); // 1 Year
+    }
+
+    // --- B. Feature Access ---
+    // Trial & Combo get BOTH
+    if (planType === 'trial' || planType === 'combo') {
+      isQrEnabled = true;
+      isBillingEnabled = true;
+    } 
+    // QR Only
+    else if (planType === 'qr') {
+      isQrEnabled = true;
+      isBillingEnabled = false;
+    }
+    // Billing Only
+    else if (planType === 'billing') {
+      isQrEnabled = false;
+      isBillingEnabled = true;
+    }
+
     return {
-      planName: 'Free Trial',
-      qrAccess: true,
-      qrExpiresAt: trialExpiry.toISOString(),
-      billingAccess: true, // User requested both for trial
-      billingExpiresAt: trialExpiry.toISOString(),
-      expiresAt: trialExpiry.toISOString() // Global account expiry
+      expiresAt: expiryDate.toISOString(),
+      qrAccess: isQrEnabled,
+      qrExpiresAt: isQrEnabled ? expiryDate.toISOString() : null,
+      billingAccess: isBillingEnabled,
+      billingExpiresAt: isBillingEnabled ? expiryDate.toISOString() : null,
+      // Backend expects these specific flags based on your schema:
+      enableOrdering: isQrEnabled ? "enabled" : "disabled",
+      billing: isBillingEnabled
     };
-  }
-
-  // 2. PAID PLANS
-  // Calculate Paid Expiry (Monthly or Yearly)
-  const paidExpiry = new Date(now);
-  if (cycle === 'monthly') {
-    paidExpiry.setMonth(paidExpiry.getMonth() + 1);
-  } else {
-    paidExpiry.setFullYear(paidExpiry.getFullYear() + 1);
-  }
-
-  // Define access based on specific plan
-  const access = {
-    planName: planType,
-    expiresAt: paidExpiry.toISOString(),
-    qrAccess: false,
-    qrExpiresAt: null,
-    billingAccess: false,
-    billingExpiresAt: null
   };
-
-  // Enable features based on plan type
-  if (planType === 'qr') {
-    access.qrAccess = true;
-    access.qrExpiresAt = paidExpiry.toISOString();
-  } 
-  else if (planType === 'billing') {
-    access.billingAccess = true;
-    access.billingExpiresAt = paidExpiry.toISOString();
-  } 
-  else if (planType === 'combo') {
-    access.qrAccess = true;
-    access.qrExpiresAt = paidExpiry.toISOString();
-    access.billingAccess = true;
-    access.billingExpiresAt = paidExpiry.toISOString();
-  }
-
-  return access;
-};
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -176,26 +166,25 @@ const getFeatureAccess = (planType, cycle) => {
         return;
       }
 
-      // 2. Expiry
-      const expiryDate = new Date();
-      if (formData.planType === "trial") expiryDate.setDate(expiryDate.getDate() + 7);
-      else if (formData.billingCycle === "monthly") expiryDate.setMonth(expiryDate.getMonth() + 1);
-      else expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+      // 2. Prepare Payload with Calculated Dates
+      const planDetails = calculatePlanDetails(formData.planType, formData.billingCycle);
+      
+      const payload = { 
+        ...formData, 
+        ...planDetails, // Merges expiresAt, billing, enableOrdering, etc.
+        paymentStatus: 'pending' // Default
+      };
 
-      const featureDetails = getFeatureAccess(formData.planType, formData.billingCycle);
-      const payload = { ...formData, expiresAt: expiryDate.toISOString(), ...featureDetails };
-
-    // 3. Free/Trial Flow
+      // 3. TRIAL FLOW (No Payment)
       if (formData.planType === "trial" || payableAmount === 0) {
-        // Send the payload with the 7-day expiry included
-        await axios.post("/api/admin/restaurants", payload);
+        await axios.post("/api/admin/restaurant/register", { ...payload, paymentStatus: 'trial' });
         
         setMessage("✅ Registered! 7-Day Trial Activated.");
         setTimeout(() => navigate("/login"), 1500);
         return;
       }
 
-      // 4. Paid Flow (Razorpay)
+      // 4. PAID FLOW (Razorpay)
       const { data } = await axios.post("/api/create-order", {
         amount: payableAmount,
         currency: "INR",
@@ -217,8 +206,8 @@ const getFeatureAccess = (planType, cycle) => {
             });
 
             if (verifyRes.data.success) {
-              // Create account with Paid status
-              await axios.post("/api/admin/restaurants", { 
+              // Register with PAID status
+              await axios.post("/api/admin/restaurants/register", { 
                   ...payload, 
                   paymentStatus: 'paid', 
                   transactionId: response.razorpay_payment_id 
@@ -250,218 +239,231 @@ const getFeatureAccess = (planType, cycle) => {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans">
+    <div className="relative min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans bg-gray-50">
       <Helmet>
-        <title>Register - Petoba</title>
+        <title>Register | {pricingMap[selectedPlan]?.name}</title>
       </Helmet>
 
-      {/* Decorative Background Elements */}
-        <div className="absolute -top-32 -left-32 w-96 h-96 bg-orange-200 rounded-full opacity-30 filter blur-3xl animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-32 w-96 h-96 bg-red-200 rounded-full opacity-30 filter blur-3xl animate-blob animation-delay-4000"></div>
-     
+      {/* Background blobs */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-orange-200/30 rounded-full blur-[100px]"></div>
+          <div className="absolute top-[20%] right-[0%] w-[30%] h-[30%] bg-blue-200/30 rounded-full blur-[100px]"></div>
+      </div>
 
-      <div className="max-w-6xl w-full bg-white rounded-[2.5rem] shadow-xl flex flex-col lg:flex-row relative z-10 border border-gray-100">
+      <div className="max-w-6xl w-full bg-white rounded-[2rem] shadow-2xl flex flex-col lg:flex-row relative z-10 border border-gray-100 overflow-hidden">
         
-        {/* --- LEFT: REGISTRATION FORM --- */}
-        <div className="lg:w-[60%] p-8 lg:p-14 order-2 lg:order-1">
+        {/* --- LEFT: FORM --- */}
+        <div className="lg:w-[60%] p-8 lg:p-12 order-2 lg:order-1">
           
-          <div className="mb-10">
-            <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Create your account</h2>
-            <p className="mt-2 text-gray-500">Enter your details below to setup your digital restaurant.</p>
+          <div className="mb-8">
+            <h2 className="text-3xl font-extrabold text-gray-900">Get Started</h2>
+            <p className="mt-2 text-gray-500">
+               Registering for: <span className="font-bold text-orange-600">{pricingMap[selectedPlan]?.name}</span>
+               {selectedPlan !== 'trial' && <span className="text-sm bg-gray-100 px-2 py-1 rounded-md ml-2 text-gray-600 uppercase">{selectedCycle}</span>}
+            </p>
           </div>
 
           {errors.general && <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-xl flex items-center gap-3"><AlertCircle size={20}/> {errors.general}</div>}
           {message && <div className="mb-6 p-4 bg-green-50 border border-green-100 text-green-600 rounded-xl flex items-center gap-3"><CheckCircle size={20}/> {message}</div>}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             
-            {/* Name & Email */}
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className="block text-xs font-bold text-gray-600 uppercase mb-2 ml-1">Restaurant Name</label>
-                <div className="relative group">
-                  <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
-                  <input type="text" name="name" placeholder="e.g. Pizza Paradise" value={formData.name} onChange={handleChange} 
-                    className="pl-12 w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent block p-3.5 transition-all outline-none" />
+                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Restaurant Name</label>
+                <div className="relative mt-1">
+                    <User className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                    <input type="text" name="name" placeholder="Pizza Paradise" value={formData.name} onChange={handleChange} 
+                        className="pl-10 w-full bg-gray-50 border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none transition-all" />
                 </div>
-                {errors.name && <p className="mt-1 text-xs text-red-500 ml-1">{errors.name}</p>}
+                {errors.name && <p className="text-xs text-red-500 mt-1 ml-1">{errors.name}</p>}
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-600 uppercase mb-2 ml-1">Email Address</label>
-                <div className="relative group">
-                  <Mail className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
-                  <input type="email" name="email" placeholder="owner@example.com" value={formData.email} onChange={handleChange} 
-                    className="pl-12 w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent block p-3.5 transition-all outline-none" />
+                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Email</label>
+                <div className="relative mt-1">
+                    <Mail className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                    <input type="email" name="email" placeholder="owner@gmail.com" value={formData.email} onChange={handleChange} 
+                        className="pl-10 w-full bg-gray-50 border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none transition-all" />
                 </div>
-                {errors.email && <p className="mt-1 text-xs text-red-500 ml-1">{errors.email}</p>}
+                {errors.email && <p className="text-xs text-red-500 mt-1 ml-1">{errors.email}</p>}
               </div>
             </div>
 
-            {/* Contact & Address */}
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className="block text-xs font-bold text-gray-600 uppercase mb-2 ml-1">Contact Number</label>
-                <div className="relative group">
-                  <Phone className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
-                  <input type="text" name="contact" placeholder="9876543210" maxLength={10} 
-                    value={formData.contact.replace(/^91/, "")} 
-                    onChange={(e) => {
-                      const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
-                      setFormData({ ...formData, contact: digits ? `91${digits}` : "" });
-                    }}
-                    className="pl-12 w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent block p-3.5 transition-all outline-none" 
-                  />
+                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Mobile</label>
+                <div className="relative mt-1">
+                    <Phone className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                    <input type="text" name="contact" placeholder="9876543210" maxLength={10} 
+                        value={formData.contact.replace(/^91/, "")} 
+                        onChange={(e) => {
+                          const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+                          setFormData({ ...formData, contact: digits ? `91${digits}` : "" });
+                        }}
+                        className="pl-10 w-full bg-gray-50 border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none transition-all" />
                 </div>
-                {errors.contact && <p className="mt-1 text-xs text-red-500 ml-1">{errors.contact}</p>}
+                {errors.contact && <p className="text-xs text-red-500 mt-1 ml-1">{errors.contact}</p>}
               </div>
-              
+
               <div>
-                <label className="block text-xs font-bold text-gray-600 uppercase mb-2 ml-1">Location</label>
-                <div className="relative group">
-                  <MapPin className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
-                  <input type="text" name="address" placeholder="City, Area..." value={formData.address} onChange={handleChange} 
-                    className="pl-12 w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent block p-3.5 transition-all outline-none" />
+                <label className="text-xs font-bold text-gray-500 uppercase ml-1">City / Area</label>
+                <div className="relative mt-1">
+                    <MapPin className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                    <input type="text" name="address" placeholder="e.g. Pune, Kothrud" value={formData.address} onChange={handleChange} 
+                        className="pl-10 w-full bg-gray-50 border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none transition-all" />
                 </div>
-                {errors.address && <p className="mt-1 text-xs text-red-500 ml-1">{errors.address}</p>}
+                {errors.address && <p className="text-xs text-red-500 mt-1 ml-1">{errors.address}</p>}
               </div>
             </div>
 
-            {/* Passwords */}
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                <div>
-                  <label className="block text-xs font-bold text-gray-600 uppercase mb-2 ml-1">Password</label>
-                  <div className="relative group">
-                    <Lock className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
-                    <input type="password" name="password" value={formData.password} onChange={handleChange} 
-                      className="pl-12 w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent block p-3.5 transition-all outline-none" />
+                  <label className="text-xs font-bold text-gray-500 uppercase ml-1">Password</label>
+                  <div className="relative mt-1">
+                      <Lock className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                      <input type="password" name="password" value={formData.password} onChange={handleChange} 
+                          className="pl-10 w-full bg-gray-50 border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none transition-all" />
                   </div>
-                  {errors.password && <p className="mt-1 text-xs text-red-500 ml-1">{errors.password}</p>}
+                  {errors.password && <p className="text-xs text-red-500 mt-1 ml-1">{errors.password}</p>}
                </div>
                <div>
-                  <label className="block text-xs font-bold text-gray-600 uppercase mb-2 ml-1">Confirm Password</label>
-                  <div className="relative group">
-                    <Lock className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
-                    <input type="password" name="retypePassword" value={formData.retypePassword} onChange={handleChange} 
-                      className="pl-12 w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent block p-3.5 transition-all outline-none" />
+                  <label className="text-xs font-bold text-gray-500 uppercase ml-1">Confirm Password</label>
+                  <div className="relative mt-1">
+                      <Lock className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                      <input type="password" name="retypePassword" value={formData.retypePassword} onChange={handleChange} 
+                          className="pl-10 w-full bg-gray-50 border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none transition-all" />
                   </div>
-                  {errors.retypePassword && <p className="mt-1 text-xs text-red-500 ml-1">{errors.retypePassword}</p>}
+                  {errors.retypePassword && <p className="text-xs text-red-500 mt-1 ml-1">{errors.retypePassword}</p>}
                </div>
             </div>
 
-            {/* Logo Upload - Clean Style */}
-            <div className="mt-4">
-              <label className="block text-xs font-bold text-gray-600 uppercase mb-2 ml-1">Restaurant Logo</label>
-              <div className="group border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-orange-500 hover:bg-orange-50 transition-all cursor-pointer relative bg-gray-50">
+            {/* Logo Upload */}
+            <div className="mt-2">
+              <label className="text-xs font-bold text-gray-500 uppercase ml-1">Restaurant Logo</label>
+              <div className="mt-1 border-2 border-dashed border-gray-200 hover:border-orange-400 bg-gray-50 rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer relative transition-colors group">
                 <input type="file" accept="image/*" onChange={handleImageChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-                <div className="space-y-2">
-                  {formData.logo ? (
-                    <img src={formData.logo} alt="Logo Preview" className="h-16 w-16 object-contain mx-auto rounded-lg shadow-sm" />
-                  ) : (
-                    <div className="mx-auto h-12 w-12 text-gray-300 group-hover:text-orange-500 transition-colors flex items-center justify-center">
-                      <UploadCloud size={32} />
-                    </div>
-                  )}
-                  <div className="text-sm text-gray-500">
-                    {formData.logo ? <span className="text-green-600 font-bold">Logo Uploaded!</span> : <span><span className="font-bold text-orange-600">Click to upload</span> or drag and drop</span>}
-                  </div>
-                </div>
-                {uploading && <div className="absolute inset-0 bg-white/90 flex items-center justify-center text-sm font-bold text-orange-600 rounded-xl">Uploading...</div>}
+                {formData.logo ? (
+                   <div className="flex items-center gap-3">
+                      <img src={formData.logo} alt="Logo" className="h-12 w-12 object-contain rounded-md" />
+                      <span className="text-green-600 font-bold text-sm">Logo Uploaded!</span>
+                   </div>
+                ) : (
+                   <div className="flex flex-col items-center text-gray-400 group-hover:text-orange-500">
+                      <UploadCloud size={24} className="mb-1"/>
+                      <span className="text-xs">Click to upload logo</span>
+                   </div>
+                )}
+                {uploading && <div className="absolute inset-0 bg-white/80 flex items-center justify-center text-xs font-bold text-orange-600">Uploading...</div>}
               </div>
-              {errors.logo && <p className="text-xs text-red-500 ml-1 mt-1">{errors.logo}</p>}
+              {errors.logo && <p className="text-xs text-red-500 mt-1 ml-1">{errors.logo}</p>}
             </div>
 
             <button type="submit" disabled={uploading} 
-              className="w-full flex items-center justify-center gap-2 py-4 px-6 mt-6 rounded-xl shadow-lg shadow-orange-200 text-lg font-bold text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 active:scale-[0.98] transition-all">
+              className="w-full flex items-center justify-center gap-2 py-4 rounded-xl shadow-lg shadow-orange-200 text-lg font-bold text-white bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 active:scale-[0.98] transition-all mt-4">
               {payableAmount > 0 ? (
                 <> Pay ₹{payableAmount} & Register </>
               ) : (
-                <> Start Free Trial <span aria-hidden="true">→</span> </>
+                <> Start 7-Day Free Trial <span aria-hidden="true">→</span> </>
               )}
             </button>
             
-            <p className="text-center text-sm text-gray-500">
-              Already have an account? <Link to="/login" className="font-bold text-orange-600 hover:text-orange-700 hover:underline">Log in</Link>
+            <p className="text-center text-sm text-gray-500 mt-4">
+              Already have an account? <Link to="/login" className="font-bold text-orange-600 hover:underline">Log in</Link>
             </p>
 
           </form>
         </div>
 
-        {/* --- RIGHT: SUMMARY (Light & Clean) --- */}
-        <div className="lg:w-[40%] bg-orange-50 border-l border-orange-100 p-8 lg:p-14 flex flex-col relative order-1 lg:order-2">
+        {/* --- RIGHT: SUMMARY & BENEFITS --- */}
+        <div className="lg:w-[40%] bg-gradient-to-br from-orange-50 to-orange-100/50 p-8 lg:p-12 border-l border-gray-100 flex flex-col order-1 lg:order-2">
           
-          <div className="relative z-10 h-full flex flex-col">
-            <h3 className="text-xs font-bold text-orange-800 uppercase tracking-widest mb-6">Order Summary</h3>
+          <div className="sticky top-8">
+            <h3 className="text-xs font-bold text-orange-800 uppercase tracking-widest mb-6">Plan Summary</h3>
             
-            {/* Receipt Card */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-orange-100 mb-8 relative overflow-hidden">
-               {/* Decorative top border */}
-               <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-orange-400 to-red-500"></div>
-
-               <div className="flex justify-between items-start mb-4 mt-2">
+            {/* Plan Card */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-orange-100/50 mb-8">
+               <div className="flex justify-between items-start mb-4">
                  <div>
-                   <h4 className="text-xl font-bold text-gray-900">{pricingMap[selectedPlan]?.name || "Plan"}</h4>
-                   <p className="text-gray-500 text-sm capitalize">{selectedCycle} Subscription</p>
+                   <h4 className="text-xl font-extrabold text-gray-900">{pricingMap[selectedPlan]?.name}</h4>
+                   <p className="text-gray-500 text-sm">{selectedPlan === 'trial' ? '7 Days Validity' : `${selectedCycle === 'monthly' ? '1 Month' : '1 Year'} Validity`}</p>
                  </div>
-                 <div className="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs font-bold self-start">
-                   {selectedPlan === 'trial' ? 'FREE' : 'PRO'}
-                 </div>
+                 {selectedPlan !== 'trial' && (
+                    <div className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">
+                       {selectedCycle === 'yearly' ? '-25% OFF' : 'PRO'}
+                    </div>
+                 )}
                </div>
 
-               <div className="space-y-3 py-4 border-t border-dashed border-gray-200">
-                  <div className="flex justify-between text-sm text-gray-600">
-                     <span>Subtotal</span>
-                     <span>₹{payableAmount}</span>
-                  </div>
-                  {selectedPlan !== 'trial' && (
-                  <div className="flex justify-between text-sm text-green-600">
-                     <span>Discount</span>
-                     <span>Applied</span>
-                  </div>
-                  )}
+               <div className="py-4 border-t border-dashed border-gray-200 space-y-2">
+                 <div className="flex justify-between text-sm text-gray-600">
+                    <span>Base Price</span>
+                    <span>₹{payableAmount}</span>
+                 </div>
+                 <div className="flex justify-between text-sm text-gray-600">
+                    <span>Taxes</span>
+                    <span>₹0</span>
+                 </div>
                </div>
 
                <div className="flex justify-between items-center pt-4 border-t border-gray-200">
-                 <span className="font-bold text-gray-800">Total</span>
+                 <span className="font-bold text-gray-800">Total Payable</span>
                  <span className="text-3xl font-extrabold text-gray-900">₹{payableAmount}</span>
                </div>
             </div>
 
-            {/* Benefits List */}
-            <div className="space-y-5 mt-2">
-               <div className="flex items-start gap-4">
-                 <div className="p-2 bg-white rounded-full text-green-600 shadow-sm"><ShieldCheck size={20} /></div>
-                 <div>
-                   <h5 className="font-bold text-gray-900 text-sm">Secure Payment</h5>
-                   <p className="text-xs text-gray-500 mt-0.5">256-bit SSL encrypted. We never store your card details.</p>
-                 </div>
-               </div>
-               
-               <div className="flex items-start gap-4">
-                 <div className="p-2 bg-white rounded-full text-blue-600 shadow-sm"><Zap size={20} /></div>
-                 <div>
-                   <h5 className="font-bold text-gray-900 text-sm">Instant Access</h5>
-                   <p className="text-xs text-gray-500 mt-0.5">Your digital menu and dashboard will be ready immediately.</p>
-                 </div>
-               </div>
+            {/* Feature List for Selected Plan */}
+            <div className="space-y-4">
+                <h4 className="font-bold text-gray-800 text-sm mb-2">What's included:</h4>
+                
+                {/* Dynamic Features based on Plan */}
+                {(selectedPlan === 'qr' || selectedPlan === 'combo' || selectedPlan === 'trial') && (
+                    <div className="flex items-start gap-3 text-sm text-gray-600">
+                        <CheckCircle size={18} className="text-green-500 shrink-0 mt-0.5" />
+                        <span>QR Menu & WhatsApp Ordering</span>
+                    </div>
+                )}
+                
+                {(selectedPlan === 'billing' || selectedPlan === 'combo' || selectedPlan === 'trial') && (
+                    <div className="flex items-start gap-3 text-sm text-gray-600">
+                        <CheckCircle size={18} className="text-green-500 shrink-0 mt-0.5" />
+                        <span>Billing POS & KOT Management</span>
+                    </div>
+                )}
 
-               <div className="flex items-start gap-4">
-                 <div className="p-2 bg-white rounded-full text-orange-600 shadow-sm"><Receipt size={20} /></div>
-                 <div>
-                   <h5 className="font-bold text-gray-900 text-sm">GST Invoice</h5>
-                   <p className="text-xs text-gray-500 mt-0.5">Automated tax invoice sent to your email after payment.</p>
-                 </div>
+                <div className="flex items-start gap-3 text-sm text-gray-600">
+                    <CheckCircle size={18} className="text-green-500 shrink-0 mt-0.5" />
+                    <span>Admin Dashboard Access</span>
+                </div>
+                
+                <div className="flex items-start gap-3 text-sm text-gray-600">
+                    <CheckCircle size={18} className="text-green-500 shrink-0 mt-0.5" />
+                    <span>Free Setup Support</span>
+                </div>
+            </div>
+
+            {/* Trust Badges */}
+            <div className="mt-8 pt-8 border-t border-gray-200 grid grid-cols-2 gap-4">
+               <div className="flex items-center gap-2">
+                  <ShieldCheck size={18} className="text-gray-400"/>
+                  <span className="text-xs text-gray-500 font-medium">Secure Payment</span>
+               </div>
+               <div className="flex items-center gap-2">
+                  <Zap size={18} className="text-gray-400"/>
+                  <span className="text-xs text-gray-500 font-medium">Instant Activation</span>
+               </div>
+               <div className="flex items-center gap-2">
+                  <Receipt size={18} className="text-gray-400"/>
+                  <span className="text-xs text-gray-500 font-medium">GST Invoice</span>
+               </div>
+               <div className="flex items-center gap-2">
+                  <Calendar size={18} className="text-gray-400"/>
+                  <span className="text-xs text-gray-500 font-medium">Cancel Anytime</span>
                </div>
             </div>
 
-            <div className="mt-auto pt-10 text-center">
-              <p className="text-xs text-gray-400">
-                &copy; {new Date().getFullYear()} Petoba Solutions. <br/> By continuing, you agree to our Terms & Privacy Policy.
-              </p>
-            </div>
           </div>
         </div>
-
 
       </div>
     </div>
