@@ -182,8 +182,8 @@ const getFeatureAccess = (planType, cycle) => {
       else if (formData.billingCycle === "monthly") expiryDate.setMonth(expiryDate.getMonth() + 1);
       else expiryDate.setFullYear(expiryDate.getFullYear() + 1);
 
-      const payload = { ...formData, expiresAt: expiryDate.toISOString(), ...featureDetails };
       const featureDetails = getFeatureAccess(formData.planType, formData.billingCycle);
+      const payload = { ...formData, expiresAt: expiryDate.toISOString(), ...featureDetails };
 
     // 3. Free/Trial Flow
       if (formData.planType === "trial" || payableAmount === 0) {
