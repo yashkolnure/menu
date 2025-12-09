@@ -696,12 +696,12 @@ const getAggregatedTableItems = (tableOrders) => {
         @page { size: auto;  margin: 0mm; }
         body { font-family: 'Courier New', monospace; margin: 5px; padding: 0; width: 76mm; }
         h3 { margin: 5px 0; text-align: center; font-size: 18px; }
-        p { margin: 2px 0; font-size: 12px; }
+        p { margin: 2px 0; font-size: 14px; }
         .text-center { text-align: center; }
         .border-bottom { border-bottom: 1px dashed #000; margin: 5px 0; }
-        table { width: 100%; font-size: 12px; border-collapse: collapse; }
+        table { width: 100%; font-size: 14px; border-collapse: collapse; }
         th { text-align: left; border-bottom: 1px solid #000; }
-        td { padding: 2px 0; }
+        td { padding: 2px 0; font-weight: bold; }
         .total-section { text-align: right; margin-top: 5px; }
         .grand-total { font-size: 16px; font-weight: bold; margin-top: 5px; }
       </style>
