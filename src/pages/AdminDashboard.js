@@ -622,8 +622,10 @@ const handleConfirmClear = async (method) => {
     }
   };
     
-  // --- 5. UTILS ---
-  const getAggregatedTableItems = (tableOrders) => {
+const getAggregatedTableItems = (tableOrders) => {
+    // ✅ Add this safety check
+    if (!tableOrders || !Array.isArray(tableOrders)) return [];
+
     const itemMap = {};
     tableOrders.forEach(order => {
       const items = order.items || order.orderItems || []; 
@@ -662,21 +664,31 @@ const handleConfirmClear = async (method) => {
     window.open(`https://wa.me/${customerPhone}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
-  const printBill = (tableNumber, orders, subTotalOverride = null) => {
+  const printBill = (tableNumber, ordersInput, subTotalOverride = null) => {
     let subTotal = subTotalOverride;
-    
-    // Safety check: ensure we have data
-    if (subTotal === null) {
+    let ordersToPrint = ordersInput;
+
+    // 1. If printing from the Active Billing Card (ordersInput is undefined)
+    if (subTotal === null || !ordersToPrint) {
       const data = billingData.find((d) => d.tableNumber === tableNumber);
       if (!data) {
-        alert("No billing data found for this table.");
+        alert("No active billing data found for Table " + tableNumber);
         return;
       }
       subTotal = data.subTotal;
+      ordersToPrint = data.orders; // ✅ FIX: Get orders from state
+    }
+
+    // 2. Safety Check: If still no orders, stop
+    if (!ordersToPrint || !Array.isArray(ordersToPrint)) {
+      alert("No items found to print!");
+      return;
     }
 
     const { tax, discount, total } = calculateTotals(subTotal);
-    const aggregatedItems = getAggregatedTableItems(orders);
+    
+    // ✅ PASS THE CORRECT ORDERS ARRAY
+    const aggregatedItems = getAggregatedTableItems(ordersToPrint);
 
     // CSS for 3-inch (80mm) Thermal Printer
     const styles = `
@@ -686,7 +698,6 @@ const handleConfirmClear = async (method) => {
         h3 { margin: 5px 0; text-align: center; font-size: 18px; }
         p { margin: 2px 0; font-size: 12px; }
         .text-center { text-align: center; }
-        .text-right { text-align: right; }
         .border-bottom { border-bottom: 1px dashed #000; margin: 5px 0; }
         table { width: 100%; font-size: 12px; border-collapse: collapse; }
         th { text-align: left; border-bottom: 1px solid #000; }
@@ -734,28 +745,21 @@ const handleConfirmClear = async (method) => {
           </div>
           
           <div class="border-bottom"></div>
-          <p class="text-center">Thank you for dining with us!</p>
+          <p class="text-center">Thank you!</p>
           <br/>
         </body>
       </html>
     `;
 
-    // Open Window, Write content, Focus, and Print
     const win = window.open("", "_blank", "width=300,height=600");
     if (win) {
       win.document.open();
       win.document.write(html);
       win.document.close();
-      
-      // WAIT for content to load, then print
       setTimeout(() => {
         win.focus();
         win.print();
-        // Optional: Close after print (uncomment if desired)
-        // win.close();
       }, 500);
-    } else {
-        alert("Pop-up blocked. Please allow pop-ups for this site.");
     }
   };
 
