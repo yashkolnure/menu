@@ -712,7 +712,7 @@ const getAggregatedTableItems = (tableOrders) => {
         <head>${styles}</head>
         <body>
           <div class="text-center">
-            ${restaurantDetails.logo ? `<img src="${restaurantDetails.logo}" style="width:50px;"/>` : ''}
+            ${restaurantDetails.logo ? `<img src="${restaurantDetails.logo}" style="width:70px;"/>` : ''}
             <h3>${restaurantDetails.name || 'Restaurant'}</h3>
             <p>${restaurantDetails.address || ''}</p>
             <p>${restaurantDetails.contact || ''}</p>
