@@ -33,6 +33,7 @@ import BulkUploadInfo from "./pages/bulkuploadinfo";
 import AgencyDashboard from "./pages/AgencyDashboard";
 import Dashboard from "./pages/Dashboard";
 import Dashboard1 from "./pages/Dashboard1";
+import Dashboard2 from "./pages/Dashboard2";
 import FeaturesPage from "./pages/FeaturesPage";
 import Kolnure from "./pages/Kolnure";
 import Kolnuree from "./pages/kolnureyash";
@@ -112,6 +113,7 @@ function AppWrapper() {
         <Route path="/agency-dashboard" element={<AgencyDashboard />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dashboard1" element={<Dashboard1 />} />
+        <Route path="/dashboard2" element={<Dashboard2 />} />
         <Route path="/bulk-upload" element={<BulkUploadInfo />} />
         <Route path="/portfolio" element={<FeaturesPage />} />
         <Route path="/kolnure" element={<Kolnure />} />
