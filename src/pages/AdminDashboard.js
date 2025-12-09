@@ -664,36 +664,157 @@ const handleConfirmClear = async (method) => {
 
   const printBill = (tableNumber, orders, subTotalOverride = null) => {
     let subTotal = subTotalOverride;
-    if(subTotal === null) {
-        const data = billingData.find(d => d.tableNumber === tableNumber);
-        if (!data) return;
-        subTotal = data.subTotal;
+    
+    // Safety check: ensure we have data
+    if (subTotal === null) {
+      const data = billingData.find((d) => d.tableNumber === tableNumber);
+      if (!data) {
+        alert("No billing data found for this table.");
+        return;
+      }
+      subTotal = data.subTotal;
     }
+
     const { tax, discount, total } = calculateTotals(subTotal);
     const aggregatedItems = getAggregatedTableItems(orders);
-    const html = `<html><body style="font-family:monospace;width:280px;text-align:center;">
-        ${restaurantDetails.logo ? `<img src="${restaurantDetails.logo}" style="width:60px;"/>` : ''}
-        <h3>${restaurantDetails.name}</h3><p>${restaurantDetails.address}</p><hr style="border-top:1px dashed black;"/>
-        <p>Table: ${tableNumber} | ${new Date().toLocaleString()}</p><hr style="border-top:1px dashed black;"/>
-        <table style="width:100%;font-size:12px;"><tr><th style="text-align:left">Item</th><th>Qty</th><th style="text-align:right">Price</th></tr>
-          ${aggregatedItems.map(item => `<tr><td style="text-align:left">${item.name}</td><td style="text-align:center">${item.quantity}</td><td style="text-align:right">${item.total.toFixed(2)}</td></tr>`).join('')}
-        </table><hr style="border-top:1px dashed black;"/><div style="text-align:right;">
-          <p>Subtotal: ₹${subTotal.toFixed(2)}</p>
-          ${taxRate > 0 ? `<p>Tax (${taxRate}%): +₹${tax.toFixed(2)}</p>` : ''}
-          ${additionalCharges > 0 ? `<p>Charges: +₹${additionalCharges.toFixed(2)}</p>` : ''}
-          ${discountRate > 0 ? `<p>Discount (${discountRate}%): -₹${discount.toFixed(2)}</p>` : ''}
-          <h3>Total: ₹${total.toFixed(2)}</h3></div><hr style="border-top:1px dashed black;"/><p>Thank you!</p></body></html>`;
-    const win = window.open("", "", "width=300,height=600");
-    win.document.write(html); win.document.close(); setTimeout(() => win.print(), 500);
+
+    // CSS for 3-inch (80mm) Thermal Printer
+    const styles = `
+      <style>
+        @page { size: auto;  margin: 0mm; }
+        body { font-family: 'Courier New', monospace; margin: 5px; padding: 0; width: 76mm; }
+        h3 { margin: 5px 0; text-align: center; font-size: 18px; }
+        p { margin: 2px 0; font-size: 12px; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .border-bottom { border-bottom: 1px dashed #000; margin: 5px 0; }
+        table { width: 100%; font-size: 12px; border-collapse: collapse; }
+        th { text-align: left; border-bottom: 1px solid #000; }
+        td { padding: 2px 0; }
+        .total-section { text-align: right; margin-top: 5px; }
+        .grand-total { font-size: 16px; font-weight: bold; margin-top: 5px; }
+      </style>
+    `;
+
+    const html = `
+      <html>
+        <head>${styles}</head>
+        <body>
+          <div class="text-center">
+            ${restaurantDetails.logo ? `<img src="${restaurantDetails.logo}" style="width:50px;"/>` : ''}
+            <h3>${restaurantDetails.name || 'Restaurant'}</h3>
+            <p>${restaurantDetails.address || ''}</p>
+            <p>${restaurantDetails.contact || ''}</p>
+          </div>
+          
+          <div class="border-bottom"></div>
+          <p>Table: <strong>${tableNumber}</strong></p>
+          <p>Date: ${new Date().toLocaleString()}</p>
+          <div class="border-bottom"></div>
+
+          <table>
+            <tr><th style="width:50%">Item</th><th style="width:15%">Qty</th><th style="text-align:right">Amt</th></tr>
+            ${aggregatedItems.map(item => `
+              <tr>
+                <td>${item.name}</td>
+                <td style="text-align:center">${item.quantity}</td>
+                <td style="text-align:right">${item.total.toFixed(2)}</td>
+              </tr>
+            `).join('')}
+          </table>
+
+          <div class="border-bottom"></div>
+
+          <div class="total-section">
+            <p>Subtotal: ₹${subTotal.toFixed(2)}</p>
+            ${taxRate > 0 ? `<p>Tax (${taxRate}%): +₹${tax.toFixed(2)}</p>` : ''}
+            ${additionalCharges > 0 ? `<p>Charges: +₹${additionalCharges.toFixed(2)}</p>` : ''}
+            ${discountRate > 0 ? `<p>Discount (${discountRate}%): -₹${discount.toFixed(2)}</p>` : ''}
+            <p class="grand-total">Total: ₹${total.toFixed(2)}</p>
+          </div>
+          
+          <div class="border-bottom"></div>
+          <p class="text-center">Thank you for dining with us!</p>
+          <br/>
+        </body>
+      </html>
+    `;
+
+    // Open Window, Write content, Focus, and Print
+    const win = window.open("", "_blank", "width=300,height=600");
+    if (win) {
+      win.document.open();
+      win.document.write(html);
+      win.document.close();
+      
+      // WAIT for content to load, then print
+      setTimeout(() => {
+        win.focus();
+        win.print();
+        // Optional: Close after print (uncomment if desired)
+        // win.close();
+      }, 500);
+    } else {
+        alert("Pop-up blocked. Please allow pop-ups for this site.");
+    }
   };
 
   const printKOT = (order) => {
-    const html = `<html><body style="font-family:monospace;width:250px;margin:0 auto;">
-        <h2 style="text-align:center;margin-bottom:5px;">KITCHEN TICKET</h2><h3 style="text-align:center;border-bottom:2px dashed black;padding-bottom:10px;">Table: ${order.tableNumber}</h3>
-        <p style="text-align:center;">${new Date(order.createdAt).toLocaleTimeString()}</p>
-        <div style="text-align:left;font-size:16px;font-weight:bold;">${order.items.map(item => `<div style="margin-bottom:10px;display:flex;justify-content:space-between;"><span>${item.quantity} x</span><span>${item.itemId?.name || "Deleted"}</span></div>`).join('')}</div></body></html>`;
-    const win = window.open("", "", "width=300,height=600");
-    win.document.write(html); win.document.close(); setTimeout(() => win.print(), 500);
+    // CSS for KOT - specifically handles the long paper issue
+    const styles = `
+      <style>
+        @page { size: auto;  margin: 0mm; }
+        body { font-family: 'Courier New', monospace; margin: 5px; padding: 0; width: 76mm; }
+        .header { text-align: center; margin-bottom: 10px; }
+        .border-bottom { border-bottom: 2px dashed #000; margin: 5px 0; }
+        .item-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
+        .qty { width: 15%; }
+        .name { width: 85%; }
+        .time { font-size: 12px; text-align: center; }
+      </style>
+    `;
+
+    const html = `
+      <html>
+        <head>${styles}</head>
+        <body>
+          <div class="header">
+            <h2 style="margin:0;">KITCHEN TICKET</h2>
+            <h3 style="margin:5px 0;">Table: ${order.tableNumber}</h3>
+          </div>
+          
+          <p class="time">${new Date(order.createdAt).toLocaleTimeString()}</p>
+          <div class="border-bottom"></div>
+
+          <div>
+            ${order.items.map(item => `
+              <div class="item-row">
+                <span class="qty">${item.quantity} x</span>
+                <span class="name">${item.itemId?.name || "Unknown Item"}</span>
+              </div>
+            `).join('')}
+          </div>
+          
+          <div class="border-bottom"></div>
+          <br/> 
+          </body>
+      </html>
+    `;
+
+    const win = window.open("", "_blank", "width=300,height=600");
+    if (win) {
+      win.document.open();
+      win.document.write(html);
+      win.document.close();
+      
+      setTimeout(() => {
+        win.focus();
+        win.print();
+        // win.close();
+      }, 500);
+    } else {
+        alert("Pop-up blocked. Please allow pop-ups.");
+    }
   };
 
   // --- SETTINGS ---
