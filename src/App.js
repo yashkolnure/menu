@@ -45,6 +45,8 @@ import RestaurantMenuPageDemo from "./pages/Menudemo";
 import SplashScreen from "./pages/SplashScreen";
 import SplashScreendemo from "./pages/SplashScreendemo";
 import DeliveryDashboard from "./pages/DeliveryDashboard";
+import SplashScreenCloud from "./pages/SplashScreencloud";
+import { Cloud } from "lucide-react";
 
 // Wrapper to handle conditional Header/Footer
 function AppWrapper() {
@@ -61,6 +63,7 @@ function AppWrapper() {
     "/admin/dashboard",
     "/restaurant/:id",
     "/mymenu/:id",
+    "/mykitchen/:id",
     "/d/:id",
   ];
 
@@ -75,7 +78,8 @@ function AppWrapper() {
       {!hideHeaderFooter && <Header />}
       <Routes>
         <Route path="/menu/:id" element={<MenuPageWithoutCart />} />
-        <Route path="/cloudkitchen/:id" element={<MenuPageWithoutCartCloud />} />
+        <Route path="/cloudkitchen/:id" element={<SplashScreenCloud />} />
+        <Route path="/mykitchen/:id" element={<MenuPageWithoutCartCloud />} />
         <Route path="/menuwp/:id" element={<SplashScreen />} />
         <Route path="/mymenu/:id" element={<RestaurantMenuPagewp />} />
         <Route path="/demo/:id" element={<RestaurantMenuPageDemo />} />
