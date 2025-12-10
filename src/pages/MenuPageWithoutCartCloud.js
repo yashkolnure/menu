@@ -228,19 +228,40 @@ function RestaurantMenuPageCloud() {
     finally { setTrackLoading(false); }
   };
 
-  // --- 7. FILTER LOGIC (THE FIX FOR YOUR ERROR) ---
-  const filteredMenu = menuData.filter(item => {
-    const active = !(item.inStock === false || item.inStock === "false");
-    const catMatch = category === "All" || item.category === category;
-    const searchMatch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
-    return active && catMatch && searchMatch;
-  }).sort((a, b) => {
-    const order = restaurantDetails?.categoryOrder || [];
-    const idxA = order.indexOf(a.category);
-    const idxB = order.indexOf(b.category);
-    if (idxA !== -1 && idxB !== -1 && idxA !== idxB) return idxA - idxB;
-    return 0;
-  });
+// Filter Logic
+  const filteredMenu = menuData
+    .filter((item) => {
+      // Hide only if explicitly false
+      const isInStock = !(item.inStock === false || item.inStock === "false");
+
+      // FIX: Trim the item category before comparing
+      const matchCategory = category === "All" || (item.category && item.category.trim() === category);
+      
+      const matchSearch = item.name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+
+      return isInStock && matchCategory && matchSearch;
+    })
+    .sort((a, b) => {
+      // ✅ Sort items by Category Order so "All" view is organized
+      const order = restaurantDetails?.categoryOrder || [];
+      
+      // Safety check: ensure categories exist before trimming
+      const catA = a.category ? a.category.trim() : "";
+      const catB = b.category ? b.category.trim() : "";
+
+      const indexA = order.indexOf(catA);
+      const indexB = order.indexOf(catB);
+
+      // 1. Sort by Category Index
+      if (indexA !== -1 && indexB !== -1 && indexA !== indexB) return indexA - indexB;
+      if (indexA !== -1 && indexB === -1) return -1;
+      if (indexA === -1 && indexB !== -1) return 1;
+
+      return 0; 
+    });
+
 
   if (restaurantDetails?.active === false) return <div className="h-screen flex items-center justify-center text-red-600 font-bold">Restaurant Unavailable</div>;
 

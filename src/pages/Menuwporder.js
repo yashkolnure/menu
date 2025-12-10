@@ -166,12 +166,15 @@ function RestaurantMenuPagewp() {
   }, [cart]);
 
 // Filter Logic
+// Filter Logic
   const filteredMenu = menuData
     .filter((item) => {
       // Hide only if explicitly false
       const isInStock = !(item.inStock === false || item.inStock === "false");
 
-      const matchCategory = category === "All" || item.category === category;
+      // FIX: Trim the item category before comparing
+      const matchCategory = category === "All" || (item.category && item.category.trim() === category);
+      
       const matchSearch = item.name
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
@@ -181,17 +184,22 @@ function RestaurantMenuPagewp() {
     .sort((a, b) => {
       // ✅ Sort items by Category Order so "All" view is organized
       const order = restaurantDetails?.categoryOrder || [];
-      const indexA = order.indexOf(a.category);
-      const indexB = order.indexOf(b.category);
+      
+      // Safety check: ensure categories exist before trimming
+      const catA = a.category ? a.category.trim() : "";
+      const catB = b.category ? b.category.trim() : "";
+
+      const indexA = order.indexOf(catA);
+      const indexB = order.indexOf(catB);
 
       // 1. Sort by Category Index
       if (indexA !== -1 && indexB !== -1 && indexA !== indexB) return indexA - indexB;
       if (indexA !== -1 && indexB === -1) return -1;
       if (indexA === -1 && indexB !== -1) return 1;
 
-      return 0; // Keeps the order exactly as it is in your JSON/Database
+      return 0; 
     });
-    
+
   const addToCart = (item) => {
     const exists = cart.find((c) => c._id === item._id);
     if (exists) {
