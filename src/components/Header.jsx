@@ -103,22 +103,22 @@ const Header = () => {
             <a href="/contact" className="hover:text-blue-600 font-medium">
               Contact Us
             </a>
-            {!token ? (
+            {/* {!token ? (
               <a
                 href="/petoba-billing-landing"
                 className="hover:text-blue-600 font-medium"
               >
               Petoba Billing App
               </a>
-            ) : null}
+            ) : null} */}
             {token ? (
               <>
-              <a
+              {/* <a
                 href="/petoba-billing-landing"
                 className="hover:text-blue-600 font-medium"
               >
                Billing App
-              </a>
+              </a> */}
                 <a
                   href="/admin/dashboard"
                   className="hover:text-blue-600 font-medium"
@@ -184,10 +184,10 @@ const Header = () => {
           <a href="/membership" onClick={closeMenu} className="hover:text-blue-600">Pricing</a>
           <a href="/agency" onClick={closeMenu} className="hover:text-blue-600">Agency</a>
           <a href="/contact" onClick={closeMenu} className="hover:text-blue-600">Contact Us</a>
-          {!token ? (
+          {/* {!token ? (
             <a href="/petoba-billing-landing" onClick={closeMenu} className="hover:text-blue-600">Petoba Billing App </a>
           ) : (null
-          )}
+          )} */}
           {token ? (
               <>
                 <a
@@ -200,14 +200,14 @@ const Header = () => {
                   href="/dashboard"
                   className="hover:text-blue-600 font-medium"
                 >
-                  Dashboard 
+                  Admin Settings 
                 </a>
-                <a
+                {/* <a
                   href="/petoba-billing"
                   className="hover:text-blue-600 font-medium"
                 >
                   Download Billing App 
-                </a>
+                </a> */}
                 <button
                   onClick={handleLogout}
                   className="px-5 py-2 rounded-full text-xl bg-gradient-to-r from-red-600 via-black to-orange-600 text-white font-semibold shadow-md hover:scale-105 transition-transform"

@@ -11,14 +11,23 @@ import {
   ArrowRight,
   Check,
   PlayCircle,
+  Gift,
   Printer,
   TrendingUp,
   Bike, 
+  Wifi,    // <--- Add
+  Settings, // <--- Add
+  Users,    // <--- Add
   UtensilsCrossed, 
   CreditCard, 
   CheckCircle2,
   ChefHat,
-  Receipt
+  Receipt,
+  UploadCloud,
+  Wand2,
+  Rocket,
+  FileText,
+  Scan
 } from "lucide-react";
 import { BsQrCodeScan, BsWhatsapp } from 'react-icons/bs';
 import { IoDocumentTextOutline } from 'react-icons/io5';
@@ -288,7 +297,7 @@ const HomePage = () => {
 
       {/* --- STATS BAR --- */}
       <div className=" ">
-        <div className="max-w-6xl mx-auto px-6 py-8 grid grid-cols-2 md:grid-cols-4 gap-8 text-center border-y border-slate-400 shadow-sm bg-white/80 glass-card rounded-2xl">
+        <div className="max-w-7xl mx-auto px-6 py-8 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-8 text-center z-20 rounded-3xl bg-white/80 glass-card shadow-md">
             {[
                 { label: "Restaurants Trusted", val: "1,000+" },
                 { label: "Orders Processed", val: "10k+" },
@@ -302,35 +311,567 @@ const HomePage = () => {
             ))}
         </div>
       </div>
-
-      {/* --- HOW IT WORKS (AI Focus) --- */}
-      <section className="py-20 relative">
+      {/* =========================================
+          OPTION 1: DIGITAL MENU + WHATSAPP
+          Layout: Left Text | Right Illustration (Improved)
+         ========================================= */}
+      <section className="py-16">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-slate-900 mb-4">Go Digital in 3 Simple Steps</h2>
-            <p className="text-slate-500 text-lg">Stop typing manually. Let our AI build your menu.</p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8 relative">
-            <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-0.5 bg-gradient-to-r from-orange-200 via-orange-400 to-orange-200 border-t-2 border-dashed border-slate-300 z-0"></div>
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            
+            {/* LEFT: Text Content */}
+            <FadeInSection>
+              <div className="relative">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold uppercase tracking-wider mb-6">
+                  <span className="w-2 h-2 rounded-full bg-green-600 animate-pulse"></span>
+                  Option 1
+                </div>
+                
+                <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 leading-tight mb-6">
+                  Digital Menu with <br/>
+                  <span className="text-green-600">WhatsApp Ordering</span>
+                </h2>
+                
+                <p className="text-lg text-slate-600 mb-8 leading-relaxed">
+                  The perfect starter pack. Replace your physical menu with a stunning QR Catalog and let customers order directly via WhatsApp.
+                </p>
 
-            {stepsData.map((step, idx) => (
-              <FadeInSection key={idx} delay={`${idx * 150}ms`}>
-                <div className="relative z-10 flex flex-col items-center text-center group">
-                  <div className="w-24 h-24 bg-white rounded-full border-4 border-orange-50 shadow-xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:border-orange-200 transition-all duration-300">
-                    <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-pink-500 rounded-full flex items-center justify-center text-white shadow-inner">
-                      {step.icon}
+                <div className="space-y-6">
+                  <div className="flex gap-4 group">
+                    <div className="mt-1 bg-green-50 p-3 rounded-xl h-fit text-green-600 shadow-sm group-hover:shadow-md transition-all">
+                       <BsQrCodeScan size={24} />
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-bold text-slate-900">Scan & View Menu</h4>
+                      <p className="text-slate-500">Customers scan the QR code to see your full menu with photos on their phone.</p>
                     </div>
                   </div>
-                  <h3 className="text-xl font-bold text-slate-800 mb-3">{step.title}</h3>
-                  <p className="text-slate-600 leading-relaxed max-w-xs">{step.description}</p>
+
+                  <div className="flex gap-4 group">
+                    <div className="mt-1 bg-green-50 p-3 rounded-xl h-fit text-green-600 shadow-sm group-hover:shadow-md transition-all">
+                       <BsWhatsapp size={24} />
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-bold text-slate-900">Direct WhatsApp Orders</h4>
+                      <p className="text-slate-500">Orders are sent to your WhatsApp number with Table # and Item details.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4 p-5 bg-gradient-to-br from-orange-50 to-white border border-orange-100 rounded-2xl shadow-sm">
+                    <div className="mt-1 bg-white p-2 rounded-full h-fit text-orange-500 shadow-sm">
+                       <Gift size={20} />
+                    </div>
+                    <div>
+                      <h4 className="text-base font-bold text-slate-900">Includes Bonus Gift</h4>
+                      <p className="text-sm text-slate-600 mt-1">
+                        Get <span className="font-bold text-orange-600 bg-orange-100 px-1 rounded">1 Month Free Trial</span> of our Billing Software.
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </FadeInSection>
-            ))}
+
+                <div className="mt-10">
+                   <a href="/membership" className="inline-flex items-center gap-2 px-8 py-4 bg-slate-900 text-white font-bold rounded-full hover:bg-slate-800 transition-all hover:gap-3 shadow-lg hover:shadow-xl">
+                      Get WhatsApp Menu Plan <ArrowRight size={18}/>
+                   </a>
+                </div>
+              </div>
+            </FadeInSection>
+
+       
+       {/* RIGHT: QR Standee + Phone Screen (Matching Your App UI) */}
+            <FadeInSection delay="200ms">
+               <div className="relative mx-auto w-full max-w-[450px] h-[550px] perspective-1000 flex justify-center items-center">
+                  
+                  {/* Ambient Background Glow */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-tr from-green-100/40 to-orange-100/30 rounded-full blur-3xl -z-20"></div>
+
+                  {/* ===========================
+                      ELEMENT 1: THE QR STANDEE
+                     =========================== */}
+                  <div className="absolute bottom-20 left-4 w-48 h-64 transform rotate-y-12 rotate-x-6 transition-transform hover:rotate-y-0 hover:rotate-x-0 z-10 group">
+                      {/* Acrylic Block */}
+                      <div className="relative h-full w-full bg-gradient-to-b from-white/95 to-white/60 backdrop-blur-md rounded-2xl border-2 border-white/80 shadow-2xl overflow-hidden flex flex-col items-center p-4 text-center">
+                          <div className="absolute -top-[100%] -left-[100%] w-[200%] h-[200%] bg-gradient-to-br from-transparent via-white/40 to-transparent transform rotate-45 pointer-events-none"></div>
+                          
+                          <div className="mb-2 text-orange-500"><UtensilsCrossed size={20}/></div>
+                          <h3 className="font-bold text-slate-900 leading-tight">Scan for<br/>Digital Menu</h3>
+                          
+                          <div className="relative mt-3 mb-2 p-2 bg-white rounded-xl shadow-inner border border-slate-100 group-hover:scale-105 transition-transform">
+                             <div className="absolute inset-0 bg-green-400/20 blur-xl rounded-xl animate-pulse z-0"></div>
+                             <BsQrCodeScan size={80} className="text-slate-900 relative z-10"/>
+                          </div>
+
+                          <div className="mt-auto bg-slate-900 text-white px-3 py-1 rounded-md text-xs font-bold uppercase tracking-widest">
+                              Table 05
+                          </div>
+                      </div>
+                  </div>
+
+                  {/* ===========================
+                      ELEMENT 2: THE SCAN BEAM
+                     =========================== */}
+                  <div className="absolute top-24 left-28 w-40 h-40 bg-gradient-to-b from-green-400/50 via-green-200/10 to-transparent blur-md -rotate-45 transform-gpu pointer-events-none z-20 animate-pulse" style={{clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)'}}></div>
+
+                  {/* ===========================
+                      ELEMENT 3: THE SMARTPHONE SCREEN (Updated to match RestaurantMenuPagewp)
+                     =========================== */}
+                  <div className="absolute top-0 right-0 w-64 h-[480px] bg-slate-900 rounded-[2.5rem] border-[8px] border-slate-900 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden z-30 animate-float" style={{animationDuration: '7s'}}>
+                     {/* Dynamic Island */}
+                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-6 bg-black rounded-b-2xl z-40"></div>
+                  
+                     {/* Screen Content - Mimicking your App Structure */}
+                     <div className="absolute inset-0 bg-gray-100 flex flex-col font-sans overflow-hidden">
+                        
+                        {/* 1. HEADER (Image + Overlay + Logo + Search) */}
+                        <div className="relative h-28 shrink-0">
+                            {/* Background Image */}
+                            <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80" className="absolute inset-0 w-full h-full object-cover" alt="header"/>
+                            {/* Overlay */}
+                            <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center p-3 gap-2">
+                                {/* Logo */}
+                                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg">
+                                    <span className="font-bold text-orange-500 text-xs">PB</span>
+                                </div>
+                                {/* Search Bar Mockup */}
+                                <div className="w-full bg-white h-7 rounded-lg opacity-95 flex items-center px-3 gap-2">
+                                    <div className="w-3 h-3 rounded-full border border-gray-300"></div>
+                                    <div className="h-2 w-20 bg-gray-200 rounded"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Scrollable Content Area */}
+                        <div className="flex-1 overflow-y-auto no-scrollbar pb-16">
+                            
+                            
+
+                            {/* 3. CATEGORIES (Orange Active Pill) */}
+                            <div className="flex gap-2 px-3 p-2">
+                                <span className="bg-orange-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-sm">All</span>
+                                <span className="bg-white border border-gray-200 text-gray-600 text-[10px] font-bold px-3 py-1.5 rounded-lg">Starters</span>
+                                <span className="bg-white border border-gray-200 text-gray-600 text-[10px] font-bold px-3 py-1.5 rounded-lg">Main</span>
+                            </div>
+
+                            {/* 4. MENU ITEMS (MenuCard Style) */}
+                            <div className="px-3 space-y-3 pb-4">
+                                {/* Card 1 */}
+                                <div className="bg-white p-2 rounded-xl border border-gray-100 shadow-sm flex gap-2">
+                                    <div className="w-14 h-14 bg-gray-100 rounded-lg shrink-0 overflow-hidden relative">
+                                         <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=150&q=80" className="w-full h-full object-cover"/>
+                                    </div>
+                                    <div className="flex-1 flex flex-col justify-between">
+                                        <div>
+                                            <div className="flex items-center gap-1 mb-1">
+                                                <div className="w-3 h-3 border border-green-600 flex items-center justify-center p-[1px]"><div className="w-full h-full bg-green-600 rounded-full"></div></div>
+                                                <p className="text-[10px] font-bold text-gray-800 line-clamp-1">Veg Cheese Burger</p>
+                                            </div>
+                                            <p className="text-[10px] font-bold text-gray-900">₹ 149</p>
+                                        </div>
+                                        <div className="self-end">
+                                             <div className="bg-white border border-green-200 text-green-600 text-[10px] font-bold px-3 py-1 rounded shadow-sm uppercase">Add +</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Card 2 */}
+                                <div className="bg-white p-2 rounded-xl border border-gray-100 shadow-sm flex gap-2">
+                                    <div className="w-14 h-14 bg-gray-100 rounded-lg shrink-0 overflow-hidden relative">
+                                         <img src="https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&w=150&q=80" className="w-full h-full object-cover"/>
+                                    </div>
+                                    <div className="flex-1 flex flex-col justify-between">
+                                        <div>
+                                            <div className="flex items-center gap-1 mb-1">
+                                                <div className="w-3 h-3 border border-red-600 flex items-center justify-center p-[1px]"><div className="w-full h-full bg-red-600 rounded-full"></div></div>
+                                                <p className="text-[10px] font-bold text-gray-800 line-clamp-1">Mexican Pizza</p>
+
+                                            </div>
+                                            <p className="text-[10px] font-bold text-gray-900">₹ 399</p>
+                                        </div>
+                                        <div className="self-end">
+                                            {/* Qty Counter Mockup */}
+                                             <div className="bg-white border border-green-200 text-green-600 text-[10px] font-bold px-1 py-0.5 rounded shadow-sm flex items-center gap-2">
+                                                 <span className="px-1">-</span>
+                                                 <span>1</span>
+                                                 <span className="px-1">+</span>
+                                             </div>
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                                {/* Card 2 */}
+                                <div className="bg-white p-2 rounded-xl border border-gray-100 shadow-sm flex gap-2">
+                                    <div className="w-14 h-14 bg-gray-100 rounded-lg shrink-0 overflow-hidden relative">
+                                         <img src="https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&w=150&q=80" className="w-full h-full object-cover"/>
+                                    </div>
+                                    <div className="flex-1 flex flex-col justify-between">
+                                        <div>
+                                            <div className="flex items-center gap-1 mb-1">
+                                                <div className="w-3 h-3 border border-red-600 flex items-center justify-center p-[1px]"><div className="w-full h-full bg-red-600 rounded-full"></div></div>
+                                                <p className="text-[10px] font-bold text-gray-800 line-clamp-1">Chicken Pizza</p>
+                                                
+                                            </div>
+                                            <p className="text-[10px] font-bold text-gray-900">₹ 399</p>
+                                        </div>
+                                        <div className="self-end">
+                                            {/* Qty Counter Mockup */}
+                                             <div className="bg-white border border-green-200 text-green-600 text-[10px] font-bold px-1 py-0.5 rounded shadow-sm flex items-center gap-2">
+                                                 <span className="px-1">-</span>
+                                                 <span>1</span>
+                                                 <span className="px-1">+</span>
+                                             </div>
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 5. FLOATING CART BUTTON (Bottom Right) */}
+                        <div className="absolute bottom-5 right-4 animate-bounce">
+                           <div className="bg-orange-500 text-white px-4 py-2 rounded-full shadow-lg shadow-orange-200 flex items-center gap-2">
+                               <span className="text-[10px] font-bold">View Cart (1)</span>
+                           </div>
+                        </div>
+
+                     </div>
+                  </div>
+
+               </div>
+            </FadeInSection>
           </div>
         </div>
       </section>
 
+      {/* =========================================
+          OPTION 2: QR MENU + FULL BILLING
+          Layout: Left Illustration (Improved) | Right Text
+         ========================================= */}
+      <section className="py-16 ">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+
+            {/* LEFT: Improved POS Illustration */}
+            <FadeInSection delay="200ms">
+               <div className="relative order-2 lg:order-1 perspective-1000">
+                  {/* Decorative Background Elements */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-gradient-to-tr from-orange-200/30 to-pink-200/30 rounded-[100px] blur-3xl -z-10"></div>
+                  
+                  {/* Main Desktop Monitor POS */}
+                  <div className="relative bg-white rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] border border-slate-200 overflow-hidden transform transition-all duration-500 hover:scale-[1.02] z-10">
+                      {/* Header/Browser Bar */}
+                      <div className="bg-slate-800 p-3 flex justify-between items-center border-b border-slate-700">
+                          <div className="flex gap-2">
+                              <div className="w-3 h-3 rounded-full bg-[#ff5f56] border border-[#e0443e]"></div>
+                              <div className="w-3 h-3 rounded-full bg-[#ffbd2e] border border-[#dea123]"></div>
+                              <div className="w-3 h-3 rounded-full bg-[#27c93f] border border-[#1aab29]"></div>
+                          </div>
+                          <div className="flex gap-4 text-[10px] font-bold text-slate-400">
+                              <span className="text-white">Dashboard</span>
+                              <span>Orders</span>
+                              <span>Reports</span>
+                          </div>
+                          <Wifi size={14} className="text-green-400" />
+                      </div>
+                      
+                      {/* POS Layout */}
+                      <div className="flex h-[380px] bg-slate-100">
+                          {/* Dark Sidebar */}
+                          <div className="w-16 bg-slate-900 flex flex-col items-center py-6 gap-8 text-slate-500">
+                              <div className="p-2 bg-orange-500 text-white rounded-xl shadow-lg shadow-orange-500/20"><LayoutDashboard size={22} /></div>
+                              <UtensilsCrossed size={22} className="hover:text-white transition-colors cursor-pointer"/>
+                              <Receipt size={22} className="hover:text-white transition-colors cursor-pointer"/>
+                              <div className="mt-auto"><Settings size={22} className="hover:text-white transition-colors cursor-pointer"/></div>
+                          </div>
+                          
+                          {/* Main Content Area (Table Management View) */}
+                          <div className="flex-1 p-4 overflow-y-auto">
+                              <div className="flex justify-between items-center mb-6">
+                                  <div>
+                                    <h3 className="text-xl font-bold text-slate-800">Table Status</h3>
+                                    <p className="text-xs text-slate-500">Live Updates</p>
+                                  </div>
+                              </div>
+                              {/* Grid of Tables */}
+                              <div className="grid grid-cols-1 gap-2">
+                                  {/* Occupied Table */}
+                                  <div className="bg-white p-4 rounded-xl border-2 border-green-500 shadow-sm relative overflow-hidden">
+                                      <div className="absolute top-0 right-0 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">Running</div>
+                                      <div className="flex justify-between items-center mb-2">
+                                          <span className="font-bold text-lg text-slate-800">T-01</span>
+                                          <Users size={14} className="text-slate-400"/>
+                                      </div>
+                                      <div className="text-sm font-bold text-green-600">₹ 1,240</div>
+                                      <p className="text-[10px] text-slate-500">Since 45 mins</p>
+                                  </div>
+                                  {/* Free Tables */}
+                                  {[2, 3, 4, 5, 6].map(n => (
+                                    <div key={n} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm opacity-70 hover:opacity-100 hover:border-orange-300 transition-all cursor-pointer">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <span className="font-bold text-lg text-slate-400">T-0{n}</span>
+                                            <Users size={14} className="text-slate-300"/>
+                                        </div>
+                                        <div className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-md w-fit">Available</div>
+                                    </div>
+                                  ))}
+                              </div>
+                          </div>
+
+                          {/* Right Panel (Current Bill/Cart) */}
+                          <div className="w-50 bg-white border-l border-slate-200 flex flex-col shadow-xl z-20">
+                              <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                                  <div className="font-bold text-slate-800 flex items-center gap-2"><Receipt size={16} className="text-orange-500"/> Current Bill</div>
+                                  <span className="text-xs font-bold bg-orange-100 text-orange-600 px-2 py-1 rounded">Table #1</span>
+                              </div>
+                              
+                              {/* Bill Items */}
+                              <div className="flex-1 p-4 space-y-3 overflow-y-auto bg-slate-50/50">
+                                  <div className="flex justify-between text-sm">
+                                      <div>
+                                        <p className="font-bold text-slate-700">Butter Chicken (Half)</p>
+                                        <p className="text-[10px] text-slate-500">Qty: 1</p>
+                                      </div>
+                                      <p className="font-bold text-slate-800">₹ 320</p>
+                                  </div>
+                                  <div className="flex justify-between text-sm">
+                                      <div>
+                                        <p className="font-bold text-slate-700">Butter Naan</p>
+                                        <p className="text-[10px] text-slate-500">Qty: 4 x ₹40</p>
+                                      </div>
+                                      <p className="font-bold text-slate-800">₹ 160</p>
+                                  </div>
+                                  <div className="my-2 border-t border-dashed border-slate-200"></div>
+                                  <div className="flex justify-between text-xs text-slate-500">
+                                      <span>Subtotal</span> <span>₹ 480</span>
+                                  </div>
+                                  <div className="flex justify-between text-xs text-slate-500 mb-2">
+                                      <span>Tax (5%)</span> <span>₹ 24</span>
+                                  </div>
+                              </div>
+                              
+                              {/* Total & Action */}
+                              <div className="p-4 bg-white border-t border-slate-100">
+                                  <div className="flex justify-between items-center mb-4">
+                                      <span className="text-sm font-bold text-slate-600">Grand Total</span>
+                                      <span className="text-2xl font-black text-slate-900">₹ 504</span>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-3">
+                                      <button className="flex items-center justify-center gap-2 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors">
+                                        <Printer size={16}/> KOT
+                                      </button>
+                                      <button className="py-3 bg-gradient-to-r from-orange-500 to-pink-600 text-white font-bold rounded-xl shadow-lg hover:shadow-orange-500/30 transition-all">
+                                        Settle Bill
+                                      </button>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                  
+                  {/* Floating Elements adding depth */}
+                  <div className="absolute -top-8 -right-8 bg-white p-3 rounded-lg shadow-[0_10px_30px_-10px_rgba(0,0,0,0.2)] border border-slate-100 flex items-center gap-3 animate-float z-20" style={{animationDuration: '6s'}}>
+                      <div className="bg-blue-100 p-2 rounded-lg text-blue-600"><Printer size={18}/></div>
+                      <div>
+                          <p className="text-[10px] text-slate-400 font-bold uppercase leading-none">Kitchen</p>
+                          <p className="text-xs font-bold text-slate-800 leading-tight">New KOT Printed</p>
+                      </div>
+                  </div>
+                  
+                  <div className="absolute bottom-10 -left-10 bg-white p-3 rounded-lg shadow-[0_10px_30px_-10px_rgba(0,0,0,0.2)] border border-slate-100 flex items-center gap-3 animate-float z-20" style={{animationDelay: '1.5s', animationDuration: '7s'}}>
+                      <div className="bg-green-100 p-2 rounded-lg text-green-600"><TrendingUp size={18}/></div>
+                      <div>
+                          <p className="text-[10px] text-slate-400 font-bold uppercase leading-none">Today's Sales</p>
+                          <p className="text-xs font-bold text-slate-800 leading-tight">₹ 12,450 so far</p>
+                      </div>
+                  </div>
+               </div>
+            </FadeInSection>
+
+            {/* RIGHT: Text Content */}
+            <FadeInSection>
+              <div className="relative order-1 lg:order-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-bold uppercase tracking-wider mb-6">
+                  <span className="w-2 h-2 rounded-full bg-orange-600 animate-pulse"></span>
+                  Option 2 (Best Value)
+                </div>
+
+                <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 leading-tight mb-6">
+                  QR Menu + <br/>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-600">Full Billing Software</span>
+                </h2>
+                
+                <p className="text-lg text-slate-600 mb-8 leading-relaxed">
+                  The all-in-one OS. You get everything in Option 1, plus a powerful Point of Sale (POS) system to manage your entire restaurant operations.
+                </p>
+
+                <div className="space-y-6">
+                  <div className="flex gap-4 group">
+                    <div className="mt-1 bg-white border border-slate-200 p-3 rounded-xl h-fit text-orange-500 shadow-sm group-hover:border-orange-300 transition-all">
+                       <LayoutDashboard size={24} />
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-bold text-slate-900">Desktop & Tablet POS</h4>
+                      <p className="text-slate-500">Manage tables, inventory, and staff from a single dashboard. Works offline.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4 group">
+                    <div className="mt-1 bg-white border border-slate-200 p-3 rounded-xl h-fit text-orange-500 shadow-sm group-hover:border-orange-300 transition-all">
+                       <Printer size={24} />
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-bold text-slate-900">Instant KOT & Bill Printing</h4>
+                      <p className="text-slate-500">Supports all major Thermal Printers for fast kitchen communication.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4 p-5 bg-gradient-to-br from-blue-50 to-white border border-blue-100 rounded-2xl shadow-sm">
+                    <div className="mt-1 bg-white p-2 rounded-full h-fit text-blue-600 shadow-sm">
+                       <TrendingUp size={20} />
+                    </div>
+                    <div>
+                      <h4 className="text-base font-bold text-slate-900">Long Term Savings</h4>
+                      <p className="text-sm text-slate-600 mt-1">
+                        Renew the billing software next year at a <span className="font-bold text-blue-600 bg-blue-100 px-1 rounded">heavily discounted rate</span>.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-10">
+                   <a href="/membership" className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-orange-500 to-pink-600 text-white font-bold rounded-full shadow-lg hover:shadow-orange-500/30 hover:-translate-y-1 transition-all hover:gap-3">
+                      Get Full Billing Software <ArrowRight size={18}/>
+                   </a>
+                </div>
+              </div>
+            </FadeInSection>
+
+          </div>
+        </div>
+      </section>
+     {/* --- HOW IT WORKS (Redesigned) --- */}
+      <section className="py-12 ">
+        {/* Background Patterns */}
+        <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-orange-200/20 rounded-full blur-3xl -z-10"></div>
+
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <div className="text-center mb-20">
+            <span className="text-orange-600 font-bold tracking-wider uppercase text-sm bg-orange-100 px-4 py-1 rounded-full">Simple Process</span>
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mt-4 mb-4">
+              From PDF to QR <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-600">in 5 Minutes</span>
+            </h2>
+            <p className="text-slate-500 text-lg max-w-xl mx-auto">
+              No technical skills needed. Our AI handles the boring data entry work for you.
+            </p>
+          </div>
+
+          <div className="relative">
+            {/* Connecting Progress Line (Desktop Only) */}
+            <div className="hidden md:block absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-slate-200 via-orange-200 to-slate-200 -translate-y-1/2 z-0 rounded-full"></div>
+
+            <div className="grid md:grid-cols-3 gap-8 md:gap-12">
+              
+              {/* --- STEP 1: UPLOAD --- */}
+              <FadeInSection>
+                <div className="relative bg-white p-8 rounded-3xl shadow-xl border border-slate-100 hover:-translate-y-2 transition-transform duration-300 group z-10">
+                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg border-4 border-slate-50 shadow-lg">1</div>
+                  
+                  {/* Illustration: Uploading File */}
+                  <div className="h-40 bg-blue-50/50 rounded-2xl mb-6 flex items-center justify-center relative overflow-hidden border border-blue-100 group-hover:bg-blue-50 transition-colors">
+                      <div className="absolute inset-0 bg-blue-100/30 scale-0 group-hover:scale-100 transition-transform rounded-full blur-2xl"></div>
+                      
+                      {/* Document Icon */}
+                      <div className="relative z-10 bg-white p-4 rounded-xl shadow-md border border-blue-100">
+                          <FileText className="text-blue-500" size={32}/>
+                          {/* Animated Arrow */}
+                          <div className="absolute -right-2 -top-2 bg-blue-500 text-white p-1 rounded-full animate-bounce">
+                              <UploadCloud size={14}/>
+                          </div>
+                      </div>
+                  </div>
+
+                  <h3 className="text-xl font-bold text-slate-900 mb-2 text-center">Upload Menu</h3>
+                  <p className="text-slate-500 text-center text-sm leading-relaxed">
+                    Simply take a photo of your physical menu or upload a PDF file. No typing required.
+                  </p>
+                </div>
+              </FadeInSection>
+
+              {/* --- STEP 2: AI PROCESSING --- */}
+              <FadeInSection delay="150ms">
+                <div className="relative bg-white p-8 rounded-3xl shadow-xl border border-slate-100 hover:-translate-y-2 transition-transform duration-300 group z-10">
+                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-orange-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg border-4 border-slate-50 shadow-lg">2</div>
+                  
+                  {/* Illustration: AI Magic */}
+                  <div className="h-40 bg-orange-50/50 rounded-2xl mb-6 flex items-center justify-center relative overflow-hidden border border-orange-100 group-hover:bg-orange-50 transition-colors">
+                      <div className="absolute inset-0 bg-orange-100/30 scale-0 group-hover:scale-100 transition-transform rounded-full blur-2xl"></div>
+                      
+                      {/* Magic Wand & Sparkles */}
+                      <div className="relative z-10 flex flex-col items-center">
+                          <div className="bg-white p-3 rounded-full shadow-lg border border-orange-100 animate-pulse">
+                             <Wand2 className="text-orange-500" size={32}/>
+                          </div>
+                          <div className="mt-3 flex gap-2">
+                             <div className="h-2 w-12 bg-slate-200 rounded-full overflow-hidden">
+                                <div className="h-full bg-orange-500 w-2/3 animate-[loading_1s_ease-in-out_infinite]"></div>
+                             </div>
+                             <span className="text-[10px] font-bold text-orange-500 uppercase">AI Working</span>
+                          </div>
+                      </div>
+                  </div>
+
+                  <h3 className="text-xl font-bold text-slate-900 mb-2 text-center">AI Extraction</h3>
+                  <p className="text-slate-500 text-center text-sm leading-relaxed">
+                    Our AI scans the text, organizes categories, and even adds food photos automatically.
+                  </p>
+                </div>
+              </FadeInSection>
+
+              {/* --- STEP 3: GO LIVE --- */}
+              <FadeInSection delay="300ms">
+                <div className="relative bg-white p-8 rounded-3xl shadow-xl border border-slate-100 hover:-translate-y-2 transition-transform duration-300 group z-10">
+                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-green-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg border-4 border-slate-50 shadow-lg">3</div>
+                  
+                  {/* Illustration: Rocket Launch */}
+                  <div className="h-40 bg-green-50/50 rounded-2xl mb-6 flex items-center justify-center relative overflow-hidden border border-green-100 group-hover:bg-green-50 transition-colors">
+                      <div className="absolute inset-0 bg-green-100/30 scale-0 group-hover:scale-100 transition-transform rounded-full blur-2xl"></div>
+                      
+                      {/* Rocket */}
+                      <div className="relative z-10 group-hover:-translate-y-2 transition-transform duration-500">
+                          <div className="bg-white p-3 rounded-2xl shadow-lg border border-green-100 flex items-center gap-2">
+                             <QrCode className="text-slate-800" size={24}/>
+                             <Rocket className="text-green-500" size={24}/>
+                          </div>
+                          {/* Clouds */}
+                          <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-20 h-2 bg-slate-200 rounded-full blur-sm group-hover:scale-x-50 transition-transform"></div>
+                      </div>
+                  </div>
+
+                  <h3 className="text-xl font-bold text-slate-900 mb-2 text-center">Start Selling</h3>
+                  <p className="text-slate-500 text-center text-sm leading-relaxed">
+                    Get your unique QR code instantly. Print it, stick it, and start accepting WhatsApp orders.
+                  </p>
+                </div>
+              </FadeInSection>
+
+            </div>
+          </div>
+
+          
+        </div>
+
+        {/* Custom CSS for the loading bar animation */}
+        <style>{`
+           @keyframes loading {
+             0% { transform: translateX(-100%); }
+             100% { transform: translateX(100%); }
+           }
+        `}</style>
+      </section>
+
+      
       {/* --- THE "CHOOSE YOUR POWER" SECTION (Menu vs Billing) --- */}
       <section className="py-16 ">
         <div className="max-w-6xl mx-auto px-6">
@@ -408,7 +949,7 @@ const HomePage = () => {
                   <p className="text-slate-500 mt-2">Powerful tools to run your restaurant smoothly.</p>
              </div>
              
-             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+             <div className="grid md:grid-cols-4 lg:grid-cols-4 gap-4 grid-cols-2">
                  {[
                      { icon: <Printer size={32} className="text-blue-500"/>, title: "KOT Printing", desc: "Auto-print orders to the kitchen via thermal printers." },
                      { icon: <Receipt size={32} className="text-green-500"/>, title: "WhatsApp Billing", desc: "Send digital bills to customers in one click. Save paper." },
@@ -428,7 +969,7 @@ const HomePage = () => {
       </section>
 
       {/* --- VIDEO SECTION --- */}
-      <FadeInSection>
+      {/* <FadeInSection>
         <section className="py-10 px-6">
           <div className="max-w-4xl mx-auto relative group cursor-pointer">
             <div className="absolute -inset-1 bg-gradient-to-r from-orange-400 to-pink-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
@@ -443,10 +984,10 @@ const HomePage = () => {
             </div>
           </div>
         </section>
-      </FadeInSection>
+      </FadeInSection> */}
 
       {/* --- TESTIMONIALS --- */}
-      <section className="py-16 bg-orange-50/30">
+      <section className="py-12">
           <div className="max-w-6xl mx-auto px-6">
               <h2 className="text-3xl font-bold text-center mb-12">What Restaurant Owners Say</h2>
               <div className="grid md:grid-cols-3 gap-8">

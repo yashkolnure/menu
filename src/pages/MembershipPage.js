@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
-import { MessageCircle, Check, X, Zap, Printer, Smartphone, LayoutDashboard, BadgeCheck } from "lucide-react";
+import { MessageCircle, Check, X, Zap, Printer, Smartphone, LayoutDashboard, Gift, Snowflake,BadgeCheck } from "lucide-react";
 
 const MembershipPage = () => {
   const [billingCycle, setBillingCycle] = useState("yearly"); // 'monthly' or 'yearly'
@@ -187,16 +187,52 @@ const MembershipPage = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Plans & Pricing - Petoba</title>
-        <meta name="description" content="Affordable QR Menu and Billing Software plans. Perfect for Restaurants and Cloud Kitchens." />
+     <Helmet>
+        <title>Christmas Sale - Petoba Pricing</title>
+        <meta name="description" content="Special Christmas Offer on QR Menu and Billing Software plans." />
       </Helmet>
+
+      {/* --- SNOWFALL ANIMATION STYLES --- */}
+      <style>{`
+        @keyframes snow {
+          0% { transform: translateY(-10px); opacity: 0; }
+          20% { opacity: 1; }
+          100% { transform: translateY(100vh); opacity: 0.2; }
+        }
+        .snowflake {
+          position: absolute;
+          top: -10px;
+          color: white;
+          animation: snow linear infinite;
+          pointer-events: none;
+          z-index: 5;
+        }
+      `}</style>
+
+      {/* --- SNOWFLAKES GENERATOR --- */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={i}
+            className="snowflake"
+            style={{
+              left: `${Math.random() * 100}vw`,
+              animationDuration: `${Math.random() * 5 + 5}s`,
+              animationDelay: `${Math.random() * 5}s`,
+              opacity: Math.random(),
+              fontSize: `${Math.random() * 10 + 10}px`
+            }}
+          >
+            ❄
+          </div>
+        ))}
+      </div>
 
       <section className="relative py-16 bg-white font-sans">
         {/* Soft Background Blobs */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-orange-100 rounded-full mix-blend-multiply filter blur-3xl opacity-40"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-40"></div>
-
+        <div className="absolute top-10 right-10 opacity-10 rotate-12"><Gift size={120} className="text-red-600" /></div>
+        <div className="absolute bottom-20 left-10 opacity-10 -rotate-12"><Snowflake size={140} className="text-blue-400" /></div>
+       <div className="absolute top-60 left-10 opacity-10 -rotate-12"><Snowflake size={240} className="text-blue-400" /></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           
           {/* Header */}
