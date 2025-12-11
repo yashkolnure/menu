@@ -1,17 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
-import { MessageCircle, Check, X, Zap, Printer, Smartphone, LayoutDashboard, Gift, Snowflake,BadgeCheck } from "lucide-react";
+import { MessageCircle, Check, X, Zap, Printer, Smartphone, LayoutDashboard, Gift, Snowflake } from "lucide-react";
+
+// !!! IMPORTANT: Import your uploaded Christmas image here
+// const christmasPopupImg = "path_to_your_uploaded_christmas_image.jpg"; 
+const christmasPopupImg = "path_to_your_uploaded_christmas_image.jpg"; 
 
 const MembershipPage = () => {
   const [billingCycle, setBillingCycle] = useState("yearly"); // 'monthly' or 'yearly'
   const [showWizard, setShowWizard] = useState(false);
+  const [showPromoPopup, setShowPromoPopup] = useState(false);
+
+  // ✅ EFFECT: Show Popup after 4 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowPromoPopup(true);
+    }, 3500);
+    return () => clearTimeout(timer);
+  }, []);
 
   // ✅ HELPER: Generate Register Link dynamically
   const getRegisterLink = (planType) => {
-    // If it's the free trial
     if (planType === "trial") return "/register?plan=trial";
-    
-    // Pass the plan type and the selected billing cycle
     return `/register?plan=${planType}&cycle=${billingCycle}`;
   };
 
@@ -48,7 +58,51 @@ const MembershipPage = () => {
     { name: "Priority Support", available: true },
   ];
 
-  // --- AI RECOMMENDATION WIZARD COMPONENT ---
+  // --- CHRISTMAS PROMO POPUP COMPONENT ---
+  const PromoPopup = ({ isOpen, onClose }) => {
+    if (!isOpen) return null;
+    return (
+      <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+        <div className="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden animate-zoomIn">
+          
+          {/* Close Button */}
+          <button 
+            onClick={onClose} 
+            className="absolute top-4 right-4 z-10 bg-black/30 hover:bg-black/50 text-white p-2 rounded-full backdrop-blur transition-all"
+          >
+            <X size={20} />
+          </button>
+
+          <div className="flex flex-col">
+            {/* Image Section */}
+            <div className="w-full relative">
+              <img 
+                src="https://data.avenirya.com/wp-content/uploads/2025/12/Gemini_Generated_Image_2m671x2m671x2m67.jpg" 
+                alt="Christmas Special Offer" 
+                className="w-full h-auto object-cover"
+              />
+              
+              {/* Action Bar inside Popup */}
+              <div className="p-6 bg-gradient-to-r from-red-600 to-red-800 text-white flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div>
+                  <h3 className="font-bold text-xl">Christmas Special 🎅</h3>
+                  <p className="text-red-100 text-sm">Exclusive Offer: Get QR Menu for ₹559/year!</p>
+                </div>
+                {/* Link specifically for the offer */}
+                <a href="/register?plan=qr&cycle=yearly&coupon=CHRISTMAS">
+                    <button className="whitespace-nowrap bg-white text-red-700 font-bold py-3 px-8 rounded-full shadow-lg hover:scale-105 transition-transform animate-pulse">
+                        Claim Offer Now
+                    </button>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // --- AI WIZARD (Unchanged) ---
   const PlanRecommendationWizard = ({ isOpen, onClose }) => {
     const [step, setStep] = useState(1);
     const [businessType, setBusinessType] = useState(null); 
@@ -61,7 +115,7 @@ const MembershipPage = () => {
           plan: "QR Menu Plan",
           icon: <Smartphone className="w-12 h-12 text-blue-500" />,
           reason: "For Cloud Kitchens, you need direct WhatsApp orders without commissions. The QR feature is perfect for you.",
-          link: "/register?plan=qr&cycle=yearly", // Defaulting to yearly for recommendation
+          link: "/register?plan=qr&cycle=yearly",
           color: "bg-blue-600"
         };
       }
@@ -88,7 +142,6 @@ const MembershipPage = () => {
     return (
       <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg relative">
-          {/* Header */}
           <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-white flex justify-between items-center rounded-t-2xl">
             <div className="flex items-center gap-3">
               <div className="bg-white/20 p-2 rounded-lg">
@@ -102,31 +155,18 @@ const MembershipPage = () => {
             <button onClick={onClose} className="text-white/80 hover:text-white"><X size={24}/></button>
           </div>
 
-          {/* Content Body */}
           <div className="p-8">
             {step === 1 && (
               <div className="animate-slideIn">
                 <h4 className="text-lg font-bold text-gray-800 mb-6">What type of food business do you run?</h4>
                 <div className="space-y-4">
-                  <button 
-                    onClick={() => { setBusinessType('cloud'); setStep(3); }} 
-                    className="w-full p-4 border-2 border-gray-100 rounded-xl flex items-center gap-4 hover:border-orange-500 hover:bg-orange-50 transition-all group text-left"
-                  >
+                  <button onClick={() => { setBusinessType('cloud'); setStep(3); }} className="w-full p-4 border-2 border-gray-100 rounded-xl flex items-center gap-4 hover:border-orange-500 hover:bg-orange-50 transition-all group text-left">
                     <span className="text-2xl">☁️</span>
-                    <div>
-                      <span className="block font-bold text-gray-700 group-hover:text-orange-700">Cloud Kitchen / Home Baker</span>
-                      <span className="text-xs text-gray-500">Delivery & Takeaway only</span>
-                    </div>
+                    <div><span className="block font-bold text-gray-700 group-hover:text-orange-700">Cloud Kitchen / Home Baker</span><span className="text-xs text-gray-500">Delivery & Takeaway only</span></div>
                   </button>
-                  <button 
-                    onClick={() => { setBusinessType('dinein'); setStep(2); }} 
-                    className="w-full p-4 border-2 border-gray-100 rounded-xl flex items-center gap-4 hover:border-orange-500 hover:bg-orange-50 transition-all group text-left"
-                  >
+                  <button onClick={() => { setBusinessType('dinein'); setStep(2); }} className="w-full p-4 border-2 border-gray-100 rounded-xl flex items-center gap-4 hover:border-orange-500 hover:bg-orange-50 transition-all group text-left">
                     <span className="text-2xl">🍽️</span>
-                    <div>
-                      <span className="block font-bold text-gray-700 group-hover:text-orange-700">Restaurant / Cafe / Hotel</span>
-                      <span className="text-xs text-gray-500">Has seating area for Dine-in</span>
-                    </div>
+                    <div><span className="block font-bold text-gray-700 group-hover:text-orange-700">Restaurant / Cafe / Hotel</span><span className="text-xs text-gray-500">Has seating area for Dine-in</span></div>
                   </button>
                 </div>
               </div>
@@ -136,25 +176,13 @@ const MembershipPage = () => {
               <div className="animate-slideIn">
                 <h4 className="text-lg font-bold text-gray-800 mb-6">Do you want a Billing System linked to your Menu?</h4>
                 <div className="space-y-4">
-                  <button 
-                    onClick={() => { setBusinessType('dinein-billing'); setStep(3); }} 
-                    className="w-full p-4 border-2 border-gray-100 rounded-xl flex items-center gap-4 hover:border-purple-500 hover:bg-purple-50 transition-all group text-left"
-                  >
+                  <button onClick={() => { setBusinessType('dinein-billing'); setStep(3); }} className="w-full p-4 border-2 border-gray-100 rounded-xl flex items-center gap-4 hover:border-purple-500 hover:bg-purple-50 transition-all group text-left">
                     <span className="text-2xl">⚡</span>
-                    <div>
-                      <span className="block font-bold text-gray-700 group-hover:text-purple-700">Yes, Integrated System</span>
-                      <span className="text-xs text-gray-500">Orders from QR go directly to Billing (KOT)</span>
-                    </div>
+                    <div><span className="block font-bold text-gray-700 group-hover:text-purple-700">Yes, Integrated System</span><span className="text-xs text-gray-500">Orders from QR go directly to Billing (KOT)</span></div>
                   </button>
-                  <button 
-                    onClick={() => { setBusinessType('dinein-simple'); setStep(3); }} 
-                    className="w-full p-4 border-2 border-gray-100 rounded-xl flex items-center gap-4 hover:border-blue-500 hover:bg-blue-50 transition-all group text-left"
-                  >
+                  <button onClick={() => { setBusinessType('dinein-simple'); setStep(3); }} className="w-full p-4 border-2 border-gray-100 rounded-xl flex items-center gap-4 hover:border-blue-500 hover:bg-blue-50 transition-all group text-left">
                     <span className="text-2xl">📱</span>
-                    <div>
-                      <span className="block font-bold text-gray-700 group-hover:text-blue-700">No, Just Digital Menu</span>
-                      <span className="text-xs text-gray-500">I already have billing or don't need it</span>
-                    </div>
+                    <div><span className="block font-bold text-gray-700 group-hover:text-blue-700">No, Just Digital Menu</span><span className="text-xs text-gray-500">I already have billing or don't need it</span></div>
                   </button>
                 </div>
                 <button onClick={() => setStep(1)} className="mt-6 text-sm text-gray-400 hover:text-gray-600 underline">Back</button>
@@ -168,13 +196,9 @@ const MembershipPage = () => {
                 </div>
                 <h4 className="text-gray-500 text-sm font-bold uppercase tracking-wide mb-2">We Recommend</h4>
                 <h2 className="text-3xl font-extrabold text-gray-900 mb-4">{result.plan}</h2>
-                <p className="text-gray-600 mb-8 bg-gray-50 p-4 rounded-xl text-sm leading-relaxed border border-gray-100">
-                  {result.reason}
-                </p>
+                <p className="text-gray-600 mb-8 bg-gray-50 p-4 rounded-xl text-sm leading-relaxed border border-gray-100">{result.reason}</p>
                 <a href={result.link}>
-                  <button className={`w-full py-4 rounded-xl text-white font-bold shadow-lg transition-transform hover:scale-105 ${result.color}`}>
-                    Choose {result.plan} →
-                  </button>
+                  <button className={`w-full py-4 rounded-xl text-white font-bold shadow-lg transition-transform hover:scale-105 ${result.color}`}>Choose {result.plan} →</button>
                 </a>
                 <button onClick={() => { setStep(1); setBusinessType(null); }} className="mt-4 text-sm text-gray-400 hover:text-gray-600">Start Over</button>
               </div>
@@ -188,11 +212,11 @@ const MembershipPage = () => {
   return (
     <>
      <Helmet>
-        <title>Christmas Sale - Petoba Pricing</title>
-        <meta name="description" content="Special Christmas Offer on QR Menu and Billing Software plans." />
+        <title>Pricing - Petoba</title>
+        <meta name="description" content="Affordable QR Menu and Billing Software plans." />
       </Helmet>
 
-      {/* --- SNOWFALL ANIMATION STYLES --- */}
+      {/* --- SNOWFALL ANIMATION --- */}
       <style>{`
         @keyframes snow {
           0% { transform: translateY(-10px); opacity: 0; }
@@ -209,30 +233,17 @@ const MembershipPage = () => {
         }
       `}</style>
 
-      {/* --- SNOWFLAKES GENERATOR --- */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className="snowflake"
-            style={{
-              left: `${Math.random() * 100}vw`,
-              animationDuration: `${Math.random() * 5 + 5}s`,
-              animationDelay: `${Math.random() * 5}s`,
-              opacity: Math.random(),
-              fontSize: `${Math.random() * 10 + 10}px`
-            }}
-          >
-            ❄
-          </div>
+          <div key={i} className="snowflake" style={{ left: `${Math.random() * 100}vw`, animationDuration: `${Math.random() * 5 + 5}s`, animationDelay: `${Math.random() * 5}s`, opacity: Math.random(), fontSize: `${Math.random() * 10 + 10}px` }}>❄</div>
         ))}
       </div>
 
       <section className="relative py-16 bg-white font-sans">
-        {/* Soft Background Blobs */}
         <div className="absolute top-10 right-10 opacity-10 rotate-12"><Gift size={120} className="text-red-600" /></div>
         <div className="absolute bottom-20 left-10 opacity-10 -rotate-12"><Snowflake size={140} className="text-blue-400" /></div>
-       <div className="absolute top-60 left-10 opacity-10 -rotate-12"><Snowflake size={240} className="text-blue-400" /></div>
+        <div className="absolute top-60 left-10 opacity-10 -rotate-12"><Snowflake size={240} className="text-blue-400" /></div>
+        
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           
           {/* Header */}
@@ -241,10 +252,7 @@ const MembershipPage = () => {
             <p className="text-lg text-gray-500 mb-6">Start small with one tool, or go big with the Combo.</p>
 
             <div className="mb-8">
-              <button 
-                onClick={() => setShowWizard(true)}
-                className="inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 px-5 py-2 rounded-full text-sm font-bold hover:bg-indigo-200 transition-colors cursor-pointer"
-              >
+              <button onClick={() => setShowWizard(true)} className="inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 px-5 py-2 rounded-full text-sm font-bold hover:bg-indigo-200 transition-colors cursor-pointer">
                 <span className="relative flex h-3 w-3">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-3 w-3 bg-indigo-500"></span>
@@ -270,16 +278,20 @@ const MembershipPage = () => {
 
           {/* Pricing Grid */}
           <div className="grid grid-cols-1 mt-8 lg:grid-cols-3 gap-8 items-stretch mb-16">
+            
+            {/* --- PLAN 1: QR MENU (Standard Pricing - Offer hidden) --- */}
             <PricingCard
               icon={<Smartphone className="w-6 h-6 text-blue-500" />}
               title="QR Menu"
               subtitle="Digital Presence"
-              originalPrice={billingCycle === "monthly" ? "₹499" : "₹1999"}
+              // ✅ REVERTED TO STANDARD PRICING
+              originalPrice={billingCycle === "monthly" ? "₹499" : "₹1999"} 
               price={billingCycle === "monthly" ? "₹199" : "₹899"}
               period={billingCycle === "monthly" ? "/mo" : "/yr"}
               features={qrFeatures}
               buttonText="Select QR Plan"
               buttonColor="bg-blue-600 hover:bg-blue-700"
+              // ✅ REVERTED TO STANDARD OFFER TEXT
               offerText={billingCycle === "yearly" ? "🎁 Yearly Deal: Get 1 Month Billing App FREE" : ""}
               redirect={getRegisterLink("qr")}
             />
@@ -343,11 +355,16 @@ const MembershipPage = () => {
 
         </div>
       </section>
+      
+      {/* --- RENDER POPUP --- */}
+      <PromoPopup isOpen={showPromoPopup} onClose={() => setShowPromoPopup(false)} />
+      
       <PlanRecommendationWizard isOpen={showWizard} onClose={() => setShowWizard(false)} />
     </>
   );
 };
 
+// --- PRICING CARD COMPONENT ---
 const PricingCard = ({ icon, title, subtitle, originalPrice, price, period, features, buttonText, buttonColor, highlight, offerText, redirect, description }) => {
   return (
     <div className={`flex flex-col bg-white rounded-2xl transition-all duration-300 h-full ${highlight ? 'shadow-2xl border-2 border-orange-100 scale-100 lg:scale-105' : 'shadow-lg border border-gray-100 hover:shadow-xl'}`}>

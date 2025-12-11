@@ -4,16 +4,20 @@ import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { 
   CheckCircle, AlertCircle, User, Mail, Phone, 
-  MapPin, Lock, UploadCloud, ShieldCheck, Zap, Receipt, Calendar
+  MapPin, Lock, UploadCloud, ShieldCheck, Zap, Receipt, Calendar, Gift, Ticket, MessageCircle, PhoneCall
 } from "lucide-react";
 
 const RegisterFreePage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
-  // ✅ 1. Get Plan & Cycle from URL (Defaults to trial)
+  // ✅ CONFIG: Support Number (Replace this with your actual number)
+  const SUPPORT_NUMBER = "919270361329"; 
+
+  // ✅ 1. Get Plan, Cycle & Coupon from URL
   const selectedPlan = (searchParams.get("plan") || "trial").toLowerCase();
   const selectedCycle = (searchParams.get("cycle") || "monthly").toLowerCase();
+  const appliedCoupon = (searchParams.get("coupon") || "").toUpperCase();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -23,7 +27,7 @@ const RegisterFreePage = () => {
     logo: "",
     password: "",
     retypePassword: "",
-    membership_level: selectedPlan === 'trial' ? 1 : 2, // 1=Trial, 2=Pro
+    membership_level: selectedPlan === 'trial' ? 1 : 2,
     currency: "INR",
     planType: selectedPlan,
     billingCycle: selectedCycle
@@ -33,13 +37,14 @@ const RegisterFreePage = () => {
   const [message, setMessage] = useState("");
   const [uploading, setUploading] = useState(false);
   const [payableAmount, setPayableAmount] = useState(0);
+  const [discountAmount, setDiscountAmount] = useState(0);
 
   // --- CONFIGURATION ---
   const WP_USERNAME = "yashkolnure58@gmail.com";
   const WP_APP_PASSWORD = "05mq iTLF UvJU dyaz 7KxQ 8pyc"; 
   const WP_SITE_URL = "https://website.avenirya.com";
 
-  // ✅ 2. Pricing Configuration (Matches Membership Page)
+  // ✅ 2. Pricing Configuration
   const pricingMap = {
     qr: { monthly: 199, yearly: 899, name: "QR Menu Plan" },
     billing: { monthly: 199, yearly: 899, name: "Billing App Plan" },
@@ -56,13 +61,25 @@ const RegisterFreePage = () => {
       document.body.appendChild(script);
     }
     
-    // Set Amount
+    // ✅ Calculate Amount with Coupon Logic
     if (selectedPlan === 'trial') {
       setPayableAmount(0);
+      setDiscountAmount(0);
     } else if (pricingMap[selectedPlan]) {
-      setPayableAmount(pricingMap[selectedPlan][selectedCycle]);
+      let basePrice = pricingMap[selectedPlan][selectedCycle];
+      let discount = 0;
+
+      // 🎅 APPLY CHRISTMAS OFFER LOGIC
+      if (appliedCoupon === 'CHRISTMAS' && selectedPlan === 'qr' && selectedCycle === 'yearly') {
+        const offerPrice = 559;
+        discount = basePrice - offerPrice;
+        basePrice = offerPrice;
+      }
+
+      setPayableAmount(basePrice);
+      setDiscountAmount(discount);
     }
-  }, [selectedPlan, selectedCycle]);
+  }, [selectedPlan, selectedCycle, appliedCoupon]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -93,35 +110,27 @@ const RegisterFreePage = () => {
     }
   };
 
-  // ✅ 3. LOGIC: Calculate Expiry & Features
   const calculatePlanDetails = (planType, cycle) => {
     const now = new Date();
     let expiryDate = new Date();
     let isQrEnabled = false;
     let isBillingEnabled = false;
 
-    // --- A. Expiry Calculation ---
     if (planType === 'trial') {
-      expiryDate.setDate(now.getDate() + 7); // 7 Days
+      expiryDate.setDate(now.getDate() + 7);
     } else if (cycle === 'monthly') {
-      expiryDate.setMonth(now.getMonth() + 1); // 1 Month
+      expiryDate.setMonth(now.getMonth() + 1);
     } else if (cycle === 'yearly') {
-      expiryDate.setFullYear(now.getFullYear() + 1); // 1 Year
+      expiryDate.setFullYear(now.getFullYear() + 1);
     }
 
-    // --- B. Feature Access ---
-    // Trial & Combo get BOTH
     if (planType === 'trial' || planType === 'combo') {
       isQrEnabled = true;
       isBillingEnabled = true;
-    } 
-    // QR Only
-    else if (planType === 'qr') {
+    } else if (planType === 'qr') {
       isQrEnabled = true;
       isBillingEnabled = false;
-    }
-    // Billing Only
-    else if (planType === 'billing') {
+    } else if (planType === 'billing') {
       isQrEnabled = false;
       isBillingEnabled = true;
     }
@@ -132,7 +141,6 @@ const RegisterFreePage = () => {
       qrExpiresAt: isQrEnabled ? expiryDate.toISOString() : null,
       billingAccess: isBillingEnabled,
       billingExpiresAt: isBillingEnabled ? expiryDate.toISOString() : null,
-      // Backend expects these specific flags based on your schema:
       enableOrdering: isQrEnabled ? "enabled" : "disabled",
       billing: isBillingEnabled
     };
@@ -159,32 +167,27 @@ const RegisterFreePage = () => {
     if (Object.keys(newErrors).length > 0) return;
 
     try {
-      // 1. Check Email
       const checkRes = await axios.get(`/api/admin/restaurants/check-email?email=${formData.email}`);
       if (checkRes.data.exists) {
         setErrors({ email: "An account with this email already exists." });
         return;
       }
 
-      // 2. Prepare Payload with Calculated Dates
       const planDetails = calculatePlanDetails(formData.planType, formData.billingCycle);
-      
       const payload = { 
         ...formData, 
-        ...planDetails, // Merges expiresAt, billing, enableOrdering, etc.
-        paymentStatus: 'pending' // Default
+        ...planDetails, 
+        paymentStatus: 'pending',
+        couponApplied: discountAmount > 0 ? appliedCoupon : null
       };
 
-      // 3. TRIAL FLOW (No Payment)
       if (formData.planType === "trial" || payableAmount === 0) {
         await axios.post("/api/admin/restaurant/register", { ...payload, paymentStatus: 'trial' });
-        
         setMessage("✅ Registered! 7-Day Trial Activated.");
         setTimeout(() => navigate("/login"), 1500);
         return;
       }
 
-      // 4. PAID FLOW (Razorpay)
       const { data } = await axios.post("/api/create-order", {
         amount: payableAmount,
         currency: "INR",
@@ -206,7 +209,6 @@ const RegisterFreePage = () => {
             });
 
             if (verifyRes.data.success) {
-              // Register with PAID status
               await axios.post("/api/admin/restaurants/register", { 
                   ...payload, 
                   paymentStatus: 'paid', 
@@ -249,6 +251,17 @@ const RegisterFreePage = () => {
           <div className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-orange-200/30 rounded-full blur-[100px]"></div>
           <div className="absolute top-[20%] right-[0%] w-[30%] h-[30%] bg-blue-200/30 rounded-full blur-[100px]"></div>
       </div>
+
+      {/* ✅ FLOATING WHATSAPP BUTTON */}
+      <a 
+        href={`https://wa.me/${SUPPORT_NUMBER}?text=Hi, I need help with registration`} 
+        target="_blank" 
+        rel="noreferrer"
+        className="fixed bottom-6 right-6 z-50 bg-[#25D366] text-white px-5 py-3 rounded-full font-bold shadow-2xl hover:scale-105 hover:shadow-[#25D366]/40 transition-all flex items-center gap-2 animate-bounce-slow"
+      >
+        <MessageCircle size={24} fill="white" className="text-[#25D366]"/> 
+        <span>Need Help?</span>
+      </a>
 
       <div className="max-w-6xl w-full bg-white rounded-[2rem] shadow-2xl flex flex-col lg:flex-row relative z-10 border border-gray-100 overflow-hidden">
         
@@ -360,7 +373,7 @@ const RegisterFreePage = () => {
             </div>
 
             <button type="submit" disabled={uploading} 
-              className="w-full flex items-center justify-center gap-2 py-4 rounded-xl shadow-lg shadow-orange-200 text-lg font-bold text-white bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 active:scale-[0.98] transition-all mt-4">
+              className={`w-full flex items-center justify-center gap-2 py-4 rounded-xl shadow-lg text-lg font-bold text-white transition-all mt-4 active:scale-[0.98] ${discountAmount > 0 ? "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-green-200" : "bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 shadow-orange-200"}`}>
               {payableAmount > 0 ? (
                 <> Pay ₹{payableAmount} & Register </>
               ) : (
@@ -382,33 +395,49 @@ const RegisterFreePage = () => {
             <h3 className="text-xs font-bold text-orange-800 uppercase tracking-widest mb-6">Plan Summary</h3>
             
             {/* Plan Card */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-orange-100/50 mb-8">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-orange-100/50 mb-8 relative overflow-hidden">
+               {/* Decorative Coupon Ribbon if discount applied */}
+               {discountAmount > 0 && (
+                   <div className="absolute top-0 right-0">
+                       <div className="bg-red-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl shadow-sm">CHRISTMAS DEAL</div>
+                   </div>
+               )}
+
                <div className="flex justify-between items-start mb-4">
                  <div>
                    <h4 className="text-xl font-extrabold text-gray-900">{pricingMap[selectedPlan]?.name}</h4>
                    <p className="text-gray-500 text-sm">{selectedPlan === 'trial' ? '7 Days Validity' : `${selectedCycle === 'monthly' ? '1 Month' : '1 Year'} Validity`}</p>
                  </div>
-                 {selectedPlan !== 'trial' && (
-                    <div className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">
-                       {selectedCycle === 'yearly' ? '-25% OFF' : 'PRO'}
-                    </div>
-                 )}
                </div>
 
                <div className="py-4 border-t border-dashed border-gray-200 space-y-2">
                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>Base Price</span>
-                    <span>₹{payableAmount}</span>
+                   <span>Base Price</span>
+                   <span>₹{selectedPlan === 'trial' ? 0 : pricingMap[selectedPlan][selectedCycle]}</span>
                  </div>
+                 
+                 {/* ✅ Discount Display */}
+                 {discountAmount > 0 && (
+                     <div className="flex justify-between text-sm text-green-600 font-bold bg-green-50 p-2 rounded-lg border border-green-100">
+                       <span className="flex items-center gap-1"><Ticket size={14}/> Coupon: {appliedCoupon}</span>
+                       <span>- ₹{discountAmount}</span>
+                     </div>
+                 )}
+
                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>Taxes</span>
-                    <span>₹0</span>
+                   <span>Taxes</span>
+                   <span>₹0</span>
                  </div>
                </div>
 
                <div className="flex justify-between items-center pt-4 border-t border-gray-200">
                  <span className="font-bold text-gray-800">Total Payable</span>
-                 <span className="text-3xl font-extrabold text-gray-900">₹{payableAmount}</span>
+                 <div className="text-right">
+                    {discountAmount > 0 && (
+                        <span className="block text-xs text-gray-400 line-through">₹{pricingMap[selectedPlan][selectedCycle]}</span>
+                    )}
+                    <span className={`text-3xl font-extrabold ${discountAmount > 0 ? "text-green-600" : "text-gray-900"}`}>₹{payableAmount}</span>
+                 </div>
                </div>
             </div>
 
@@ -416,7 +445,6 @@ const RegisterFreePage = () => {
             <div className="space-y-4">
                 <h4 className="font-bold text-gray-800 text-sm mb-2">What's included:</h4>
                 
-                {/* Dynamic Features based on Plan */}
                 {(selectedPlan === 'qr' || selectedPlan === 'combo' || selectedPlan === 'trial') && (
                     <div className="flex items-start gap-3 text-sm text-gray-600">
                         <CheckCircle size={18} className="text-green-500 shrink-0 mt-0.5" />
@@ -440,6 +468,23 @@ const RegisterFreePage = () => {
                     <CheckCircle size={18} className="text-green-500 shrink-0 mt-0.5" />
                     <span>Free Setup Support</span>
                 </div>
+
+                {/* Christmas Bonus Feature display */}
+                {discountAmount > 0 && (
+                    <div className="flex items-start gap-3 text-sm text-red-600 font-bold animate-pulse">
+                        <Gift size={18} className="shrink-0 mt-0.5" />
+                        <span>Bonus: Priority Christmas Support 🎄</span>
+                    </div>
+                )}
+            </div>
+
+             {/* ✅ SIDEBAR HELP SECTION */}
+             <div className="mt-6 bg-white p-4 rounded-xl border border-orange-200 flex items-center gap-3 shadow-sm">
+               <div className="bg-orange-50 p-2 rounded-full text-orange-600"><PhoneCall size={20}/></div>
+               <div>
+                  <p className="text-xs font-bold text-orange-800 uppercase">Having trouble?</p>
+                  <p className="text-sm font-semibold text-gray-700">Call or WhatsApp us at <a href={`https://wa.me/${SUPPORT_NUMBER}`} className="underline hover:text-orange-600">92703 61329</a></p>
+               </div>
             </div>
 
             {/* Trust Badges */}
