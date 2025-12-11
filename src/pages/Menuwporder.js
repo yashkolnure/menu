@@ -5,6 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import CustomFieldsDisplay from "../components/CustomFieldsDisplay";
 import { Helmet } from "react-helmet";
 import MenuCard from "../components/MenuCardWp";
+import PetobaChatbot from "../components/PetobaChatbot";
 
 function RestaurantMenuPagewp() {
   const { id } = useParams();
@@ -75,7 +76,7 @@ function RestaurantMenuPagewp() {
       try {
         const token = localStorage.getItem("token");
         // Ensure API URL is correct
-        const res = await fetch(`/api/admin/${id}/offers`, {
+        const res = await fetch(`https://petoba.in/api/admin/${id}/offers`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -97,10 +98,10 @@ function RestaurantMenuPagewp() {
         const token = localStorage.getItem("token");
 
         const [menuRes, detailsRes] = await Promise.all([
-          fetch(`/api/admin/${id}/menu`, {
+          fetch(`https://petoba.in/api/admin/${id}/menu`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          fetch(`/api/admin/${id}/details`, {
+          fetch(`https://petoba.in/api/admin/${id}/details`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -486,7 +487,7 @@ function RestaurantMenuPagewp() {
             onClick={() => setShowCart(true)}
             className="bg-orange-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-orange-600 transition-all"
           >
-            View Cart ({cart.length})
+            Cart ({cart.length})
           </button>
         </div>
       )}
@@ -608,6 +609,16 @@ function RestaurantMenuPagewp() {
         toastClassName=""
         autoClose={1000}
       />
+      {restaurantDetails && (
+        <PetobaChatbot 
+            menuData={menuData} 
+            restaurantName={restaurantDetails.name}
+            currencySymbol={currencySymbol}
+            addToCart={addToCart}
+        />
+      )}
+
+
     </>
   );
 }
