@@ -609,14 +609,14 @@ function RestaurantMenuPagewp() {
         toastClassName=""
         autoClose={1000}
       />
-      {restaurantDetails && (
+      {/* {restaurantDetails && (
         <PetobaChatbot 
             menuData={menuData} 
             restaurantName={restaurantDetails.name}
             currencySymbol={currencySymbol}
             addToCart={addToCart}
         />
-      )}
+      )} */}
 
 
     </>
