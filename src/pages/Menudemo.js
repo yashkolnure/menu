@@ -344,12 +344,21 @@ const handleTableNumberSubmit = () => {
              <CustomFieldsDisplay restaurantId={id} />
         </div>
         
-        <div className="flex flex-wrap justify-center">
-          <p className="text-gray-500 text-center mt-4">
-              Made with ❤️ by <a href="https://yash.avenirya.com" className="text-orange-500" target="_blank" rel="noopener noreferrer">Petoba</a> 
-            </p>
-            </div>
-          </div>
+      
+           <div className="flex flex-wrap justify-center">
+          <p className="text-gray-500 text-center mt-4 mb-24">
+            Made with ❤️ by{" "}
+            <a
+              href="https://petoba.in"
+              className="text-orange-500"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Petoba
+            </a>
+          </p>
+        </div>
+      </div>
 
 
       {cart.length > 0 && (

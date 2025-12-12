@@ -468,7 +468,7 @@ function RestaurantMenuPagewp() {
         </div>
 
         <div className="flex flex-wrap justify-center">
-          <p className="text-gray-500 text-center mt-4">
+          <p className="text-gray-500 text-center mt-4 mb-24">
             Made with ❤️ by{" "}
             <a
               href="https://petoba.in"

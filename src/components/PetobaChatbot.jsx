@@ -155,7 +155,7 @@ const handleSend = async () => {
             {messages.map((msg, index) => (
               <div key={index} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div 
-                  className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm ${
+                  className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm whitespace-pre-wrap ${ // 👈 ADD whitespace-pre-wrap HERE
                     msg.role === "user" 
                       ? "bg-orange-500 text-white rounded-tr-none" 
                       : "bg-white border border-gray-200 text-gray-800 rounded-tl-none"
