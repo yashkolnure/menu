@@ -1,3 +1,6 @@
-# https://www.robotstxt.org/robotstxt.html
+# Allow all crawlers to access everything
 User-agent: *
-Disallow:
+Allow: /
+
+# Sitemap Location
+Sitemap: https://petoba.in/sitemap.xml

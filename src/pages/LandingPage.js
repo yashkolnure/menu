@@ -27,7 +27,9 @@ import {
   Wand2,
   Rocket,
   FileText,
-  Scan
+  Sparkles, // <--- Add this
+  Zap,
+  Send
 } from "lucide-react";
 import { BsQrCodeScan, BsWhatsapp } from 'react-icons/bs';
 import { IoDocumentTextOutline } from 'react-icons/io5';
@@ -707,7 +709,156 @@ const HomePage = () => {
           </div>
         </div>
       </section>
-     {/* --- HOW IT WORKS (Redesigned) --- */}
+
+{/* =========================================
+          NEW: AI CHATBOT HIGHLIGHT SECTION
+          Layout: Left Text | Right Chat Simulation
+          Theme: Transparent BG (Blends with Main Page)
+         ========================================= */}
+      <section className="py-16 relative ">
+        
+        {/* Background Decor (Subtle & Transparent) */}
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-orange-500/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
+
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+
+            {/* LEFT: Text Content */}
+            <FadeInSection>
+              <div>
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-50 border border-orange-100 text-orange-600 font-bold text-xs uppercase tracking-widest mb-6 animate-pulse shadow-sm">
+                  <Sparkles size={14} />
+                  <span>New Feature</span>
+                </div>
+
+                <h2 className="text-4xl lg:text-5xl font-extrabold leading-tight mb-6 text-slate-900">
+                  Meet Your New <br/>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-600">AI Waiter Bot</span>
+                </h2>
+
+                <p className="text-lg text-slate-600 mb-8 leading-relaxed">
+                  Imagine a waiter who never sleeps, knows every ingredient, and upsells perfectly. Our AI lives inside the digital menu to chat with customers and take orders instantly.
+                </p>
+
+                <div className="space-y-5 mb-10">
+                  {[
+                    "Answers questions like 'Is this spicy?'",
+                    "Takes orders via text (e.g. '2 Burgers')",
+                    "Suggests pairings & upsells items",
+                    "Works 24/7 without taking a break"
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                        <Check size={14} strokeWidth={3} />
+                      </div>
+                      <span className="font-medium text-slate-700">{item}</span>
+                    </div>
+                  ))}
+                </div>
+
+              </div>
+            </FadeInSection>
+
+            {/* RIGHT: Chatbot Illustration */}
+            <FadeInSection delay="200ms">
+              <div className="relative mx-auto w-full max-w-[400px]">
+                
+                {/* Floating Status Badge */}
+                <div className="absolute -right-4 top-10 animate-bounce z-20" style={{animationDuration: '3s'}}>
+                   <div className="bg-white/90 backdrop-blur border border-slate-200 p-3 rounded-2xl shadow-xl flex items-center gap-3">
+                      <div className="bg-green-100 p-2 rounded-full text-green-600"><CheckCircle2 size={20}/></div>
+                      <div>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase">Status</p>
+                        <p className="text-sm font-bold text-slate-800">Order Accepted</p>
+                      </div>
+                   </div>
+                </div>
+
+                {/* Phone Frame (Kept Dark for Contrast/Premium Feel) */}
+                <div className="relative bg-slate-900 border-[8px] border-slate-900 rounded-[2.5rem] shadow-2xl overflow-hidden h-[550px] transform rotate-1 hover:rotate-0 transition-transform duration-500">
+                  
+                  {/* Fake Header */}
+                  <div className="bg-slate-800 p-4 border-b border-slate-700 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 flex items-center justify-center shadow-lg">
+                        <Bot size={16} className="text-white"/>
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-white">Petoba AI</p>
+                        <p className="text-[10px] text-green-400 flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> Online
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-slate-400"><Settings size={18}/></div>
+                  </div>
+
+                  {/* Chat Area */}
+                  <div className="p-4 space-y-4 font-sans text-sm h-full bg-slate-800/50">
+                    
+                    {/* Bot Message */}
+                    <div className="flex justify-start">
+                      <div className="bg-slate-700 text-slate-100 p-3 rounded-2xl rounded-tl-none max-w-[85%] shadow-md border border-slate-600">
+                        Hi! 👋 I'm your AI waiter. Ask me for recommendations or order directly here!
+                      </div>
+                    </div>
+
+                    {/* User Message */}
+                    <div className="flex justify-end">
+                      <div className="bg-orange-500 text-white p-3 rounded-2xl rounded-tr-none max-w-[85%] shadow-lg">
+                        I want something spicy. 🌶️
+                      </div>
+                    </div>
+
+                    {/* Bot Typing Indicator */}
+                    <div className="flex justify-start">
+                      <div className="bg-slate-700 p-3 rounded-2xl rounded-tl-none border border-slate-600 w-16 flex items-center gap-1">
+                         <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></span>
+                         <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></span>
+                         <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></span>
+                      </div>
+                    </div>
+
+                    {/* Bot Result */}
+                    <div className="flex justify-start animate-fade-in-up" style={{animationDelay: '1s', animationFillMode: 'both'}}>
+                      <div className="bg-slate-700 text-slate-100 p-3 rounded-2xl rounded-tl-none max-w-[95%] shadow-md border border-slate-600">
+                        <p className="mb-2">How about our <strong>Schezwan Noodles</strong>? 🔥 It's a customer favorite!</p>
+                        <div className="bg-slate-800 p-2 rounded-xl flex gap-3 items-center border border-slate-600 mt-2">
+                           <img src="https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=100&q=80" className="w-10 h-10 rounded-lg object-cover" alt="food"/>
+                           <div className="flex-1">
+                             <p className="font-bold text-xs text-white">Schezwan Noodles</p>
+                             <p className="text-xs text-orange-400">₹ 180</p>
+                           </div>
+                           <button className="bg-white text-slate-900 text-[10px] font-bold px-3 py-1.5 rounded hover:bg-slate-200 transition">Add</button>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  {/* Fake Input */}
+                  <div className="absolute bottom-0 left-0 w-full p-3 bg-slate-800 border-t border-slate-700">
+                    <div className="flex items-center gap-2 bg-slate-900 p-2 rounded-full border border-slate-700">
+                      <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-500">
+                        <Sparkles size={14}/>
+                      </div>
+                      <div className="flex-1 text-xs text-slate-500">Add 1 plate...</div>
+                      <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white">
+                        <Send size={14}/>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </FadeInSection>
+
+          </div>
+        </div>
+      </section>
+
+      {/* --- HOW IT WORKS (Redesigned) --- */}
       <section className="py-12 ">
         {/* Background Patterns */}
         <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>

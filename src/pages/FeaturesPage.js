@@ -81,7 +81,7 @@ const FeaturesPage = () => {
                 </div>
               </div>
               <a
-                href={`https://yash.avenirya.com/d/${restaurant._id}`}
+                href={`https://petoba.in/d/${restaurant._id}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-auto inline-block text-center py-2 px-4 rounded-full bg-gradient-to-r from-orange-400 to-orange-600 text-white font-semibold shadow-md hover:scale-105 transition-transform"
