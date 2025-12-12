@@ -6,12 +6,76 @@ import {
   LayoutDashboard, Receipt, History, Gift, Bell, Search, Printer, Trash2, CheckCircle, 
   Menu, X, ChefHat, Users, Clock, Volume2, VolumeX, TrendingUp, Percent, MessageCircle, 
   AlertTriangle, Tag, Eye, Coins, CreditCard, Smartphone, Banknote, Grid, Plus, Minus, Bike,
-  MapPin, Phone, XCircle // 🆕 Added XCircle for Reject Button
+  MapPin, Phone, XCircle, HelpCircle // Added HelpCircle for Tour Button
 } from "lucide-react";
 import DeliveryDashboard from "./DeliveryDashboard";
 
+// 1. IMPORT DRIVER.JS
+import { driver } from "driver.js";
+import "driver.js/dist/driver.css";
+
 // 🔗 CONFIGURATION
 const SOCKET_URL = "https://yash.avenirya.com"; 
+
+// --- CUSTOM TOUR STYLES ---
+const tourStyles = `
+  .driver-popover.driverjs-theme {
+    background-color: #ffffff;
+    color: #1f2937;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    padding: 20px;
+    max-width: 320px;
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    border: 1px solid #e0e7ff;
+  }
+  .driver-popover.driverjs-theme .driver-popover-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: #ea580c; /* Orange-600 */
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .driver-popover.driverjs-theme .driver-popover-description {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #4b5563;
+    margin-bottom: 20px;
+  }
+  .driver-popover.driverjs-theme .driver-popover-footer .driver-popover-btn {
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    text-shadow: none;
+    transition: all 0.2s ease;
+  }
+  .driver-popover.driverjs-theme .driver-popover-footer .driver-popover-next-btn {
+    background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); /* Orange Gradient */
+    color: white !important;
+    border: none;
+    box-shadow: 0 4px 6px -1px rgba(234, 88, 12, 0.3);
+  }
+  .driver-popover.driverjs-theme .driver-popover-footer .driver-popover-next-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 8px -1px rgba(234, 88, 12, 0.4);
+  }
+  .driver-popover.driverjs-theme .driver-popover-footer .driver-popover-prev-btn,
+  .driver-popover.driverjs-theme .driver-popover-footer .driver-popover-close-btn {
+    background: #f3f4f6;
+    color: #6b7280 !important;
+    border: 1px solid #e5e7eb;
+  }
+  .driver-popover.driverjs-theme .driver-popover-progress-text {
+    color: #9ca3af;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .driver-popover { z-index: 1000000000 !important; }
+  .driver-overlay { z-index: 999999999 !important; opacity: 0.8 !important; }
+`;
 
 function AdminDashboard() {
   // --- STATE ---
@@ -25,11 +89,9 @@ function AdminDashboard() {
   const [totalTables, setTotalTables] = useState(() => Number(localStorage.getItem("totalTables")) || 12);
 
   // --- QUEUES & POPUPS ---
-  // 1. Table Orders
   const [newOrderPopup, setNewOrderPopup] = useState(null);
   const [newOrderQueue, setNewOrderQueue] = useState([]);
   
-  // 2. 🆕 Delivery Orders
   const [newDeliveryPopup, setNewDeliveryPopup] = useState(null);
   const [newDeliveryQueue, setNewDeliveryQueue] = useState([]);
 
@@ -51,7 +113,7 @@ function AdminDashboard() {
 
   // 🆕 Refs for tracking processed IDs
   const processedOrderIds = useRef(new Set()); 
-  const processedDeliveryIds = useRef(new Set()); // 👈 Track delivery IDs
+  const processedDeliveryIds = useRef(new Set()); 
 
     // --- ICONS ---
   const Icons = {
@@ -71,7 +133,6 @@ function AdminDashboard() {
   // 1. Check if Billing is Active (Highest Priority)
   const showBillingBlocker = restaurantDetails.billing === false;
   
-
   const handleGoToSettings = () => {
     navigate("/dashboard"); // Navigates to the settings page
   };
@@ -79,6 +140,140 @@ function AdminDashboard() {
   const showOrderModeWarning = !showBillingBlocker && restaurantDetails.orderMode === 'whatsapp';
   
   const isRestrictedMode = showBillingBlocker || showOrderModeWarning;
+
+  // --- TOUR LOGIC START ---
+  const tourInitialized = useRef(false);
+  const restaurantId = localStorage.getItem("restaurantId");
+
+  const startTour = () => {
+    const isMobile = window.innerWidth < 1024;
+    
+    // Open sidebar on mobile so elements are visible
+    if (isMobile) {
+        setIsSidebarOpen(true);
+    }
+
+    // 1. Define the unique key
+    const tourKey = `tour_seen_admin_${restaurantId}`;
+
+    setTimeout(() => {
+        const driverObj = driver({
+            showProgress: true,
+            animate: true,
+            doneBtnText: 'Finish Setup',
+            closeBtnText: 'Skip',
+            nextBtnText: 'Next →',
+            prevBtnText: '← Back',
+            popoverClass: 'driverjs-theme',
+            stagePadding: 5,
+            
+            steps: [
+                { 
+                    element: 'body', 
+                    popover: { 
+                        title: '🚀 Admin Control Center', 
+                        description: 'Welcome to your command center! Here you can manage live orders, billing, and deliveries.', 
+                        side: "left", 
+                        align: 'center' 
+                    } 
+                },
+                { 
+                    element: '#live-toggle', 
+                    popover: { 
+                        title: '🟢 Store Status', 
+                        description: '<b>Toggle this switch</b> to open or close your restaurant. When off, customers cannot place orders.', 
+                        side: "bottom", 
+                        align: 'center' 
+                    } 
+                },
+                { 
+                    element: '#sound-toggle', 
+                    popover: { 
+                        title: '🔊 Sound Alerts', 
+                        description: 'Click here to <b>enable sound</b>. You will hear a distinct bell for table orders vs delivery orders.', 
+                        side: "bottom", 
+                        align: 'center' 
+                    } 
+                },
+                { 
+                    element: '#sidebar-tables', 
+                    popover: { 
+                        title: '🪑 My Tables', 
+                        description: 'Manage your floor plan. You can add items to tables manually here (Admin POS).', 
+                        side: isMobile ? "bottom" : "right", 
+                        align: 'start' 
+                    } 
+                },
+                { 
+                    element: '#sidebar-orders', 
+                    popover: { 
+                        title: '🔥 Live Dashboard', 
+                        description: 'View active orders, kitchen status, and today\'s revenue stats in real-time.', 
+                        side: isMobile ? "bottom" : "right", 
+                        align: 'start' 
+                    } 
+                },
+                { 
+                    element: '#sidebar-billing', 
+                    popover: { 
+                        title: '🧾 Billing & Checkout', 
+                        description: 'Settle bills here. Supports Cash, UPI, and Split payments. Print receipts instantly.', 
+                        side: isMobile ? "bottom" : "right", 
+                        align: 'start' 
+                    } 
+                },
+                { 
+                    element: '#sidebar-delivery', 
+                    popover: { 
+                        title: '🛵 Delivery Orders', 
+                        description: 'Manage orders coming from your website/app for home delivery.', 
+                        side: isMobile ? "bottom" : "right", 
+                        align: 'start' 
+                    } 
+                },
+                { 
+                    element: '#notification-bell', 
+                    popover: { 
+                        title: '🔔 Notification Center', 
+                        description: 'Missed a popup? Click here to see pending orders in the queue.', 
+                        side: "left", 
+                        align: 'start' 
+                    } 
+                },
+            ],
+            
+            onDestroy: () => {
+                if (isMobile) setIsSidebarOpen(false);
+            }
+        });
+
+        // Save seen flag immediately
+        console.log("🔒 Saving Admin tour completion flag to:", tourKey);
+        localStorage.setItem(tourKey, 'true');
+
+        driverObj.drive();
+
+    }, isMobile ? 500 : 100); 
+  };
+
+  // Auto-Start Effect
+  useEffect(() => {
+    if (!restaurantId) return;
+    const tourKey = `tour_seen_admin_${restaurantId}`;
+    const hasSeenTour = localStorage.getItem(tourKey);
+
+    if (!hasSeenTour && !tourInitialized.current) {
+        tourInitialized.current = true;
+        const timer = setTimeout(() => {
+            if(document.getElementById('sidebar-tables')) {
+                console.log("✅ Starting Admin Tour...");
+                startTour();
+            }
+        }, 1500);
+        return () => clearTimeout(timer);
+    }
+  }, [restaurantId]);
+  // --- TOUR LOGIC END ---
 
  const BlockingModal = ({ title, message, buttonText, onAction, isExternal, type = "danger", onClose }) => (
     <div className="fixed inset-0 z-[200] bg-gray-900/90 backdrop-blur-md flex items-center justify-center p-4">
@@ -165,7 +360,6 @@ function AdminDashboard() {
 
   // Refs
   const audioRef = useRef(null);
-  const restaurantId = localStorage.getItem("restaurantId");
   const token = localStorage.getItem("token");
 
   // --- 🧠 STATS ---
@@ -679,7 +873,7 @@ const getAggregatedTableItems = (tableOrders) => {
       ordersToPrint = data.orders; // ✅ FIX: Get orders from state
     }
 
-    // 2. Safety Check: If still no orders, stop
+    // 2. Safety Check: If still no items, stop
     if (!ordersToPrint || !Array.isArray(ordersToPrint)) {
       alert("No items found to print!");
       return;
@@ -885,7 +1079,9 @@ const getAggregatedTableItems = (tableOrders) => {
   
 
   const SidebarItem = ({ id, label, icon: Icon }) => (
-    <button onClick={() => { setActiveTab(id); if(window.innerWidth < 1024) setIsSidebarOpen(false); }}
+    <button 
+      id={`sidebar-${id}`} // 🆕 Added ID here for Driver.js
+      onClick={() => { setActiveTab(id); if(window.innerWidth < 1024) setIsSidebarOpen(false); }}
       className={`w-full flex items-center gap-3 px-6 py-4 text-left transition-colors ${activeTab === id ? "bg-orange-50 text-orange-600 border-r-4 border-orange-600 bg-orange-50" : "text-gray-500 hover:text-orange-500 hover:bg-gray-50"}`}>
       <Icon size={20} /> <span className="font-medium">{label}</span>
     </button>
@@ -894,6 +1090,10 @@ const getAggregatedTableItems = (tableOrders) => {
   return (
     <div className="flex h-screen bg-gray-100 font-sans overflow-hidden text-gray-800 relative">
       <Helmet><title>Dashboard | Petoba</title></Helmet>
+      
+      {/* 🆕 ADDED STYLES FOR TOUR */}
+      <style>{tourStyles}</style>
+
       <audio ref={audioRef} src={notificationSound} preload="auto" onError={(e) => console.log("Audio Error: ", e)} />
 
       {isSidebarOpen && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setIsSidebarOpen(false)}></div>}
@@ -918,6 +1118,12 @@ const getAggregatedTableItems = (tableOrders) => {
           <SidebarItem id="delivery" label="Delivery Orders" icon={Bike} />
           <SidebarItem id="history" label="Order History" icon={History} />
           <div className="mt-auto p-2 gap-2 flex flex-col border-t border-gray-100">
+              
+              {/* 🆕 MANUAL TOUR BUTTON */}
+              <button onClick={startTour} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-orange-600 bg-orange-50 hover:bg-orange-100">
+                  <HelpCircle size={20} /><span className="font-bold">Start Tour</span>
+              </button>
+
               <button onClick={handlemyorders} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-600 hover:bg-gray-100">
                   <Icons.Settings /><span className="font-medium">Admin Settings</span>
               </button>
@@ -937,13 +1143,19 @@ const getAggregatedTableItems = (tableOrders) => {
   
   <div className="flex items-center gap-3 sm:gap-6">
       {/* SOUND TOGGLE */}
-      <button onClick={unlockAudio} className={`flex items-center gap-2 px-3 py-2 rounded-full transition-colors shadow-sm border ${soundEnabled ? "bg-blue-50 text-blue-600 border-blue-200" : "bg-gray-100 text-gray-600 border-gray-300"}`} title="Click to allow sound">
+      <button 
+        id="sound-toggle" // 🆕 Added ID
+        onClick={unlockAudio} 
+        className={`flex items-center gap-2 px-3 py-2 rounded-full transition-colors shadow-sm border ${soundEnabled ? "bg-blue-50 text-blue-600 border-blue-200" : "bg-gray-100 text-gray-600 border-gray-300"}`} 
+        title="Click to allow sound"
+      >
         {soundEnabled ? <Volume2 size={18}/> : <VolumeX size={18}/>}
         <span className="text-xs font-bold hidden sm:inline">{soundEnabled ? "Sound On" : "Sound Off"}</span>
       </button>
 
       {/* 🆕 STORE STATUS TOGGLE */}
       <button 
+        id="live-toggle" // 🆕 Added ID
         onClick={toggleLiveStatus} 
         disabled={isTogglingLive}
         className={`flex items-center gap-3 px-1.5 py-1.5 rounded-full border transition-all duration-300 cursor-pointer ${
@@ -966,7 +1178,7 @@ const getAggregatedTableItems = (tableOrders) => {
       </button>
 
       {/* NOTIFICATIONS */}
-      <div className="relative cursor-pointer p-1">
+      <div id="notification-bell" className="relative cursor-pointer p-1">
         <Bell className="text-gray-500 hover:text-orange-500 transition" size={22} />
         {(newOrderQueue.length + newDeliveryQueue.length) > 0 && <span className="absolute -top-0 -right-0 w-4 h-4 bg-red-500 rounded-full border-2 border-white text-[10px] text-white flex items-center justify-center">{newOrderQueue.length + newDeliveryQueue.length}</span>}
       </div>
@@ -1066,7 +1278,7 @@ const getAggregatedTableItems = (tableOrders) => {
                     </div>
 
                   {/* 🆕 TABLE CONTROLS */}
-                    <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                    <div id="table-controls" className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                         <h3 className="font-bold text-gray-700 flex items-center gap-2"><Grid size={20} className="text-orange-500"/> Floor Plan</h3>
                         <div className="flex items-center gap-3 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200">
                             <span className="text-sm text-gray-500 font-medium">Total Tables:</span>

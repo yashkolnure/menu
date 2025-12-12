@@ -9,6 +9,87 @@ import ExpertHelpPopup from "../components/ExpertHelpPopup";
 import OfferBannerManager from "../components/OfferBannerManager";
 import { Helmet } from "react-helmet";
 
+// 1. IMPORT DRIVER.JS
+import { driver } from "driver.js";
+import "driver.js/dist/driver.css";
+
+// --- CUSTOM "ATTRACTIVE" STYLES ---
+const tourStyles = `
+  /* Global Driver Overrides */
+  .driver-popover.driverjs-theme {
+    background-color: #ffffff;
+    color: #1f2937;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    padding: 20px;
+    max-width: 320px;
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    border: 1px solid #e0e7ff;
+  }
+
+  .driver-popover.driverjs-theme .driver-popover-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: #4338ca; /* Indigo-700 */
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .driver-popover.driverjs-theme .driver-popover-description {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #4b5563;
+    margin-bottom: 20px;
+  }
+
+  /* Buttons */
+  .driver-popover.driverjs-theme .driver-popover-footer .driver-popover-btn {
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    text-shadow: none;
+    transition: all 0.2s ease;
+  }
+
+  /* Next/Finish Button */
+  .driver-popover.driverjs-theme .driver-popover-footer .driver-popover-next-btn {
+    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+    color: white !important;
+    border: none;
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+  }
+  .driver-popover.driverjs-theme .driver-popover-footer .driver-popover-next-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 8px -1px rgba(79, 70, 229, 0.4);
+  }
+
+  /* Back/Close Button */
+  .driver-popover.driverjs-theme .driver-popover-footer .driver-popover-prev-btn,
+  .driver-popover.driverjs-theme .driver-popover-footer .driver-popover-close-btn {
+    background: #f3f4f6;
+    color: #6b7280 !important;
+    border: 1px solid #e5e7eb;
+  }
+  .driver-popover.driverjs-theme .driver-popover-footer .driver-popover-prev-btn:hover {
+    background: #e5e7eb;
+    color: #374151 !important;
+  }
+
+  /* Progress Steps */
+  .driver-popover.driverjs-theme .driver-popover-progress-text {
+    color: #9ca3af;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  /* Ensure it is on top of everything */
+  .driver-popover { z-index: 1000000000 !important; }
+  .driver-overlay { z-index: 999999999 !important; opacity: 0.8 !important; }
+`;
+
 // --- ICONS ---
 const Icons = {
   Home: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>,
@@ -23,12 +104,7 @@ const Icons = {
   Close: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>, 
   Logout: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>,
   plate: () =>  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M9 7h6M9 11h6M9 15h3M7 2h10a2 2 0 012 2v16l-3-2-3 2-3-2-3 2V4a2 2 0 012-2z"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6M9 11h6M9 15h3M7 2h10a2 2 0 012 2v16l-3-2-3 2-3-2-3 2V4a2 2 0 012-2z" />
   </svg>,
   food: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0v6m0 0l-2.685-1.579M12 20l2.685-1.579M5.315 7.421L3 8.618m0 0l2.685 1.579M3 8.618v3.764m0 0l2.685 1.579M3 12.382l2.685-1.579M18.685 16.579L21 15.382m0 0l-2.685-1.579M21 15.382v-3.764m0 0l-2.685-1.579M21 11.618l-2.685 1.579" /></svg>,
   Whatsapp: () => <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
@@ -39,27 +115,16 @@ const CategoryReorderModal = ({ isOpen, onClose, categories, onSave }) => {
   const dragItem = useRef();
   const dragOverItem = useRef();
 
-  // Reset list when modal opens
   useEffect(() => {
     if (isOpen) setList(categories);
   }, [isOpen, categories]);
 
-  // Handle Drag Sorting
   const handleSort = () => {
-    // Duplicate items
     let _list = [...list];
-    
-    // Remove dragged item
     const draggedItemContent = _list.splice(dragItem.current, 1)[0];
-    
-    // Switch the position
     _list.splice(dragOverItem.current, 0, draggedItemContent);
-    
-    // Reset refs
     dragItem.current = null;
     dragOverItem.current = null;
-    
-    // Update state
     setList(_list);
   };
 
@@ -68,8 +133,6 @@ const CategoryReorderModal = ({ isOpen, onClose, categories, onSave }) => {
   return (
     <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in-up flex flex-col max-h-[80vh]">
-        
-        {/* Header */}
         <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 shrink-0">
           <div>
             <h3 className="font-bold text-gray-800">Reorder Categories</h3>
@@ -77,8 +140,6 @@ const CategoryReorderModal = ({ isOpen, onClose, categories, onSave }) => {
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><Icons.Close /></button>
         </div>
-
-        {/* Draggable List */}
         <div className="p-4 overflow-y-auto flex-1 space-y-2">
           {list.map((cat, index) => (
             <div 
@@ -91,7 +152,6 @@ const CategoryReorderModal = ({ isOpen, onClose, categories, onSave }) => {
               onDragOver={(e) => e.preventDefault()}
             >
               <div className="flex items-center gap-3">
-                {/* Drag Handle Icon */}
                 <span className="text-gray-300">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" /></svg>
                 </span>
@@ -100,8 +160,6 @@ const CategoryReorderModal = ({ isOpen, onClose, categories, onSave }) => {
             </div>
           ))}
         </div>
-
-        {/* Footer */}
         <div className="p-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50 shrink-0">
           <button onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg text-sm font-medium">Cancel</button>
           <button 
@@ -119,26 +177,176 @@ const CategoryReorderModal = ({ isOpen, onClose, categories, onSave }) => {
 function Dashboard() {
   // --- STATE ---
   const [activeTab, setActiveTab] = useState("overview"); 
-  const [restaurant, setRestaurant] = useState({ name: "", logo: "", address: "", contact: "", billing: false }); // Added billing: false
+  const [restaurant, setRestaurant] = useState({ name: "", logo: "", address: "", contact: "", billing: false });
   const [restaurantId, setRestaurantId] = useState(localStorage.getItem("restaurantId") || "");
   const [menuItems, setMenuItems] = useState([]);
   const [offers, setOffers] = useState([]);
   const [existingItems, setExistingItems] = useState([]);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile Menu State
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isOrderModeDropdownOpen, setIsOrderModeDropdownOpen] = useState(false);
   const [showBillingAlert, setShowBillingAlert] = useState(false);
-  
-  // Add this new state
   const [showReorderModal, setShowReorderModal] = useState(false);
 
-  // Add this handler function
+  // --- 2. DRIVER.JS LOGIC & INIT ---
+  // GUARD: Prevents double-running in Strict Mode
+  const tourInitialized = useRef(false);
+
+const startTour = () => {
+    const isMobile = window.innerWidth < 768;
+
+    if (isMobile) {
+        setIsMobileMenuOpen(true);
+    }
+
+    // 1. Define the unique key
+    const tourKey = `tour_completed_${restaurantId}`;
+
+    setTimeout(() => {
+        const driverObj = driver({
+            showProgress: true,
+            animate: true,
+            doneBtnText: 'Start Using App',
+            closeBtnText: 'Dismiss',
+            nextBtnText: 'Next →',
+            prevBtnText: '← Back',
+            stagePadding: 8,
+            popoverClass: 'driverjs-theme',
+            
+            steps: [
+                { 
+                    element: 'body', 
+                    popover: { 
+                        title: '👋 Welcome to Petoba!', 
+                        description: 'Your restaurant dashboard is ready. Let\'s show you the <b>5 key features</b> to get started.', 
+                        side: "left", 
+                        align: 'center' 
+                    } 
+                },
+                { 
+                    element: '#sidebar-overview', 
+                    popover: { 
+                        title: '🏠 Home Dashboard', 
+                        description: 'See your live menu count and membership status at a glance.', 
+                        side: isMobile ? "bottom" : "right", 
+                        align: 'start' 
+                    } 
+                },
+                { 
+                    element: '#sidebar-menu', 
+                    popover: { 
+                        title: '🍔 Menu Manager', 
+                        description: '<b>Add new dishes</b>, update prices, and organize categories here.', 
+                        side: isMobile ? "bottom" : "right", 
+                        align: 'start' 
+                    } 
+                },
+                { 
+                    element: '#add-dish-btn', 
+                    popover: { 
+                        title: '⚡ Quick Add', 
+                        description: 'Use this button anytime to add a dish in seconds.', 
+                        side: "bottom", 
+                        align: 'center' 
+                    } 
+                },
+                { 
+                    element: '#sidebar-qr', 
+                    popover: { 
+                        title: '📲 QR Codes', 
+                        description: 'Download <b>table standees</b> and marketing posters.', 
+                        side: isMobile ? "bottom" : "right", 
+                        align: 'start' 
+                    } 
+                },
+                { 
+                    element: '#order-mode-toggle', 
+                    popover: { 
+                        title: '⚙️ Ordering Mode', 
+                        description: 'Toggle between receiving orders on <b>WhatsApp</b> or using the pro <b>Billing Terminal</b>.', 
+                        side: isMobile ? "bottom" : "right", 
+                        align: 'start' 
+                    } 
+                },
+                { 
+                    element: '#sidebar-settings', 
+                    popover: { 
+                        title: '🛠️ Settings', 
+                        description: 'Update your logo, address, and contact info here.', 
+                        side: isMobile ? "bottom" : "right", 
+                        align: 'start' 
+                    } 
+                },
+                { 
+                    element: '#sidebar-uploads', 
+                    popover: { 
+                        title: '📄 AI Import', 
+                        description: 'Upload a photo of your paper menu and let our AI digitize it for you!', 
+                        side: isMobile ? "bottom" : "right", 
+                        align: 'start' 
+                    } 
+                },
+            ],
+            // ✅ UPDATED LOGIC: Save "Completed" flag to LocalStorage when finished/closed
+           onDestroy: () => {
+                if (isMobile) setIsMobileMenuOpen(false);
+            }
+        });
+
+        // 2. 🛑 FIX: Save to LocalStorage IMMEDIATELY (Before user can refresh)
+        console.log("🔒 Saving tour completion flag to:", tourKey);
+        localStorage.setItem(tourKey, 'true');
+
+        // 3. Start the tour
+        driverObj.drive();
+
+    }, isMobile ? 500 : 100); 
+  };
+  // --- 3. TOUR EFFECT (RUN ONCE PER DEVICE) ---
+  useEffect(() => {
+    // 1. Wait for critical data
+    if (!restaurantId) return;
+
+    // 2. Define the unique key for this user/restaurant
+    const tourKey = `tour_completed_${restaurantId}`;
+    
+    // 3. Check LocalStorage
+    const hasSeenTour = localStorage.getItem(tourKey);
+
+    // DEBUGGING LOGS (Check your console!)
+    console.log("Tour Debug:", { 
+        restaurantId, 
+        tourKey, 
+        hasSeenTour, 
+        "Is Mobile?": window.innerWidth < 768 
+    });
+
+    // 4. Auto Start Logic
+    if (!hasSeenTour) {
+        console.log("🚀 Tour condition met. Starting in 1.5s...");
+        
+        // We use a timeout to wait for the DOM to be fully painted
+        const timer = setTimeout(() => {
+            // Double check element exists before driving
+            const sidebarElement = document.getElementById('sidebar-overview');
+            if (sidebarElement) {
+                console.log("✅ Element found. Launching Driver.");
+                startTour();
+            } else {
+                console.warn("⚠️ Driver skipped: Sidebar element not found yet.");
+            }
+        }, 1500);
+
+        // CLEANUP: If the component unmounts (Strict Mode does this), cancel the timer
+        return () => clearTimeout(timer);
+    } else {
+        console.log("🛑 Tour skipped: User has already seen it.");
+    }
+  }, [restaurantId]);
+  
   const handleSaveCategoryOrder = async (newOrder) => {
     try {
-      // 1. Optimistic Update (Instant UI change)
       setRestaurant(prev => ({ ...prev, categoryOrder: newOrder }));
       setShowReorderModal(false);
-      
-      // 2. Save to Backend
       await axios.put(`/api/admin/${restaurantId}/settings`, 
         { categoryOrder: newOrder },
         { headers: { Authorization: `Bearer ${token}` } }
@@ -150,15 +358,11 @@ function Dashboard() {
     }
   };
   
-  // FIX: Ref for scrolling
   const formRef = useRef(null);
-
-  // Form States
   const [itemForm, setItemForm] = useState({ name: "", category: "", description: "", price: "", image: "", _id: null, inStock: true });
   const [customCategory, setCustomCategory] = useState("");
   const [showItemForm, setShowItemForm] = useState(false);
   
-  // Loading/Feedback States
   const [message, setMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState("");
@@ -169,11 +373,9 @@ function Dashboard() {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   
-  
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-  // --- HELPERS ---
   const triggerAction = async (fn) => {
     setIsLoading(true);
     await fn();
@@ -222,40 +424,23 @@ function Dashboard() {
     if (groupedItems.length && !selectedCategory) setSelectedCategory(groupedItems[0].category);
   }, [existingItems]);
 
-  // --- SORTING & GROUPING LOGIC ---
   const orderedMenuGroups = React.useMemo(() => {
     if (!existingItems) return [];
-
-    // 1. Extract categories, TRIM whitespace, and ignore empty values
-    // We use a Map to ensure we only get unique category names
     const categoriesSet = new Set(
       existingItems
         .map((item) => (item.category ? item.category.trim() : ""))
         .filter((cat) => cat !== "")
     );
-    
     const uniqueCategories = Array.from(categoriesSet);
-
-    // 2. Sort based on restaurant.categoryOrder
     const sortedCategories = uniqueCategories.sort((a, b) => {
       const order = restaurant.categoryOrder || [];
       const indexA = order.indexOf(a);
       const indexB = order.indexOf(b);
-
-      // Priority 1: Both are in the saved list -> Sort by index
       if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-      
-      // Priority 2: Only A is in list -> A goes first
       if (indexA !== -1) return -1;
-      
-      // Priority 3: Only B is in list -> B goes first
       if (indexB !== -1) return 1;
-
-      // Priority 4: Neither in list -> Sort Alphabetically
       return a.localeCompare(b);
     });
-
-    // 3. Build the final groups
     return sortedCategories.map((cat) => ({
       category: cat,
       items: existingItems.filter(
@@ -264,28 +449,22 @@ function Dashboard() {
     }));
   }, [existingItems, restaurant.categoryOrder]);
 
-// 🆕 HANDLER: Toggle between WhatsApp and Billing App
   const toggleOrderMode = async () => {
-    // Determine new mode based on current state
     const currentMode = restaurant.orderMode || 'whatsapp';
     const newMode = currentMode === 'whatsapp' ? 'billing' : 'whatsapp';
-    
-    // Optimistic Update (Update UI immediately)
     setRestaurant(prev => ({ ...prev, orderMode: newMode }));
-    
     try {
-        // Send 'orderMode' to your settings update API
         await axios.put(`/api/admin/${restaurantId}/settings`, 
             { orderMode: newMode }, 
             { headers: { Authorization: `Bearer ${token}` } }
         );
     } catch (err) {
         console.error(err);
-        // Revert UI on failure
         setRestaurant(prev => ({ ...prev, orderMode: currentMode }));
         alert("Failed to update settings");
     }
   };
+
   const handleItemChange = (e) => {
     const { name, value } = e.target;
     if (name === "price" && !/^\d*\.?\d*$/.test(value)) return;
@@ -391,7 +570,6 @@ function Dashboard() {
     
     setShowItemForm(true);
 
-    // FIX: Scroll to form when editing
     setTimeout(() => {
         if(formRef.current) {
             formRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -420,14 +598,15 @@ function Dashboard() {
   }));
 
 
-  // --- COMPONENTS ---
+  // --- 5. UPDATED SIDEBAR COMPONENT (To Accept IDs) ---
   const SidebarItem = ({ id, label, icon: Icon }) => (
     <button 
+      id={`sidebar-${id}`} // <--- ADDED ID HERE
       onClick={() => { 
           setActiveTab(id); 
           setIsEditMode(false); 
           setShowItemForm(false);
-          setIsMobileMenuOpen(false); // Close mobile menu on click
+          setIsMobileMenuOpen(false); 
       }}
       className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === id ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-600 hover:bg-gray-100'}`}
     >
@@ -442,6 +621,9 @@ function Dashboard() {
       <Helmet>
         <title>Dashboard - {restaurant.name || "Petoba"}</title>
       </Helmet>
+
+      {/* --- INJECT CUSTOM TOUR STYLES --- */}
+      <style>{tourStyles}</style>
 
       <UpgradePopup isOpen={showUpgrade} onClose={() => setShowUpgrade(false)} currentLevel={restaurant?.membership_level || 1} onUpgrade={handleUpgrade} />
       <ExpertHelpPopup open={showPopup} onClose={() => setShowPopup(false)} />
@@ -467,8 +649,8 @@ function Dashboard() {
                     alt="Petoba Logo" 
                     className="w-36 cursor-pointer hover:opacity-80 transition-opacity" 
                     onClick={() => {
-                        navigate("/");        // Navigates to homepage
-                        setActiveTab("overview"); // Resets tab
+                        navigate("/");
+                        setActiveTab("overview");
                     }}
                 />
             </div>
@@ -534,6 +716,7 @@ function Dashboard() {
 
         {/* Dropdown Trigger Button */}
         <button
+            id="order-mode-toggle" 
             onClick={() => setIsOrderModeDropdownOpen(!isOrderModeDropdownOpen)}
             className="w-full bg-white border border-gray-300 text-gray-700 text-sm font-medium py-2.5 px-3 rounded-xl flex items-center justify-between shadow-sm hover:border-indigo-400 hover:ring-2 hover:ring-indigo-50 transition-all"
         >
@@ -728,6 +911,16 @@ function Dashboard() {
                  </div>
             </div>
             <div className="flex items-center gap-4">
+                 
+                 {/* --- TOUR BUTTON (Always allows manual start) --- */}
+                 <button 
+                    onClick={() => startTour()}
+                    className="hidden md:flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-full hover:bg-indigo-100 transition-colors"
+                 >
+                    <span>👋 Tour</span>
+                 </button>
+                 {/* ------------------------------- */}
+
                  <div className="flex items-center gap-3 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-200">
                     <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">
                         {restaurant.name ? restaurant.name.charAt(0).toUpperCase() : "R"}
@@ -823,6 +1016,7 @@ function Dashboard() {
 
                 {/* ADD DISH BUTTON */}
                 <button 
+                    id="add-dish-btn" // <--- ADDED ID HERE
                     onClick={() => {
                         setShowItemForm(!showItemForm);
                         setItemForm({ name: "", category: "", description: "", price: "", image: "", _id: null, inStock: true });
@@ -1078,6 +1272,7 @@ function Dashboard() {
                         
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <button 
+                                id="bulk-import-btn" // <--- Added ID here if needed, or target 'sidebar-uploads'
                                 onClick={() => triggerAction(() => handleOptionClick("/bulk-upload", true))} 
                                 disabled={isLoading}
                                 className="p-6 border-2 border-gray-200 hover:border-indigo-500 hover:bg-indigo-50 rounded-2xl transition-all flex flex-col items-center justify-center gap-3 group text-center"
