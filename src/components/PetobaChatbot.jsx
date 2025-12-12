@@ -114,7 +114,7 @@ const handleSend = async () => {
           </span>
 
           <span className="font-bold text-sm tracking-wide">
-            {restaurantName || "Petoba"} AI
+            Ask AI
           </span>
           
           {/* Robot/Chat Icon */}
