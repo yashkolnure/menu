@@ -5,6 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import CustomFieldsDisplay from "../components/CustomFieldsDisplay";
 import { Helmet } from "react-helmet";
 import MenuCard from "../components/MenuCardWp";
+import PetobaChatbot from "../components/PetobaChatbot";
 
 function RestaurantMenuPageDemo() {
   const { id } = useParams();
@@ -457,6 +458,14 @@ const handleTableNumberSubmit = () => {
 
 
       <ToastContainer position="bottom-left"  toastClassName="" autoClose={1000} />
+            {restaurantDetails && (
+        <PetobaChatbot 
+            menuData={menuData} 
+            restaurantName={restaurantDetails.name}
+            currencySymbol={currencySymbol}
+            addToCart={addToCart}
+        />
+      )}
     </>
   );
 }

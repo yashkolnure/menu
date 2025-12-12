@@ -1,16 +1,21 @@
-// components/PetobaChatbot.jsx
 import React, { useState, useRef, useEffect } from "react";
 
-// ✅ 1. Accept 'addToCart' as a prop
 const PetobaChatbot = ({ menuData, restaurantName, currencySymbol, addToCart }) => {
   const [isOpen, setIsOpen] = useState(false);
+  
+  // Initial Welcome Message
   const [messages, setMessages] = useState([
-    { role: "assistant", content: `Welcome to ${restaurantName || "Petoba"}! 🍽️ I'm your AI waiter. You can order directly here!` }
+    { 
+      role: "assistant", 
+      content: `Welcome to ${restaurantName || "Petoba"}! 🍽️ I'm your AI waiter. Ask me for recommendations or order directly here!` 
+    }
   ]);
+  
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
+  // Auto-scroll to latest message
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -19,7 +24,7 @@ const PetobaChatbot = ({ menuData, restaurantName, currencySymbol, addToCart }) 
     scrollToBottom();
   }, [messages, isOpen]);
 
-  const handleSend = async () => {
+const handleSend = async () => {
     if (!input.trim()) return;
     const userMessageText = input; 
     
@@ -28,14 +33,14 @@ const PetobaChatbot = ({ menuData, restaurantName, currencySymbol, addToCart }) 
     setLoading(true);
 
     try {
-      // 1. Shrink the menu data to save 50% of your limits
       const simplifiedMenu = menuData.map(item => ({
-        n: item.name,      // n = name
-        p: item.price,     // p = price
-        c: item.category,  // c = category
-        d: item.description ? item.description.substring(0, 50) : "" // Limit desc length
+        n: item.name,      
+        p: item.price,    
+        c: item.category,  
+        d: item.description ? item.description.substring(0, 50) : "" 
       }));
-      const response = await fetch('http://localhost:5000/api/admin/chat', { 
+
+      const response = await fetch('/api/admin/chat', { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -49,42 +54,46 @@ const PetobaChatbot = ({ menuData, restaurantName, currencySymbol, addToCart }) 
       const data = await response.json();
       let aiContent = data.reply;
 
-      // ✅ 2. CHECK FOR JSON "ACTION"
       try {
-        // Attempt to parse the response as JSON
-        if (aiContent.trim().startsWith("{") && aiContent.trim().endsWith("}")) {
-          const command = JSON.parse(aiContent);
+        const jsonMatch = aiContent.match(/\{[\s\S]*\}/); 
+        
+        if (jsonMatch) {
+          const command = JSON.parse(jsonMatch[0]);
 
           if (command.action === "add_to_cart") {
-            // Find the actual item object from your menuData
-            const itemToAdd = menuData.find(
-              (item) => item.name.toLowerCase() === command.item_name.toLowerCase()
-            );
+            
+            // --- FUZZY MATCHING ---
+            const commandTokens = command.item_name.toLowerCase().split(/\s+/).filter(t => t.length > 1);
+
+            const matches = menuData.filter(item => {
+              const itemString = item.name.toLowerCase().replace(/[^a-z0-9]/g, "");
+              return commandTokens.every(token => itemString.includes(token));
+            });
+
+            const itemToAdd = matches.sort((a, b) => a.name.length - b.name.length)[0];
+            // ----------------------
 
             if (itemToAdd) {
-              // 🚀 TRIGGER THE CART FUNCTION
-              addToCart(itemToAdd); 
+              const qty = command.quantity || 1;
               
-              // If quantity > 1, loop it (simple version) or update your addToCart to accept qty
-              for (let i = 1; i < command.quantity; i++) {
-                addToCart(itemToAdd);
-              }
-
-              aiContent = `✅ Added ${command.quantity} x ${itemToAdd.name} to your cart! Anything else?`;
+              // ✅ FIX: Call addToCart ONCE with the full quantity
+              addToCart(itemToAdd, qty);
+              
+              aiContent = `✅ Added ${qty} x ${itemToAdd.name} to your cart!`;
             } else {
-              aiContent = "I couldn't find that exact item. Could you check the menu name?";
+              aiContent = `I tried to add "${command.item_name}" but couldn't find a perfect match.`;
             }
           }
         }
       } catch (e) {
-        // It was just normal text, ignore error
+        // Not JSON
       }
 
       setMessages((prev) => [...prev, { role: "assistant", content: aiContent }]);
 
     } catch (error) {
       console.error("Chat Error:", error);
-      setMessages((prev) => [...prev, { role: "assistant", content: "I'm having trouble reaching the kitchen." }]);
+      setMessages((prev) => [...prev, { role: "assistant", content: "I'm having trouble connecting." }]);
     } finally {
       setLoading(false);
     }
@@ -92,13 +101,13 @@ const PetobaChatbot = ({ menuData, restaurantName, currencySymbol, addToCart }) 
 
   return (
     <>
-      {/* ✅ BUTTON: Bottom Center | Pill Shape | "RestaurantName AI" */}
+      {/* ✅ FLOATING BUTTON: Bottom Center | Pill Shape */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-5 left-1/2 transform -translate-x-1/2 z-50 bg-gray-900 text-white px-6 py-3 rounded-full shadow-2xl hover:bg-gray-800 transition-all active:scale-95 flex items-center space-x-3 border border-gray-700"
+          className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 bg-gray-900 text-white px-6 py-3 rounded-full shadow-2xl hover:bg-gray-800 transition-all active:scale-95 flex items-center space-x-3 border border-gray-700"
         >
-          {/* Green Dot */}
+          {/* Green "Online" Dot */}
           <span className="relative flex h-2.5 w-2.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
@@ -108,7 +117,7 @@ const PetobaChatbot = ({ menuData, restaurantName, currencySymbol, addToCart }) 
             {restaurantName || "Petoba"} AI
           </span>
           
-          {/* Robot Icon */}
+          {/* Robot/Chat Icon */}
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
             <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
             <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z" />
@@ -116,9 +125,9 @@ const PetobaChatbot = ({ menuData, restaurantName, currencySymbol, addToCart }) 
         </button>
       )}
 
-      {/* ✅ WINDOW: Classic Bottom-Right Position */}
+      {/* ✅ CHAT WINDOW: Bottom Right Position */}
       {isOpen && (
-        <div className="fixed bottom-4 right-5 z-50 w-80 md:w-96 h-[500px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-200 animate-fade-in-up">
+        <div className="fixed bottom-20 left-1/2 z-50 transform -translate-x-1/2 w-80 md:w-96 h-[500px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-200 animate-fade-in-up font-sans">
           
           {/* Header */}
           <div className="bg-gray-900 text-white p-4 flex justify-between items-center shadow-md">
@@ -142,7 +151,7 @@ const PetobaChatbot = ({ menuData, restaurantName, currencySymbol, addToCart }) 
           </div>
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-4 bg-gray-50 space-y-4">
+          <div className="flex-1 overflow-y-auto p-4 bg-gray-50 space-y-4 scrollbar-thin scrollbar-thumb-gray-200">
             {messages.map((msg, index) => (
               <div key={index} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div 

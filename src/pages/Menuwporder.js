@@ -76,7 +76,7 @@ function RestaurantMenuPagewp() {
       try {
         const token = localStorage.getItem("token");
         // Ensure API URL is correct
-        const res = await fetch(`https://petoba.in/api/admin/${id}/offers`, {
+        const res = await fetch(`/api/admin/${id}/offers`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -98,10 +98,10 @@ function RestaurantMenuPagewp() {
         const token = localStorage.getItem("token");
 
         const [menuRes, detailsRes] = await Promise.all([
-          fetch(`https://petoba.in/api/admin/${id}/menu`, {
+          fetch(`/api/admin/${id}/menu`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          fetch(`https://petoba.in/api/admin/${id}/details`, {
+          fetch(`/api/admin/${id}/details`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -201,15 +201,16 @@ function RestaurantMenuPagewp() {
       return 0; 
     });
 
-  const addToCart = (item) => {
+// ✅ UPDATED addToCart to accept quantity (default is 1)
+  const addToCart = (item, qty = 1) => {
     const exists = cart.find((c) => c._id === item._id);
     if (exists) {
       const updated = cart.map((c) =>
-        c._id === item._id ? { ...c, quantity: c.quantity + 1 } : c
+        c._id === item._id ? { ...c, quantity: c.quantity + qty } : c
       );
       setCart(updated);
     } else {
-      setCart([...cart, { ...item, quantity: 1 }]);
+      setCart([...cart, { ...item, quantity: qty }]);
     }
     toast.success("Added to cart!");
   };
@@ -609,14 +610,14 @@ function RestaurantMenuPagewp() {
         toastClassName=""
         autoClose={1000}
       />
-      {/* {restaurantDetails && (
+      {restaurantDetails && (
         <PetobaChatbot 
             menuData={menuData} 
             restaurantName={restaurantDetails.name}
             currencySymbol={currencySymbol}
             addToCart={addToCart}
         />
-      )} */}
+      )}
 
 
     </>

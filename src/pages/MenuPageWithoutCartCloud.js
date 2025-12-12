@@ -6,6 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import MenuCard from "../components/MenuCardWp";
 import { Helmet } from "react-helmet";
 import { MapPin, Navigation } from "lucide-react";
+import PetobaChatbot from "../components/PetobaChatbot";
 
 function RestaurantMenuPageCloud() {
   const { id } = useParams();
@@ -18,10 +19,27 @@ function RestaurantMenuPageCloud() {
   const [offers, setOffers] = useState([]);
   
   // UI
+    const currencies = [
+    { code: "INR", name: "Indian Rupee", symbol: "₹" },
+    { code: "USD", name: "US Dollar", symbol: "$" },
+    { code: "EUR", name: "Euro", symbol: "€" },
+    { code: "GBP", name: "British Pound", symbol: "£" },
+    { code: "AED", name: "UAE Dirham", symbol: "د.إ" },
+    { code: "AUD", name: "Australian Dollar", symbol: "A$" },
+    { code: "CAD", name: "Canadian Dollar", symbol: "CA$" },
+    { code: "SGD", name: "Singapore Dollar", symbol: "S$" },
+    { code: "JPY", name: "Japanese Yen", symbol: "¥" },
+    { code: "CNY", name: "Chinese Yuan", symbol: "¥" },
+  ];
+  
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [activeOffer, setActiveOffer] = useState(0);
+    const selectedCurrency = currencies.find(
+    (c) => c.code === restaurantDetails?.currency
+  );
+  const currencySymbol = selectedCurrency ? selectedCurrency.symbol : "₹";
   
   // Cart & Modals
   const [cart, setCart] = useState([]);
@@ -412,7 +430,16 @@ function RestaurantMenuPageCloud() {
       )}
 
       <ToastContainer position="bottom-right" autoClose={2000} />
+            {restaurantDetails && (
+        <PetobaChatbot 
+            menuData={menuData} 
+            restaurantName={restaurantDetails.name}
+            currencySymbol={currencySymbol}
+            addToCart={addToCart}
+        />
+      )}
     </>
+    
   );
 }
 
