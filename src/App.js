@@ -10,6 +10,7 @@ import RestaurantRegister from "./pages/RestaurantRegister";
 import LandingPage from './pages/LandingPage';
 import RestaurantDetails from "./pages/RestaurantDetails";
 import BulkUploadmenu from "./pages/freefree";
+import NotificationSetup from "./pages/NotificationSetup";
 import BulkUploadmenu1 from "./pages/freefree1";
 import AdminLoginPage1 from "./pages/loginbulk";
 import Loginpro from "./pages/loginpro";
@@ -123,6 +124,7 @@ function AppWrapper() {
         <Route path="/upload-menu" element={<UploadMenuPage />} />
         <Route path="/petoba-billing" element={<BillingApp />} />
         <Route path="/petoba-billing-landing" element={<PetobaBillingLanding />} />
+        <Route path="/notification-setup" element={<NotificationSetup />} />
       </Routes>
       {!hideHeaderFooter && <Footer />}
     </>
