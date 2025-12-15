@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Helmet } from "react-helmet";
 import { useNavigate } from "react-router-dom";
+import NotificationSetup from "./NotificationSetup";
 import notificationSound from '../components/notification.mp3'; 
 import { 
   LayoutDashboard, Receipt, History, Gift, Bell, Search, Printer, Trash2, CheckCircle, 
@@ -442,7 +443,7 @@ function AdminDashboard() {
   // --- 2. FETCH DATA ---
   const fetchMenu = async () => {
     try {
-        const res = await fetch(`/api/admin/${restaurantId}/menu`, {
+        const res = await fetch(`https://petoba.in/api/admin/${restaurantId}/menu`, {
             headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -457,13 +458,13 @@ function AdminDashboard() {
   const fetchOrders = async (isFirstLoad) => {
     try {
       // 1. Fetch Table Orders
-      const resTable = await fetch(`/api/admin/${restaurantId}/orders`, {
+      const resTable = await fetch(`https://petoba.in/api/admin/${restaurantId}/orders`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const tableData = await resTable.json();
       
       // 2. Fetch Delivery Orders
-      const resDelivery = await fetch(`/api/admin/delivery/all/${restaurantId}`, {
+      const resDelivery = await fetch(`https://petoba.in/api/admin/delivery/all/${restaurantId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const deliveryData = await resDelivery.json();
@@ -534,7 +535,7 @@ function AdminDashboard() {
 
   const fetchRestaurantDetails = async () => {
     try {
-      const res = await fetch(`/api/admin/${restaurantId}/details`, {
+      const res = await fetch(`https://petoba.in/api/admin/${restaurantId}/details`, {
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       });
       const data = await res.json();
@@ -551,7 +552,7 @@ function AdminDashboard() {
     setIsTogglingLive(true);
     
     try {
-      const res = await fetch(`/api/admin/${restaurantId}/status`, {
+      const res = await fetch(`https://petoba.in/api/admin/${restaurantId}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ isLive: newStatus })
@@ -602,7 +603,7 @@ const openAddDishModal = (tableNum) => {
       }, 0);
 
       try {
-          const res = await fetch("/api/order", {
+          const res = await fetch("https://petoba.in/api/order", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -637,7 +638,7 @@ const openAddDishModal = (tableNum) => {
     if (!newOrderPopup) return;
     setIsAccepting(true);
     try {
-      await fetch(`/api/admin/${restaurantId}/orders/${newOrderPopup._id}`, {
+      await fetch(`https://petoba.in/api/admin/${restaurantId}/orders/${newOrderPopup._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ status: "ok" }),
@@ -668,7 +669,7 @@ const openAddDishModal = (tableNum) => {
 
     setIsAccepting(true);
     try {
-        await fetch(`/api/admin/${restaurantId}/orders/${newOrderPopup._id}`, {
+        await fetch(`https://petoba.in/api/admin/${restaurantId}/orders/${newOrderPopup._id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
             body: JSON.stringify({ status: "cancelled" }), 
@@ -700,7 +701,7 @@ const openAddDishModal = (tableNum) => {
       if(!newDeliveryPopup) return;
       setIsAccepting(true);
       try {
-          await fetch(`/api/admin/delivery/status/${newDeliveryPopup._id}`, {
+          await fetch(`https://petoba.in/api/admin/delivery/status/${newDeliveryPopup._id}`, {
               method: "PUT",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ status: "Confirmed" }),
@@ -729,7 +730,7 @@ const openAddDishModal = (tableNum) => {
 
       setIsAccepting(true);
       try {
-          await fetch(`/api/admin/delivery/status/${newDeliveryPopup._id}`, {
+          await fetch(`https://petoba.in/api/admin/delivery/status/${newDeliveryPopup._id}`, {
               method: "PUT",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ status: "Cancelled" }),
@@ -783,7 +784,7 @@ const handleConfirmClear = async (method) => {
     const safeTableParam = encodeURIComponent(settleTableData.tableNumber);
 
     try {
-      const res = await fetch(`/api/clearTable/${safeTableParam}`, {
+      const res = await fetch(`https://petoba.in/api/clearTable/${safeTableParam}`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({ taxRate, discountRate, additionalCharges, paymentMethod: method })
@@ -1039,16 +1040,16 @@ const getAggregatedTableItems = (tableOrders) => {
   const fetchOrderHistory = async () => {
     setLoadingHistory(true);
     try {
-      const res = await fetch(`/api/admin/${restaurantId}/order-history`, { headers: { Authorization: `Bearer ${token}` }});
+      const res = await fetch(`https://petoba.in/api/admin/${restaurantId}/order-history`, { headers: { Authorization: `Bearer ${token}` }});
       const data = await res.json();
       setOrderHistory(Array.isArray(data) ? data : []);
     } catch (error) { console.error(error); } finally { setLoadingHistory(false); }
   };
 
-  const fetchOffers = async () => { try { const res = await fetch(`/api/admin/${restaurantId}/offers`, { headers: { Authorization: `Bearer ${token}` } }); if(res.ok) setOffers(await res.json()); } catch (e) {} };
+  const fetchOffers = async () => { try { const res = await fetch(`https://petoba.in/api/admin/${restaurantId}/offers`, { headers: { Authorization: `Bearer ${token}` } }); if(res.ok) setOffers(await res.json()); } catch (e) {} };
   const handleOfferImageUpload = (e) => { const file = e.target.files[0]; if(file) { const reader = new FileReader(); reader.onloadend = () => setNewOffer({image: reader.result, imagePreview: reader.result}); reader.readAsDataURL(file); }};
-  const handleAddOffer = async () => { await fetch(`/api/admin/${restaurantId}/offers`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ image: newOffer.image }) }); fetchOffers(); setNewOffer({image:'', imagePreview:''}); alert("Offer Added"); };
-  const handleDeleteOffer = async (id) => { if(!window.confirm("Delete?")) return; await fetch(`/api/admin/${restaurantId}/offers/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); fetchOffers(); };
+  const handleAddOffer = async () => { await fetch(`https://petoba.in/api/admin/${restaurantId}/offers`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ image: newOffer.image }) }); fetchOffers(); setNewOffer({image:'', imagePreview:''}); alert("Offer Added"); };
+  const handleDeleteOffer = async (id) => { if(!window.confirm("Delete?")) return; await fetch(`https://petoba.in/api/admin/${restaurantId}/offers/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); fetchOffers(); };
 
   const getGroupedHistory = () => {
     const groupedMap = {};
@@ -1117,12 +1118,11 @@ const getAggregatedTableItems = (tableOrders) => {
           <SidebarItem id="billing" label="Table Billing" icon={Receipt} />
           <SidebarItem id="delivery" label="Delivery Orders" icon={Bike} />
           <SidebarItem id="history" label="Order History" icon={History} />
+          <SidebarItem id="notifications" label="Get Mobile Alerts" icon={Smartphone} />
           <div className="mt-auto p-2 gap-2 flex flex-col border-t border-gray-100">
               
               {/* 🆕 MANUAL TOUR BUTTON */}
-              <button onClick={startTour} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-orange-600 bg-orange-50 hover:bg-orange-100">
-                  <HelpCircle size={20} /><span className="font-bold">Start Tour</span>
-              </button>
+              
 
               <button onClick={handlemyorders} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-600 hover:bg-gray-100">
                   <Icons.Settings /><span className="font-medium">Admin Settings</span>
@@ -1551,6 +1551,12 @@ const getAggregatedTableItems = (tableOrders) => {
                   </div>
                </div>
             )}
+
+            {activeTab === "notifications" && (
+        <div className="h-full w-full">
+            <NotificationSetup />
+        </div>
+    )}
 {/* 👇 ADD THIS NEW BLOCK */}
     {activeTab === "delivery" && (
         <div className="h-full">
@@ -1743,6 +1749,8 @@ const getAggregatedTableItems = (tableOrders) => {
           </div>
         </div>
       )}
+
+
 
       {/* --- 🆕 SETTLE BILL MODAL --- */}
       {settleTableData && (
