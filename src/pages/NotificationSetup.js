@@ -140,7 +140,7 @@ const NotificationSetup = () => {
             
             {/* Auto Connect Button */}
             <a 
-              href={`ntfy://subscribe/${topic}`} 
+              href={`ntfy://${topic}`} 
               className="w-full md:w-auto px-6 py-4 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg shadow-sm transition flex items-center justify-center gap-2 mb-6"
             >
               <Smartphone size={20} /> One-Tap Connect
