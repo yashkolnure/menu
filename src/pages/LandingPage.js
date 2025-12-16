@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Helmet } from "react-helmet";
 import HomePagePortfolioSection from "../components/HomePagePortfolioSection";
+import AdvancedAIWaiterDemo from '../components/headerillustration';
 import {
   QrCode,
   MessageCircle,
@@ -299,77 +300,9 @@ const HomePage = () => {
       {/* ============================================
           RIGHT SIDE: COMPACT VISUAL (35%)
           ============================================ */}
-      <div className="lg:col-span-5 relative hidden lg:block">
-        <div className="relative w-full max-w-[320px] mx-auto animate-float">
-
-          {/* Decorative Blur behind phone */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-orange-500 to-pink-500 rounded-[3rem] blur-2xl opacity-20 transform scale-95 translate-y-4"></div>
-
-          {/* The Phone Mockup */}
-          <div className="relative bg-slate-900 rounded-[2.5rem] border-[8px] border-slate-900 shadow-2xl overflow-hidden aspect-[9/16]">
-            
-            {/* Screen Content */}
-            <div className="h-full bg-slate-50 flex flex-col relative overflow-hidden">
-               {/* App Header */}
-               <div className="bg-white p-4 pt-8 shadow-sm z-10 flex justify-between items-center">
-                  <div>
-                    <p className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Welcome to</p>
-                    <p className="font-bold text-slate-900">Petoba Demo</p>
-                  </div>
-                  <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center">
-                    <Bot size={16} className="text-slate-600"/>
-                  </div>
-               </div>
-
-               {/* Scrollable Content Simulation */}
-               <div className="p-4 space-y-3 overflow-hidden opacity-90">
-                  <div className="h-32 rounded-xl bg-[url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80')] bg-cover relative group">
-                    <div className="absolute inset-0 bg-black/40 rounded-xl group-hover:bg-black/20 transition-colors"></div>
-                    <div className="absolute bottom-3 left-3 text-white">
-                       <span className="bg-orange-500 text-[10px] font-bold px-2 py-0.5 rounded">Promo</span>
-                       <p className="font-bold text-sm">Burger Festival</p>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 overflow-hidden">
-                     <span className="px-3 py-1 bg-slate-900 text-white text-xs rounded-full">All</span>
-                     <span className="px-3 py-1 bg-white border border-slate-200 text-slate-600 text-xs rounded-full">Pizza</span>
-                     <span className="px-3 py-1 bg-white border border-slate-200 text-slate-600 text-xs rounded-full">Burger</span>
-                  </div>
-
-                  {/* List Items */}
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="flex gap-3 bg-white p-2 rounded-xl border border-slate-100 shadow-sm items-center">
-                       <div className="w-12 h-12 bg-slate-100 rounded-lg"></div>
-                       <div className="flex-1">
-                          <div className="h-2 w-20 bg-slate-200 rounded mb-1"></div>
-                          <div className="h-2 w-10 bg-slate-200 rounded"></div>
-                       </div>
-                       <div className="w-6 h-6 rounded-full border border-slate-200 flex items-center justify-center text-[10px]">+</div>
-                    </div>
-                  ))}
-               </div>
-
-               {/* Bottom Floating Bar */}
-               <div className="absolute bottom-4 left-4 right-4 bg-slate-900 text-white p-3 rounded-xl shadow-lg flex justify-between items-center">
-                  <div className="text-xs font-bold">1 Item | ₹149</div>
-                  <div className="text-xs font-bold flex items-center gap-1">View Cart <ArrowRight size={12}/></div>
-               </div>
-            </div>
-          </div>
-
-          {/* Floating Badge (Visual Interest) */}
-          <div className="absolute top-20 -right-12 bg-white/90 backdrop-blur p-3 rounded-xl shadow-lg border border-slate-100 flex items-center gap-3 animate-bounce" style={{animationDuration: '4s'}}>
-             <div className="bg-green-100 p-2 rounded-full text-green-600">
-               <BsWhatsapp size={18}/>
-             </div>
-             <div>
-               <p className="text-[10px] text-slate-400 font-bold uppercase">New Order</p>
-               <p className="text-xs font-bold text-slate-900">₹ 450.00</p>
-             </div>
-          </div>
-
-        </div>
+      <div className="lg:col-span-5 relative ">
+        
+           <AdvancedAIWaiterDemo />
       </div>
 
     </div>
@@ -586,6 +519,8 @@ const HomePage = () => {
           OPTION 2: QR MENU + FULL BILLING
           Layout: Left Illustration (Improved) | Right Text
          ========================================= */}
+
+
      <section className="py-16">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-16 items-center">

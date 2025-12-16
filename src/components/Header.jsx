@@ -1,29 +1,27 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [timeLeft, setTimeLeft] = useState("");
   const [token, setToken] = useState(localStorage.getItem("token") || null);
 
-   const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
-   const handleLogout = () => {
+  const handleLogout = () => {
     localStorage.removeItem("token");
     setToken(null);
     navigate("/login");
   };
 
-
   const closeMenu = () => {
     setMenuOpen(false);
   };
 
-   // 🔹 Countdown logic
+  // 🔹 Countdown logic
   useEffect(() => {
     const updateTimer = () => {
       const now = new Date();
@@ -40,9 +38,7 @@ const Header = () => {
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-      setTimeLeft(
-        `${hours}h ${minutes}m ${seconds}s`
-      );
+      setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
     };
 
     updateTimer();
@@ -51,11 +47,10 @@ const Header = () => {
     return () => clearInterval(timer);
   }, []);
 
-
   return (
-    
-    <header className="sticky top-0 z-50 py-0">
-     {/* 🔹 Scrolling Offer Banner with Timer */}
+    // 👇 CHANGED: z-50 to z-[9999] to force it to the very top
+    <header className="sticky top-0 z-[9999] py-0">
+      {/* 🔹 Scrolling Offer Banner with Timer */}
       {/* <div className="scroll-banner">
   <div className="scroll-track">
     <div className="scroll-text">
@@ -70,20 +65,18 @@ const Header = () => {
   </div>
 </div> */}
 
-
-      
       <div className="max-w-[1200px] mx-auto  py-2">
         {/* Main pill container */}
         <div className="flex items-center justify-between backdrop-blur-lg rounded-full px-6 py-0 border border-gray-200 shadow-lg">
-          
           {/* Logo */}
           <div className="flex items-center gap-2">
             <a href="/">
-            <img
-              src="https://petoba.avenirya.com/wp-content/uploads/2022/07/Untitled-design-6.png"
-              alt="Logo"
-              className="h-20 w-auto"
-            /></a>
+              <img
+                src="https://petoba.avenirya.com/wp-content/uploads/2022/07/Untitled-design-6.png"
+                alt="Logo"
+                className="h-20 w-auto"
+              />
+            </a>
           </div>
 
           {/* Desktop Nav links */}
@@ -113,23 +106,23 @@ const Header = () => {
             ) : null} */}
             {token ? (
               <>
-              {/* <a
+                {/* <a
                 href="/petoba-billing-landing"
                 className="hover:text-blue-600 font-medium"
               >
-               Billing App
+                Billing App
               </a> */}
                 <a
                   href="/admin/dashboard"
                   className="hover:text-blue-600 font-medium"
                 >
-                  Manage Orders 
+                  Manage Orders
                 </a>
                 <a
                   href="/dashboard"
                   className="hover:text-blue-600 font-medium"
                 >
-                  Dashboard 
+                  Dashboard
                 </a>
                 <button
                   onClick={handleLogout}
@@ -148,8 +141,6 @@ const Header = () => {
             )}
           </nav>
 
-           
-
           {/* Hamburger Menu Button */}
           <button
             onClick={toggleMenu}
@@ -165,65 +156,88 @@ const Header = () => {
       </div>
 
       {/* Mobile Menu Overlay */}
+      {/* 👇 CHANGED: z-40 to z-[10000] to ensure it covers everything including the header base */}
       {menuOpen && (
         <div
-          className="fixed inset-0 bg-black/40 z-40"
+          className="fixed inset-0 bg-black/40 z-[10000]"
           onClick={closeMenu}
         ></div>
       )}
 
       {/* Mobile Menu */}
+      {/* 👇 CHANGED: z-50 to z-[10001] so it is above the overlay */}
       <div
-        className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg z-50 transform transition-transform duration-300 ${
+        className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg z-[10001] transform transition-transform duration-300 ${
           menuOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         <nav className="flex flex-col p-6 gap-4 text-black font-medium">
-          <a href="/" onClick={closeMenu} className="hover:text-blue-600">Home</a>
-          <a href="/portfolio" onClick={closeMenu} className="hover:text-blue-600">Portfolio</a>
-          <a href="/membership" onClick={closeMenu} className="hover:text-blue-600">Pricing</a>
-          <a href="/agency" onClick={closeMenu} className="hover:text-blue-600">Agency</a>
-          <a href="/contact" onClick={closeMenu} className="hover:text-blue-600">Contact Us</a>
+          <a href="/" onClick={closeMenu} className="hover:text-blue-600">
+            Home
+          </a>
+          <a
+            href="/portfolio"
+            onClick={closeMenu}
+            className="hover:text-blue-600"
+          >
+            Portfolio
+          </a>
+          <a
+            href="/membership"
+            onClick={closeMenu}
+            className="hover:text-blue-600"
+          >
+            Pricing
+          </a>
+          <a href="/agency" onClick={closeMenu} className="hover:text-blue-600">
+            Agency
+          </a>
+          <a
+            href="/contact"
+            onClick={closeMenu}
+            className="hover:text-blue-600"
+          >
+            Contact Us
+          </a>
           {/* {!token ? (
             <a href="/petoba-billing-landing" onClick={closeMenu} className="hover:text-blue-600">Petoba Billing App </a>
           ) : (null
           )} */}
           {token ? (
-              <>
-                <a
-                  href="/admin/dashboard"
-                  className="hover:text-blue-600 font-medium"
-                >
-                  Manage Orders 
-                </a>
-                <a
-                  href="/dashboard"
-                  className="hover:text-blue-600 font-medium"
-                >
-                  Admin Settings 
-                </a>
-                {/* <a
+            <>
+              <a
+                href="/admin/dashboard"
+                className="hover:text-blue-600 font-medium"
+              >
+                Manage Orders
+              </a>
+              <a
+                href="/dashboard"
+                className="hover:text-blue-600 font-medium"
+              >
+                Admin Settings
+              </a>
+              {/* <a
                   href="/petoba-billing"
                   className="hover:text-blue-600 font-medium"
                 >
                   Download Billing App 
                 </a> */}
-                <button
-                  onClick={handleLogout}
-                  className="px-5 py-2 rounded-full text-xl bg-gradient-to-r from-red-600 via-black to-orange-600 text-white font-semibold shadow-md hover:scale-105 transition-transform"
-                >
-                  Logout
-                </button>
-              </>
-            ) : (
-              
-              <a
-                href="/login"
-                className="px-5 py-2 rounded-full text-xl bg-gradient-to-r from-orange-500 via-black to-blue-600 text-white font-semibold shadow-md hover:scale-105 transition-transform"
+              <button
+                onClick={handleLogout}
+                className="px-5 py-2 rounded-full text-xl bg-gradient-to-r from-red-600 via-black to-orange-600 text-white font-semibold shadow-md hover:scale-105 transition-transform"
               >
-                Login →
-              </a>
-            )}
+                Logout
+              </button>
+            </>
+          ) : (
+            <a
+              href="/login"
+              className="px-5 py-2 rounded-full text-xl bg-gradient-to-r from-orange-500 via-black to-blue-600 text-white font-semibold shadow-md hover:scale-105 transition-transform"
+            >
+              Login →
+            </a>
+          )}
         </nav>
       </div>
     </header>
