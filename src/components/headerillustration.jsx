@@ -341,19 +341,30 @@ const AdvancedAIWaiterDemo = () => {
                   </div>
                 </div>
 
-                {/* --- FAKE CURSOR --- */}
-                <div 
-                  className="absolute w-8 h-8 z-50 pointer-events-none transition-all duration-700 ease-in-out drop-shadow-2xl"
-                  style={{
-                    top:  step === 1 ? '85%' : step === 3 ? '92%' : step === 7 ? '65%' : step === 8 ? '65%' : step === 9 ? '90%' : '120%',
-                    left: step === 1 ? '90%' : step === 3 ? '60%' : step === 7 ? '82%' : step === 8 ? '82%' : step === 9 ? '50%' : '120%',
-                    opacity: [1, 3, 7, 8, 9].includes(step) ? 1 : 0,
-                    transform: step === 7 || step === 9 ? 'scale(0.8)' : 'scale(1)'
-                  }}
-                >
-                   {(step === 7 || step === 9) && <div className="absolute inset-0 bg-slate-500 rounded-full animate-ping opacity-50"></div>}
-                   <svg className="w-full h-full text-slate-900 fill-slate-900 stroke-white stroke-2" viewBox="0 0 24 24"><path d="M5.5 3.21l10.8 15.65a1 1 0 0 1-1.63 1.15l-3.35-4.85-3.05 4.38a1 1 0 0 1-1.63-1.15l3.08-4.42L3.87 8.35a1 1 0 0 1 .82-1.64h.81z"/></svg>
-                </div>
+  <div
+  className="absolute w-6 h-6 z-50 pointer-events-none transition-all duration-700 ease-in-out"
+  style={{
+    top: step === 1 ? '85%' : step === 3 ? '92%' : step === 7 ? '65%' : step === 8 ? '65%' : step === 9 ? '90%' : '120%',
+    left: step === 1 ? '90%' : step === 3 ? '60%' : step === 7 ? '82%' : step === 8 ? '82%' : step === 9 ? '50%' : '120%',
+    opacity: [1, 3, 7, 8, 9].includes(step) ? 1 : 0,
+    transform: `
+      translate(-50%, -50%)
+      ${step === 7 || step === 9 ? 'scale(0.8)' : 'scale(1)'}
+    `,
+  }}
+>
+  {(step === 7 || step === 9) && (
+    <div className="absolute inset-0 rounded-full bg-slate-400 animate-ping opacity-40" />
+  )}
+
+  <svg
+    viewBox="0 0 24 24"
+    className="w-full h-full fill-white stroke-black stroke-[1.5]"
+  >
+    <path d="M3 2L20 12L13 14L16 21L13.5 22L10.5 15L3 18Z" />
+  </svg>
+</div>
+
             </div>
 
             {/* --- SUCCESS OVERLAY --- */}
