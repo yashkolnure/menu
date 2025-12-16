@@ -5,6 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import CustomFieldsDisplay from "../components/CustomFieldsDisplay";
 import { Helmet } from "react-helmet";
 import MenuCard from "../components/MenuCardWp";
+import PetobaChatbot from "../components/PetobaChatbot";
 
 const API_BASE_URL = ""; 
 
@@ -32,6 +33,27 @@ function RestaurantMenuPage() {
   const [activeOffer, setActiveOffer] = useState(0);
   const carouselRef = useRef(null);
   const [offers, setOffers] = useState([]);
+
+    // show/hide scroll-to-top button
+    const [showScrollTop, setShowScrollTop] = useState(false);
+  
+    const currencies = [
+      { code: "INR", name: "Indian Rupee", symbol: "₹" },
+      { code: "USD", name: "US Dollar", symbol: "$" },
+      { code: "EUR", name: "Euro", symbol: "€" },
+      { code: "GBP", name: "British Pound", symbol: "£" },
+      { code: "AED", name: "UAE Dirham", symbol: "د.إ" },
+      { code: "AUD", name: "Australian Dollar", symbol: "A$" },
+      { code: "CAD", name: "Canadian Dollar", symbol: "CA$" },
+      { code: "SGD", name: "Singapore Dollar", symbol: "S$" },
+      { code: "JPY", name: "Japanese Yen", symbol: "¥" },
+      { code: "CNY", name: "Chinese Yuan", symbol: "¥" },
+    ];
+  
+    const selectedCurrency = currencies.find(
+      (c) => c.code === restaurantDetails?.currency
+    );
+    const currencySymbol = selectedCurrency ? selectedCurrency.symbol : "₹";
 
   // --- 🆕 REDIRECT LOGIC ---
   useEffect(() => {
@@ -658,7 +680,17 @@ function RestaurantMenuPage() {
       )}
 
       <ToastContainer position="bottom-right" autoClose={2000} />
+
+            {restaurantDetails && (
+              <PetobaChatbot 
+                  menuData={menuData} 
+                  restaurantName={restaurantDetails.name}
+                  currencySymbol={currencySymbol}
+                  addToCart={addToCart}
+              />
+            )}
     </>
+    
   );
 }
 

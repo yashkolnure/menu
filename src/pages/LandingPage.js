@@ -9,6 +9,7 @@ import {
   Image,
   Star,
   ArrowRight,
+  ScanLine,
   Check,
   PlayCircle,
   Gift,
@@ -29,10 +30,44 @@ import {
   FileText,
   Sparkles, // <--- Add this
   Zap,
-  Send
+  Send,
+  MessageSquare,
+  SettingsIcon
 } from "lucide-react";
 import { BsQrCodeScan, BsWhatsapp } from 'react-icons/bs';
 import { IoDocumentTextOutline } from 'react-icons/io5';
+
+const heroStyles = `
+  /* Gradient Animation */
+  @keyframes gradient-xy {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient-xy 6s ease infinite;
+  }
+
+  /* Float Animation for Cards */
+  @keyframes float-card {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  .hover-float:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px -15px rgba(0,0,0,0.1);
+  }
+
+  /* Receipt Printing Animation */
+  @keyframes print {
+    0% { height: 0; opacity: 0; }
+    20% { height: 0; opacity: 1; }
+    100% { height: 80px; opacity: 1; }
+  }
+  .animate-print {
+    animation: print 3s ease-in-out infinite alternate;
+  }
+`;
 
 // --- Custom Animations & CSS ---
 const customStyles = `
@@ -151,6 +186,15 @@ const billingFeatures = [
     "Detailed Sales & Tax Reports"
 ];
 
+const features = [
+    { icon: <ScanLine size={18} />, label: "QR Menu", color: "text-blue-600", bg: "bg-blue-50" },
+    { icon: <LayoutDashboard size={18} />, label: "Fast POS", color: "text-orange-600", bg: "bg-orange-50" },
+    { icon: <MessageCircle size={18} />, label: "WhatsApp", color: "text-green-600", bg: "bg-green-50" },
+    { icon: <Bot size={18} />, label: "AI Waiter", color: "text-purple-600", bg: "bg-purple-50" },
+    { icon: <Printer size={18} />, label: "KOT Print", color: "text-slate-600", bg: "bg-slate-50" },
+    { icon: <TrendingUp size={18} />, label: "Analytics", color: "text-pink-600", bg: "bg-pink-50" },
+  ];
+
 const HomePage = () => {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
@@ -175,128 +219,162 @@ const HomePage = () => {
 
       {/* --- BACKGROUND ELEMENTS --- */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-slate-50 to-orange-50/60">
-        <div className="absolute top-0 left-0 w-full h-[600px] bg-gradient-to-b from-white to-transparent"></div>
-        <div className="absolute top-20 right-[-100px] w-96 h-96 bg-orange-300/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-40 left-[-100px] w-80 h-80 bg-blue-300/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-96 h-96 bg-orange-200/40 rounded-full blur-3xl pointer-events-none"></div>
+  <div className="absolute bottom-0 left-0 translate-y-12 -translate-x-12 w-96 h-96 bg-blue-200/40 rounded-full blur-3xl pointer-events-none"></div>
+   <div className="absolute bottom-40 left-[-100px] w-80 h-80 bg-blue-300/10 rounded-full blur-3xl"></div>
       </div>
 
-      {/* --- HERO SECTION --- */}
-      <section className="relative pt-8 pb-12 lg:pt-12">
-        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center">
-          
-          {/* Left Content */}
-          <div className="text-center lg:text-left z-10">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-100/80 text-orange-700 font-semibold text-sm mb-6 border border-orange-200">
-              <span className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
-              </span>
-              Trusted by 1,000+ Restaurants
+<section className="relative pt-12 pb-12 lg:pt-18 lg:pb-16">
+  {/* --- Background Ambience --- */}
+ 
+  <div className="max-w-7xl mx-auto px-6">
+    <div className="grid lg:grid-cols-12 gap-12 items-center">
+      
+      {/* ============================================
+          LEFT SIDE: TEXT + FEATURE EXTRACTION (65%)
+          ============================================ */}
+      <div className="lg:col-span-7 relative z-10">
+        
+        {/* Trust Pill */}
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 shadow-sm mb-6">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+          </span>
+          <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">
+            Live in 1,000+ Restaurants
+          </span>
+        </div>
+
+        {/* Headline */}
+        <h1 className="text-5xl lg:text-6xl font-extrabold text-slate-900 leading-[1.1] mb-6">
+          The All-in-One <br/>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-pink-600">
+            Restaurant OS.
+          </span>
+        </h1>
+
+        {/* Subtext */}
+        <p className="text-lg text-slate-600 mb-8 max-w-xl leading-relaxed">
+          Don't buy 5 different tools. We combined everything you need to run a modern restaurant into one simple platform.
+        </p>
+
+        {/* --- FEATURE EXTRACTION GRID (The "Extract") --- */}
+        {/* This moves the features into the text area for high visibility */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-10">
+          {[
+            { icon: <BsQrCodeScan/>, label: "QR Menu", desc: "No App Needed" },
+            { icon: <LayoutDashboard/>, label: "Billing POS", desc: "Fast & Offline" },
+            { icon: <BsWhatsapp/>, label: "WhatsApp", desc: "Direct Orders" },
+            { icon: <Bot/>, label: "AI Waiter", desc: "Auto-Upsell" },
+            { icon: <Printer/>, label: "KOT Print", desc: "Kitchen Sync" },
+            { icon: <TrendingUp/>, label: "Reports", desc: "Live Analytics" },
+          ].map((item, i) => (
+            <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-slate-100 bg-white shadow-sm hover:border-orange-200 hover:shadow-md transition-all group cursor-default">
+              <div className="mt-1 text-orange-500 group-hover:scale-110 transition-transform">
+                {item.icon}
+              </div>
+              <div>
+                <h4 className="font-bold text-sm text-slate-900 leading-tight">{item.label}</h4>
+                <p className="text-[10px] text-slate-500 font-medium">{item.desc}</p>
+              </div>
             </div>
+          ))}
+        </div>
+
+        {/* CTA Buttons */}
+        <div className="flex flex-wrap gap-4">
+          <a href="/membership" className="px-8 py-4 bg-slate-900 text-white font-bold rounded-xl shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center gap-2">
+            Start Free Trial <ArrowRight size={18} />
+          </a>
+          <button 
+            onClick={() => setOpen(true)}
+            className="px-8 py-4 bg-white text-slate-700 font-bold rounded-xl border border-slate-200 hover:bg-slate-50 transition-all flex items-center gap-2"
+          >
+            <PlayCircle size={18} className="text-orange-500"/> View Demo
+          </button>
+        </div>
+      </div>
+
+      {/* ============================================
+          RIGHT SIDE: COMPACT VISUAL (35%)
+          ============================================ */}
+      <div className="lg:col-span-5 relative hidden lg:block">
+        <div className="relative w-full max-w-[320px] mx-auto animate-float">
+
+          {/* Decorative Blur behind phone */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-orange-500 to-pink-500 rounded-[3rem] blur-2xl opacity-20 transform scale-95 translate-y-4"></div>
+
+          {/* The Phone Mockup */}
+          <div className="relative bg-slate-900 rounded-[2.5rem] border-[8px] border-slate-900 shadow-2xl overflow-hidden aspect-[9/16]">
             
-            <h1 className="text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.1] mb-6">
-              Smart QR Menu & <br/>
-              <span className="gradient-text">Fast Billing POS.</span>
-            </h1>
-            
-            <p className="text-lg lg:text-xl text-slate-600 mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-              Petoba is the <strong>all-in-one restaurant OS</strong>. Create an AI-powered digital menu in minutes, manage KOTs, and automate WhatsApp billing.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <a href="/membership" className="group relative px-8 py-4 bg-slate-900 text-white font-bold rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2">
-                <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-orange-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full"></div>
-                <span className="relative z-10">Create Free Menu</span>
-                <ArrowRight className="relative z-10 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </a>
-              <button className="px-8 py-4 bg-white text-slate-700 font-bold rounded-full shadow-md border border-slate-200 hover:bg-slate-50 transition-all flex items-center justify-center gap-2" onClick={() => setOpen(true)}>
-                <PlayCircle className="w-5 h-5 text-orange-500" />
-                See Demo
-              </button>
+            {/* Screen Content */}
+            <div className="h-full bg-slate-50 flex flex-col relative overflow-hidden">
+               {/* App Header */}
+               <div className="bg-white p-4 pt-8 shadow-sm z-10 flex justify-between items-center">
+                  <div>
+                    <p className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Welcome to</p>
+                    <p className="font-bold text-slate-900">Petoba Demo</p>
+                  </div>
+                  <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center">
+                    <Bot size={16} className="text-slate-600"/>
+                  </div>
+               </div>
+
+               {/* Scrollable Content Simulation */}
+               <div className="p-4 space-y-3 overflow-hidden opacity-90">
+                  <div className="h-32 rounded-xl bg-[url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80')] bg-cover relative group">
+                    <div className="absolute inset-0 bg-black/40 rounded-xl group-hover:bg-black/20 transition-colors"></div>
+                    <div className="absolute bottom-3 left-3 text-white">
+                       <span className="bg-orange-500 text-[10px] font-bold px-2 py-0.5 rounded">Promo</span>
+                       <p className="font-bold text-sm">Burger Festival</p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 overflow-hidden">
+                     <span className="px-3 py-1 bg-slate-900 text-white text-xs rounded-full">All</span>
+                     <span className="px-3 py-1 bg-white border border-slate-200 text-slate-600 text-xs rounded-full">Pizza</span>
+                     <span className="px-3 py-1 bg-white border border-slate-200 text-slate-600 text-xs rounded-full">Burger</span>
+                  </div>
+
+                  {/* List Items */}
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="flex gap-3 bg-white p-2 rounded-xl border border-slate-100 shadow-sm items-center">
+                       <div className="w-12 h-12 bg-slate-100 rounded-lg"></div>
+                       <div className="flex-1">
+                          <div className="h-2 w-20 bg-slate-200 rounded mb-1"></div>
+                          <div className="h-2 w-10 bg-slate-200 rounded"></div>
+                       </div>
+                       <div className="w-6 h-6 rounded-full border border-slate-200 flex items-center justify-center text-[10px]">+</div>
+                    </div>
+                  ))}
+               </div>
+
+               {/* Bottom Floating Bar */}
+               <div className="absolute bottom-4 left-4 right-4 bg-slate-900 text-white p-3 rounded-xl shadow-lg flex justify-between items-center">
+                  <div className="text-xs font-bold">1 Item | ₹149</div>
+                  <div className="text-xs font-bold flex items-center gap-1">View Cart <ArrowRight size={12}/></div>
+               </div>
             </div>
           </div>
 
-          
-{/* Right Image & Floating Badges */}
-<div className="relative flex justify-center z-10 mt-8 lg:mt-0">
-  {/* 1. Container Width: Reduced to 'w-64' on mobile to create space on sides for badges. 
-      2. 'md:w-[28rem]' keeps it large on desktop.
-  */}
-  <div className="relative w-64 md:w-[28rem] animate-float">
-    
-    {/* Background Glow */}
-    <div className="absolute inset-0 bg-gradient-to-tr from-orange-100 to-pink-100 rounded-[2rem] rotate-6 opacity-40 blur-xl transform scale-95"></div>
-    
-    {/* Main Phone Image */}
-    <img 
-      src="https://data.avenirya.com/wp-content/uploads/2025/10/Untitled-design-8.png" 
-      alt="Petoba App Interface" 
-      className="relative z-10 w-full drop-shadow-2xl"
-    />
-    
-    {/* --- FLOATING BADGES START --- */}
-    {/* Global Badge Style: Smaller on mobile (scale-75), Glassmorphism, specific positioning */}
+          {/* Floating Badge (Visual Interest) */}
+          <div className="absolute top-20 -right-12 bg-white/90 backdrop-blur p-3 rounded-xl shadow-lg border border-slate-100 flex items-center gap-3 animate-bounce" style={{animationDuration: '4s'}}>
+             <div className="bg-green-100 p-2 rounded-full text-green-600">
+               <BsWhatsapp size={18}/>
+             </div>
+             <div>
+               <p className="text-[10px] text-slate-400 font-bold uppercase">New Order</p>
+               <p className="text-xs font-bold text-slate-900">₹ 450.00</p>
+             </div>
+          </div>
 
-    {/* 1. WhatsApp New Order (Top Left) */}
-    <div className="absolute -left-6 top-4 md:-left-10 md:top-12 bg-white/95 backdrop-blur-md p-2 md:p-3 rounded-2xl shadow-lg shadow-orange-500/10 flex items-center gap-2 md:gap-3 z-20 animate-bounce border border-white/50 scale-75 md:scale-100 origin-right" style={{animationDuration: '3s'}}>
-        <div className="bg-green-100 p-1.5 md:p-2 rounded-full"><BsWhatsapp className="text-green-600 text-lg md:text-xl"/></div>
-        <div>
-            <p className="text-[10px] md:text-xs text-slate-500 font-semibold leading-tight">New Order</p>
-            <p className="text-xs md:text-sm font-bold text-slate-800">₹ 850.00</p>
         </div>
-    </div>
+      </div>
 
-    {/* 2. KOT Printed (Top Right - slightly lower than left to avoid symmetry) */}
-    <div className="absolute -right-6 top-16 md:-right-12 md:top-20 bg-white/95 backdrop-blur-md p-2 md:p-3 rounded-2xl shadow-lg shadow-slate-400/10 flex items-center gap-2 md:gap-3 z-20 animate-bounce border border-white/50 scale-75 md:scale-100 origin-left" style={{animationDuration: '4.5s', animationDelay: '1s'}}>
-        <div className="bg-slate-100 p-1.5 md:p-2 rounded-full"><Printer className="text-slate-600 text-lg md:text-xl"/></div>
-        <div>
-            <p className="text-[10px] md:text-xs text-slate-500 font-semibold leading-tight">Kitchen KOT</p>
-            <p className="text-xs md:text-sm font-bold text-slate-800 flex items-center gap-1">Printed <CheckCircle2 size={10} className="text-green-500"/></p>
-        </div>
     </div>
-
-    {/* 3. Table Order (Middle Left) */}
-    <div className="absolute -left-8 top-[45%] md:-left-14 md:top-80 bg-white/95 backdrop-blur-md p-2 md:p-3 rounded-2xl shadow-lg shadow-orange-500/10 flex items-center gap-2 md:gap-3 z-20 animate-bounce border border-white/50 scale-75 md:scale-100 origin-right" style={{animationDuration: '5s', animationDelay: '0.5s'}}>
-        <div className="bg-orange-100 p-1.5 md:p-2 rounded-full"><UtensilsCrossed className="text-orange-500 text-lg md:text-xl"/></div>
-        <div>
-            <p className="text-[10px] md:text-xs text-slate-500 font-semibold leading-tight">Table #4</p>
-            <p className="text-xs md:text-sm font-bold text-slate-800">Ordering...</p>
-        </div>
-    </div>
-
-    {/* 4. Delivery Order (Middle Right) */}
-    <div className="absolute -right-8 top-[60%] md:-right-16 md:bottom-40 bg-white/95 backdrop-blur-md p-2 md:p-3 rounded-2xl shadow-lg shadow-blue-500/10 flex items-center gap-2 md:gap-3 z-20 animate-bounce border border-white/50 scale-75 md:scale-100 origin-left" style={{animationDuration: '3.5s', animationDelay: '1.5s'}}>
-        <div className="bg-blue-100 p-1.5 md:p-2 rounded-full"><Bike className="text-blue-600 text-lg md:text-xl"/></div>
-        <div>
-            <p className="text-[10px] md:text-xs text-slate-500 font-semibold leading-tight">Delivery</p>
-            <p className="text-xs md:text-sm font-bold text-slate-800">Received</p>
-        </div>
-    </div>
-
-     {/* 5. 5-Star Review (Bottom Left) */}
-     <div className="absolute -left-2 bottom-12 md:-left-4 md:bottom-20 bg-white/95 backdrop-blur-md p-2 md:p-3 rounded-2xl shadow-lg shadow-yellow-500/10 flex items-center gap-2 md:gap-3 z-20 animate-bounce border border-white/50 scale-75 md:scale-100 origin-right" style={{animationDuration: '4s', animationDelay: '2s'}}>
-        <div className="bg-yellow-100 p-1.5 md:p-2 rounded-full"><Star className="text-yellow-500 text-lg md:text-xl fill-yellow-500"/></div>
-        <div>
-            <p className="text-[10px] md:text-xs text-slate-500 font-semibold leading-tight">Google Review</p>
-            <p className="text-xs md:text-sm font-bold text-slate-800">5.0 Stars</p>
-        </div>
-    </div>
-
-    {/* 6. Payment Received (Bottom Right) */}
-    <div className="absolute -right-4 bottom-4 md:-right-6 md:bottom-10 bg-white/95 backdrop-blur-md p-2 md:p-3 rounded-2xl shadow-lg shadow-purple-500/10 flex items-center gap-2 md:gap-3 z-20 animate-bounce border border-white/50 scale-75 md:scale-100 origin-left" style={{animationDuration: '6s'}}>
-        <div className="bg-purple-100 p-1.5 md:p-2 rounded-full"><CreditCard className="text-purple-500 text-lg md:text-xl"/></div>
-        <div>
-            <p className="text-[10px] md:text-xs text-slate-500 font-semibold leading-tight">Bill Paid</p>
-            <p className="text-xs md:text-sm font-bold text-slate-800">₹ 1,200</p>
-        </div>
-    </div>
-
-    {/* --- FLOATING BADGES END --- */}
   </div>
-</div>
-        </div>
-      </section>
-
+</section>
       {/* --- STATS BAR --- */}
       <div className=" ">
         <div className="max-w-7xl mx-auto px-6 py-8 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-8 text-center z-20 rounded-3xl bg-white/80 glass-card shadow-md">
@@ -715,149 +793,221 @@ const HomePage = () => {
           Layout: Left Text | Right Chat Simulation
           Theme: Transparent BG (Blends with Main Page)
          ========================================= */}
-      <section className="py-16 relative ">
+   <section className="relative py-24 text-slate-900 font-sans ">
         
-        {/* Background Decor (Subtle & Transparent) */}
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-orange-500/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
+    
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+        <div className="grid lg:grid-cols-2 gap-16 lg:gap-8 items-center">
 
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+          {/* --- LEFT COLUMN: CONTENT --- */}
+          <div className="space-y-8 text-center lg:text-left">
+            
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-orange-100 shadow-sm animate-fade-in-up">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+              </span>
+              <span className="text-orange-600 font-bold text-xs tracking-wider uppercase">New Feature Unlocked</span>
+            </div>
 
-            {/* LEFT: Text Content */}
-            <FadeInSection>
-              <div>
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-50 border border-orange-100 text-orange-600 font-bold text-xs uppercase tracking-widest mb-6 animate-pulse shadow-sm">
-                  <Sparkles size={14} />
-                  <span>New Feature</span>
+            {/* Headline */}
+            <h2 className="text-5xl lg:text-7xl font-extrabold leading-tight tracking-tight text-slate-900">
+              Meet Your <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-pink-600 to-purple-600">
+                AI Waiter.
+              </span>
+            </h2>
+
+            {/* Price Strike-through & Reveal */}
+            <div className="flex flex-col lg:flex-row items-center gap-4 lg:gap-6 justify-center lg:justify-start">
+               <div className="flex items-center gap-2 text-slate-400 text-xl font-medium line-through decoration-red-500/60 decoration-2">
+                  <span>₹ 1,999/Yr</span>
+               </div>
+               <div className="px-6 py-2 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2 text-green-700 font-bold text-xl lg:text-2xl shadow-sm">
+                  <Gift size={24} className="animate-bounce text-green-600" />
+                  <span>Now 100% FREE</span>
+               </div>
+            </div>
+
+            <p className="text-lg text-slate-600 leading-relaxed max-w-xl mx-auto lg:mx-0">
+              Increase table turnover and boost average order value with an AI that never sleeps. It lives inside your QR menu, ready to upsell and assist.
+            </p>
+
+            {/* Feature Grid (Light Glassmorphism) */}
+            <div className="grid sm:grid-cols-2 gap-4 max-w-lg mx-auto lg:mx-0">
+              {[
+                { icon: MessageSquare, text: "Unlimited Chats" },
+                { icon: TrendingUp, text: "Auto-Upselling" },
+                { icon: Bot, text: "24/7 Availability" },
+                { icon: CreditCard, text: "No Credit Card Needed" }
+              ].map((item, idx) => (
+                <div key={idx} className="flex items-center gap-3 p-3 rounded-2xl bg-white/80 border border-white/40 shadow-sm hover:shadow-md transition-all backdrop-blur-sm">
+                  <div className="p-2 bg-orange-100 rounded-full text-orange-600">
+                    <item.icon size={18} />
+                  </div>
+                  <span className="text-sm font-bold text-slate-700">{item.text}</span>
                 </div>
+              ))}
+            </div>
 
-                <h2 className="text-4xl lg:text-5xl font-extrabold leading-tight mb-6 text-slate-900">
-                  Meet Your New <br/>
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-600">AI Waiter Bot</span>
-                </h2>
 
-                <p className="text-lg text-slate-600 mb-8 leading-relaxed">
-                  Imagine a waiter who never sleeps, knows every ingredient, and upsells perfectly. Our AI lives inside the digital menu to chat with customers and take orders instantly.
-                </p>
 
-                <div className="space-y-5 mb-10">
-                  {[
-                    "Answers questions like 'Is this spicy?'",
-                    "Takes orders via text (e.g. '2 Burgers')",
-                    "Suggests pairings & upsells items",
-                    "Works 24/7 without taking a break"
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-green-600">
-                        <Check size={14} strokeWidth={3} />
-                      </div>
-                      <span className="font-medium text-slate-700">{item}</span>
+            {/* Social Proof */}
+            <div className="flex items-center justify-center lg:justify-start gap-4 text-xs text-slate-500 font-medium">
+               <div className="flex -space-x-2">
+                  {[1,2,3,4].map((i) => (
+                    <div key={i} className={`w-6 h-6 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center text-[8px] overflow-hidden shadow-sm`}>
+                      <img src={`https://i.pravatar.cc/100?img=${i + 25}`} alt="user" className="w-full h-full object-cover"/>
                     </div>
                   ))}
+               </div>
+               <p>Joined by 500+ restaurants this week</p>
+            </div>
+
+          </div>
+
+          {/* --- RIGHT COLUMN: 3D PHONE VISUAL (Light Theme) --- */}
+          <div className="relative perspective-1000 group my-10 lg:my-0">
+            
+            {/* Floating Elements (Decorations) */}
+            <div className="absolute -top-12 -right-8 z-30 animate-bounce delay-700 duration-[3000ms]">
+               <div className="bg-white/80 backdrop-blur-xl border border-white/40 p-4 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.1)] flex items-center gap-3">
+                  <div className="bg-green-100 p-2 rounded-full text-green-600 shadow-sm"><CheckCircle2 size={24}/></div>
+                  <div>
+                    <p className="text-[10px] uppercase text-slate-400 font-bold">Status</p>
+                    <p className="text-slate-900 font-bold">Active & Free</p>
+                  </div>
+               </div>
+            </div>
+
+            <div className="absolute bottom-20 -left-12 z-30 animate-bounce delay-150 duration-[4000ms] hidden md:block">
+               <div className="bg-white/80 backdrop-blur-xl border border-white/40 p-4 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.1)]">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-xs shadow-sm">%</div>
+                    <div>
+                      <p className="text-[10px] uppercase text-slate-400 font-bold">Upsell</p>
+                      <p className="text-slate-900 font-bold text-xs">Recommended</p>
+                    </div>
+                  </div>
+                  <div className="h-1.5 w-32 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-orange-500 to-pink-500 w-[85%]"></div>
+                  </div>
+               </div>
+            </div>
+
+            {/* The Phone Mockup (Light Frame) */}
+            <div className="relative mx-auto w-[320px] sm:w-[360px] h-[650px] bg-slate-50 border-[12px] border-white rounded-[3rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] overflow-hidden transform transition-transform duration-700 group-hover:rotate-0 rotate-2 lg:rotate-3 ring-1 ring-slate-200/50">
+              
+              {/* Phone Notch */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-white rounded-b-xl z-20 border-b border-x border-slate-100"></div>
+
+              {/* Header */}
+              <div className="bg-white/80 backdrop-blur-md p-5 pt-8 border-b border-slate-100 flex items-center justify-between sticky top-0 z-10">
+                <div className="flex items-center gap-3">
+                   <div className="relative">
+                     <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-500 to-pink-500 flex items-center justify-center text-white shadow-md">
+                       <Bot size={20} />
+                     </div>
+                     <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+                   </div>
+                   <div>
+                     <h3 className="font-bold text-slate-900 text-sm">Petoba AI</h3>
+                     <p className="text-[10px] text-green-600 font-medium flex items-center gap-1">
+                       <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> Online
+                     </p>
+                   </div>
+                </div>
+                <div className="text-slate-400 hover:bg-slate-100 p-2 rounded-full transition"><SettingsIcon size={20}/></div>
+              </div>
+
+              {/* Chat Area */}
+              <div className="p-4 h-full overflow-hidden flex flex-col space-y-6 bg-slate-50 relative pb-20">
+                
+                {/* Date Divider */}
+                <div className="text-center">
+                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-white border border-slate-100 px-3 py-1 rounded-full shadow-sm">Today</span>
                 </div>
 
-              </div>
-            </FadeInSection>
-
-            {/* RIGHT: Chatbot Illustration */}
-            <FadeInSection delay="200ms">
-              <div className="relative mx-auto w-full max-w-[400px]">
-                
-                {/* Floating Status Badge */}
-                <div className="absolute -right-4 top-10 animate-bounce z-20" style={{animationDuration: '3s'}}>
-                   <div className="bg-white/90 backdrop-blur border border-slate-200 p-3 rounded-2xl shadow-xl flex items-center gap-3">
-                      <div className="bg-green-100 p-2 rounded-full text-green-600"><CheckCircle2 size={20}/></div>
-                      <div>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase">Status</p>
-                        <p className="text-sm font-bold text-slate-800">Order Accepted</p>
-                      </div>
+                {/* Msg 1 (Bot) - Light bubble */}
+                <div className="flex items-end gap-2">
+                   <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-500 to-pink-500 flex-shrink-0 p-[2px]">
+                     <div className="w-full h-full bg-white rounded-full flex items-center justify-center">
+                        <Bot size={14} className="text-orange-500"/>
+                     </div>
+                   </div>
+                   <div className="bg-white p-3.5 rounded-2xl rounded-bl-none max-w-[85%] border border-slate-100 text-slate-700 text-sm shadow-sm">
+                      <p>Hello! 👋 I noticed you're ordering the Burger. Would you like to add <b>Fries & Coke</b> for just ₹99 extra?</p>
                    </div>
                 </div>
 
-                {/* Phone Frame (Kept Dark for Contrast/Premium Feel) */}
-                <div className="relative bg-slate-900 border-[8px] border-slate-900 rounded-[2.5rem] shadow-2xl overflow-hidden h-[550px] transform rotate-1 hover:rotate-0 transition-transform duration-500">
-                  
-                  {/* Fake Header */}
-                  <div className="bg-slate-800 p-4 border-b border-slate-700 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 flex items-center justify-center shadow-lg">
-                        <Bot size={16} className="text-white"/>
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-white">Petoba AI</p>
-                        <p className="text-[10px] text-green-400 flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> Online
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-slate-400"><Settings size={18}/></div>
-                  </div>
+                {/* Msg 2 (User) - Vibrant bubble */}
+                <div className="flex items-end justify-end gap-2">
+                   <div className="bg-gradient-to-r from-orange-500 to-pink-600 p-3.5 rounded-2xl rounded-br-none max-w-[80%] text-white text-sm shadow-md">
+                      <p>Oh, that sounds good. Is it spicy? 🌶️</p>
+                   </div>
+                </div>
 
-                  {/* Chat Area */}
-                  <div className="p-4 space-y-4 font-sans text-sm h-full bg-slate-800/50">
-                    
-                    {/* Bot Message */}
-                    <div className="flex justify-start">
-                      <div className="bg-slate-700 text-slate-100 p-3 rounded-2xl rounded-tl-none max-w-[85%] shadow-md border border-slate-600">
-                        Hi! 👋 I'm your AI waiter. Ask me for recommendations or order directly here!
-                      </div>
-                    </div>
-
-                    {/* User Message */}
-                    <div className="flex justify-end">
-                      <div className="bg-orange-500 text-white p-3 rounded-2xl rounded-tr-none max-w-[85%] shadow-lg">
-                        I want something spicy. 🌶️
-                      </div>
-                    </div>
-
-                    {/* Bot Typing Indicator */}
-                    <div className="flex justify-start">
-                      <div className="bg-slate-700 p-3 rounded-2xl rounded-tl-none border border-slate-600 w-16 flex items-center gap-1">
-                         <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></span>
-                         <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></span>
-                         <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></span>
-                      </div>
-                    </div>
-
-                    {/* Bot Result */}
-                    <div className="flex justify-start animate-fade-in-up" style={{animationDelay: '1s', animationFillMode: 'both'}}>
-                      <div className="bg-slate-700 text-slate-100 p-3 rounded-2xl rounded-tl-none max-w-[95%] shadow-md border border-slate-600">
-                        <p className="mb-2">How about our <strong>Schezwan Noodles</strong>? 🔥 It's a customer favorite!</p>
-                        <div className="bg-slate-800 p-2 rounded-xl flex gap-3 items-center border border-slate-600 mt-2">
-                           <img src="https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=100&q=80" className="w-10 h-10 rounded-lg object-cover" alt="food"/>
-                           <div className="flex-1">
-                             <p className="font-bold text-xs text-white">Schezwan Noodles</p>
-                             <p className="text-xs text-orange-400">₹ 180</p>
-                           </div>
-                           <button className="bg-white text-slate-900 text-[10px] font-bold px-3 py-1.5 rounded hover:bg-slate-200 transition">Add</button>
+                {/* Msg 3 (Bot) with Product Card */}
+                <div className="flex items-end gap-2">
+                   <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-500 to-pink-500 flex-shrink-0 p-[2px]">
+                     <div className="w-full h-full bg-white rounded-full flex items-center justify-center">
+                        <Bot size={14} className="text-orange-500"/>
+                     </div>
+                   </div>
+                   <div className="bg-white p-3 rounded-2xl rounded-bl-none max-w-[85%] border border-slate-100 text-slate-700 text-sm shadow-sm space-y-3">
+                      <p>Not at all! It's perfectly seasoned. 🍟🥤 I've added it to your cart.</p>
+                      
+                      {/* Product Card Inside Chat */}
+                      <div className="bg-slate-50 rounded-xl p-2 flex gap-3 items-center border border-slate-100 relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-1 h-full bg-green-500"></div>
+                        <img src="https://images.unsplash.com/photo-1594007654729-407eedc4be65?auto=format&fit=crop&w=100&q=80" className="w-12 h-12 rounded-lg object-cover shadow-sm" alt="fries"/>
+                        <div className="flex-1 leading-tight">
+                          <p className="font-bold text-xs text-slate-900">Fries & Coke Combo</p>
+                          <p className="text-[10px] text-slate-500">Added to order</p>
+                        </div>
+                        <div className="bg-green-100 text-green-700 p-1.5 rounded-full">
+                            <CheckCircle2 size={14} />
                         </div>
                       </div>
-                    </div>
-
-                  </div>
-
-                  {/* Fake Input */}
-                  <div className="absolute bottom-0 left-0 w-full p-3 bg-slate-800 border-t border-slate-700">
-                    <div className="flex items-center gap-2 bg-slate-900 p-2 rounded-full border border-slate-700">
-                      <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-500">
-                        <Sparkles size={14}/>
+                   </div>
+                </div>
+                
+                 {/* Typing Indicator */}
+                 <div className="flex items-end gap-2">
+                   <div className="w-8 h-8 rounded-full bg-slate-200 flex-shrink-0"></div>
+                   <div className="bg-white p-3 rounded-2xl rounded-bl-none border border-slate-100 shadow-sm w-16 flex items-center gap-1">
+                         <span className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce"></span>
+                         <span className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></span>
+                         <span className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></span>
                       </div>
-                      <div className="flex-1 text-xs text-slate-500">Add 1 plate...</div>
-                      <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white">
-                        <Send size={14}/>
-                      </div>
-                    </div>
-                  </div>
+                </div>
 
+              </div>
+              
+              {/* Input Area (Light) */}
+              <div className="absolute bottom-0 left-0 w-full p-3 bg-white/80 backdrop-blur-md border-t border-slate-100">
+                <div className="flex items-center gap-2 bg-slate-100 p-2 rounded-full border border-slate-200 focus-within:border-orange-300 transition-colors relative z-20">
+                  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-slate-400 shadow-sm cursor-pointer hover:text-orange-500 transition">
+                    <Sparkles size={16}/>
+                  </div>
+                  <input 
+                    type="text" 
+                    placeholder="Ask for recommendations..."
+                    className="flex-1 bg-transparent border-none text-xs text-slate-700 focus:ring-0 placeholder-slate-400 outline-none"
+                  />
+                  <button className="w-8 h-8 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 flex items-center justify-center text-white shadow-md hover:scale-105 transition active:scale-95">
+                    <Send size={14}/>
+                  </button>
                 </div>
               </div>
-            </FadeInSection>
 
+            </div>
           </div>
-        </div>
-      </section>
 
+        </div>
+      </div>
+    </section>
       {/* --- HOW IT WORKS (Redesigned) --- */}
       <section className="py-12 ">
         {/* Background Patterns */}
