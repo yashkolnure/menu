@@ -381,7 +381,7 @@ function RestaurantMenuPage() {
             </div>
           </div>
 
-          <div className="flex justify-center space-x-2 pb-6 bg-gray-100">
+          <div className="flex justify-center space-x-2 pb-2 bg-gray-100">
             {offers.map((_, idx) => (
               <span
                 key={idx}
