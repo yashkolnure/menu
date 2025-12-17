@@ -69,7 +69,7 @@ function RestaurantMenuPage() {
     const fetchOffers = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`${API_BASE_URL}/api/admin/${id}/offers`, { 
+        const res = await fetch(`${API_BASE_URL}https://petoba.in/api/admin/${id}/offers`, { 
             headers: token ? { Authorization: `Bearer ${token}` } : {} 
         });
         const data = await res.json();
@@ -93,7 +93,7 @@ function RestaurantMenuPage() {
     const fetchDetails = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`${API_BASE_URL}/api/admin/${id}/details`, {
+        const res = await fetch(`${API_BASE_URL}https://petoba.in/api/admin/${id}/details`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         const data = await res.json();
@@ -110,7 +110,7 @@ function RestaurantMenuPage() {
     const fetchMenu = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`${API_BASE_URL}/api/admin/${id}/menu`, {
+        const res = await fetch(`${API_BASE_URL}https://petoba.in/api/admin/${id}/menu`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         const data = await res.json();
@@ -218,7 +218,7 @@ function RestaurantMenuPage() {
     setIsLoadingOrders(true);
     try {
       // 🔧 Ensure this matches your backend route
-      const res = await fetch(`${API_BASE_URL}/api/admin/orders/table/${id}/${tableNum}`);
+      const res = await fetch(`${API_BASE_URL}https://petoba.in/api/admin/orders/table/${id}/${tableNum}`);
       
       if (res.ok) {
         const data = await res.json();
@@ -277,7 +277,7 @@ function RestaurantMenuPage() {
     }
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/order`, {
+      const res = await fetch(`${API_BASE_URL}https://petoba.in/api/order`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -462,74 +462,114 @@ function RestaurantMenuPage() {
         Cart {cart.length > 0 && <span>{cart.length}</span>}
       </button>
 
-      {showCart && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 w-[90%] max-w-md animate-zoomIn">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Your Cart</h2>
-            {cart.length === 0 ? (
-              <p className="text-gray-500">Cart is empty.</p>
-            ) : (
-              <>
-                <div className="max-h-[60vh] overflow-y-auto">
-                    {cart.map((item) => (
-                    <div key={item._id} className="flex items-center justify-between mb-3 border-b pb-2">
-                        <div>
-                        <h4 className="font-semibold">{item.name}</h4>
-                        <p>₹ {item.price}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                            <button className="px-2 bg-gray-300 rounded" onClick={() => decreaseQty(item._id)}>-</button>
-                            <span>{item.quantity}</span>
-                            <button className="px-2 bg-gray-300 rounded" onClick={() => increaseQty(item._id)}>+</button>
-                        </div>
-                        </div>
-                        <button className="text-red-500" onClick={() => removeFromCart(item._id)}>Remove</button>
-                    </div>
-                    ))}
-                </div>
-                <h3 className="text-lg font-semibold mt-4">
-                  Total: ₹{cart.reduce((total, item) => total + item.price * item.quantity, 0)}
-                </h3>
-                <div className="flex justify-between mt-6 space-x-4">
-                  <button
-                    onClick={() => setCart([])}
-                    className="w-1/2 py-3 bg-gray-200 text-gray-800 rounded-xl font-semibold hover:bg-gray-300"
-                  >
-                    Clear Cart
-                  </button>
+     {/* --- MODERN BOTTOM-SHEET CART --- */}
+{showCart && (
+  <div 
+    className="fixed inset-0 bg-black/60 z-[100] transition-opacity duration-300 flex items-end justify-center"
+    onClick={() => setShowCart(false)}
+  >
+    <div 
+      className="bg-white w-full max-w-md rounded-t-[2.5rem] shadow-2xl flex flex-col animate-slideUp relative"
+      style={{ maxHeight: '85vh' }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Pull Handle */}
+      <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-4 mb-2" />
 
-                  <button
-                      onClick={() => {
-                        setShowCart(false);
-                        // Check if BOTH Table Number AND WhatsApp Number are present
-                        if (tableNumber && wpno) {
-                            handleTableNumberSubmit();
-                        } else {
-                            // If either is missing, show the modal so user can enter them
-                            setShowModal(true);
-                        }
-                      }}
-                      className="w-1/2 py-3 bg-green-500 text-white rounded-xl font-semibold hover:bg-green-600"
-                    >
-                      Order ✔
-                    </button>
-                </div>
-              </>
-            )}
+      {/* Header */}
+      <div className="px-6 py-4 flex justify-between items-center border-b border-gray-100">
+        <h2 className="text-2xl font-black text-gray-800">My Cart</h2>
+        <button 
+          onClick={() => setShowCart(false)}
+          className="bg-gray-100 p-2 rounded-full text-gray-500 hover:text-red-500 transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Cart Items List */}
+      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
+        {cart.length === 0 ? (
+          <div className="text-center py-20">
+             <span className="text-5xl">🛒</span>
+             <p className="text-gray-400 mt-4 font-medium">Your cart is empty</p>
+          </div>
+        ) : (
+          cart.map((item) => (
+            <div key={item._id} className="flex items-center justify-between group">
+              <div className="flex-1 pr-4">
+                <h4 className="font-bold text-gray-800 text-lg">{item.name}</h4>
+                <p className="text-orange-600 font-semibold">{currencySymbol}{item.price}</p>
+              </div>
+              
+              <div className="flex items-center bg-gray-100 rounded-xl p-1 border border-gray-200">
+                <button 
+                  className="w-8 h-8 flex items-center justify-center bg-white rounded-lg shadow-sm font-bold text-gray-600 hover:text-orange-500 active:scale-90 transition-all"
+                  onClick={() => decreaseQty(item._id)}
+                >
+                  -
+                </button>
+                <span className="w-10 text-center font-bold text-gray-800">{item.quantity}</span>
+                <button 
+                  className="w-8 h-8 flex items-center justify-center bg-white rounded-lg shadow-sm font-bold text-gray-600 hover:text-orange-500 active:scale-90 transition-all"
+                  onClick={() => increaseQty(item._id)}
+                >
+                  +
+                </button>
+              </div>
+
+              <button 
+                className="ml-4 p-2 text-gray-300 hover:text-red-500 transition-colors"
+                onClick={() => removeFromCart(item._id)}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Footer / Summary */}
+      {cart.length > 0 && (
+        <div className="p-6 bg-gray-50 border-t border-gray-100 rounded-t-3xl">
+          <div className="flex justify-between items-center mb-6 px-1">
+            <span className="text-gray-500 font-medium text-lg">Grand Total</span>
+            <span className="text-3xl font-black text-gray-900">
+              {currencySymbol}{cart.reduce((total, item) => total + item.price * item.quantity, 0)}
+            </span>
+          </div>
+
+          <div className="flex gap-4">
+            <button
+              onClick={() => setCart([])}
+              className="flex-1 py-4 bg-white border-2 border-gray-200 text-gray-500 rounded-2xl font-bold hover:bg-gray-100 transition-all active:scale-95"
+            >
+              Clear
+            </button>
+
             <button
               onClick={() => {
-                setShowModal(true);
-                setTimeout(() => {
-                  setShowCart(false);
-                  setShowModal(false);
-                }, 300);
+                setShowCart(false);
+                if (tableNumber && wpno) {
+                  handleTableNumberSubmit();
+                } else {
+                  setShowModal(true);
+                }
               }}
-              className="absolute top-4 right-4 text-gray-500 hover:text-red-500 text-xl"
+              className="flex-[2] py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-2xl font-black text-lg shadow-lg shadow-orange-200 hover:shadow-orange-300 transition-all active:scale-95"
             >
-              ✕
+              Place Order
             </button>
           </div>
         </div>
       )}
+    </div>
+  </div>
+)}
 
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
@@ -594,17 +634,16 @@ function RestaurantMenuPage() {
         </div>
       )}
       {/* Show if we have orders OR if a table number is set */}
-      {(myOrders.length > 0 || tableNumber) && (
+      
         <button
           onClick={() => {
             if(tableNumber) fetchOrdersForTable(tableNumber); // Refresh on click
             setShowMyOrders(true);
           }}
-          className="fixed bottom-5 left-5 bg-orange-500 text-white border-2 border-orange-500 px-4 py-3 rounded-full shadow-lg text-lg z-40 flex items-center gap-2 hover:bg-orange-600"
+          className="fixed bottom-5 left-24 bg-orange-500 text-white border-2 border-orange-500 px-4 py-3 rounded-full shadow-lg text-lg z-40 flex items-center gap-2 hover:bg-orange-600"
         >
           🧾 
         </button>
-      )}
 
       {/* 🆕 "MY ORDERS" MODAL */}
       {showMyOrders && (

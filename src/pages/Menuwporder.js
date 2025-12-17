@@ -496,117 +496,109 @@ function RestaurantMenuPagewp() {
         </div>
       )}
 
-      {/* Scroll to top button (left-bottom) */}
-      {showScrollTop && (
-        <button
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          className="fixed bottom-5 left-5 z-50 bg-orange-500 text-white p-2 rounded-full shadow-lg hover:bg-gray-700 transition-transform transform hover:-translate-y-1"
-          aria-label="Scroll to top"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-4 h-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M5 15l7-7 7 7"
-            />
-          </svg>
-        </button>
+
+    
+{/* --- MODERN BOTTOM SHEET CART --- */}
+<div 
+  className={`fixed inset-0 z-[99] transition-opacity duration-300 ${showCart ? "bg-black/60 opacity-100" : "pointer-events-none opacity-0"}`}
+  onClick={() => setShowCart(false)}
+>
+  <div 
+    className={`fixed inset-x-0 bottom-0 z-50 flex flex-col bg-white rounded-t-[2rem] shadow-2xl transition-transform duration-500 ease-out ${showCart ? "translate-y-0" : "translate-y-full"}`}
+    style={{ maxHeight: '90vh' }}
+    onClick={(e) => e.stopPropagation()}
+  >
+    {/* Handle bar for "Pull down" feel */}
+    <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-4 mb-2" />
+
+    <div className="px-6 py-4 flex justify-between items-center border-b border-gray-100">
+      <h2 className="text-2xl font-extrabold text-gray-800">Your Order</h2>
+      <button 
+        onClick={() => setShowCart(false)}
+        className="p-2 bg-gray-100 rounded-full text-gray-500 hover:text-red-500 transition-colors"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+        </svg>
+      </button>
+    </div>
+
+    {/* Cart Items List */}
+    <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
+      {cart.length > 0 ? (
+        cart.map((item) => (
+          <div key={item._id} className="flex items-center justify-between group">
+            <div className="flex-1">
+              <p className="font-bold text-gray-800 text-lg">{item.name}</p>
+              <p className="text-orange-600 font-medium">{currencySymbol}{item.price}</p>
+            </div>
+            
+            <div className="flex items-center bg-orange-50 rounded-xl p-1 border border-orange-100">
+              <button
+                onClick={() => updateQty(item._id, item.quantity - 1)}
+                className="w-8 h-8 flex items-center justify-center rounded-lg bg-white shadow-sm text-orange-600 font-bold hover:bg-orange-500 hover:text-white transition-all"
+              >
+                -
+              </button>
+              <span className="w-10 text-center font-bold text-gray-700">{item.quantity}</span>
+              <button
+                onClick={() => updateQty(item._id, item.quantity + 1)}
+                className="w-8 h-8 flex items-center justify-center rounded-lg bg-white shadow-sm text-orange-600 font-bold hover:bg-orange-500 hover:text-white transition-all"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        ))
+      ) : (
+        <div className="py-10 text-center">
+           <p className="text-gray-400">Your cart is feeling a bit light...</p>
+        </div>
       )}
+    </div>
 
-      {showCart && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl max-w-md w-full mx-4 p-5 space-y-4 relative">
-            <button
-              className="absolute top-2 right-3 text-gray-500 hover:text-red-500 text-xl"
-              onClick={() => setShowCart(false)}
-            >
-              ✕
-            </button>
-
-            <h2 className="text-xl font-bold text-center mb-3">Your Cart</h2>
-
-            <div style={{ maxHeight: 320, overflowY: "auto" }}>
-              {cart.map((item) => (
-                <div
-                  key={item._id}
-                  className="flex justify-between items-center border-b py-2"
-                >
-                  <div>
-                    <p className="font-semibold">{item.name}</p>
-                    <p className="text-sm text-gray-500">
-                      {currencySymbol}
-                      {item.price}
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => updateQty(item._id, item.quantity - 1)}
-                      className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
-                    >
-                      -
-                    </button>
-                    <span>{item.quantity}</span>
-                    <button
-                      onClick={() => updateQty(item._id, item.quantity + 1)}
-                      className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
-                    >
-                      +
-                    </button>
-                    <button
-                      onClick={() => removeFromCart(item._id)}
-                      className="ml-2 text-red-500 hover:text-red-700 text-xl"
-                    >
-                      🗑
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="pt-3">
-              <p className="text-right font-semibold">
-                Total: {currencySymbol}
-                {cart.reduce(
-                  (sum, item) => sum + item.price * item.quantity,
-                  0
-                )}
-              </p>
-            </div>
-
-            <div>
-              <input
+    {/* Order Section */}
+    <div className="p-6 bg-gray-50 border-t border-gray-100 rounded-t-3xl">
+      <div className="mb-4">
+        <label className="block text-sm font-semibold text-gray-500 mb-2 ml-1">Dining Table Number</label>
+        <div className="relative">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">#</span>
+            <input
                 type="text"
                 value={tableNumber}
                 onChange={(e) => setTableNumber(e.target.value)}
-                placeholder="Enter table number"
-                className="w-full px-4 py-2 border rounded-lg mt-3"
-              />
-            </div>
-
-            {/* 🆕 CONDITIONAL BUTTON RENDERING */}
-            {restaurantDetails?.enableOrdering === "disabled" ? ( // Check logic here based on your need
-              <div className="mt-3 p-3 bg-red-100 border border-red-200 text-red-700 rounded-lg text-center font-bold">
-                ⚠️ Ordering is currently closed. <br/>
-                <span className="text-sm font-normal">Please ask a waiter for assistance.</span>
-              </div>
-            ) : (
-              <button
-                onClick={handleTableNumberSubmit}
-                className="bg-green-600 text-white w-full mt-3 py-3 rounded-lg hover:bg-green-700 transition font-bold text-lg shadow-md"
-              >
-                Order via WhatsApp
-              </button>
-            )}
-          </div>
+                placeholder="Ex: 05"
+                className="w-full pl-8 pr-4 py-3 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-orange-400 focus:outline-none transition-all font-bold text-lg"
+            />
         </div>
+      </div>
+
+      <div className="flex justify-between items-center mb-6 px-1">
+        <span className="text-gray-500 font-medium">Grand Total</span>
+        <span className="text-2xl font-black text-gray-900">
+          {currencySymbol}{cart.reduce((sum, item) => sum + item.price * item.quantity, 0)}
+        </span>
+      </div>
+
+      {restaurantDetails?.enableOrdering === "disabled" ? (
+        <div className="p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl text-center">
+          <p className="font-bold">Ordering is currently closed</p>
+          <p className="text-xs opacity-80">Please contact the waiter for assistance</p>
+        </div>
+      ) : (
+        <button
+          onClick={handleTableNumberSubmit}
+          className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-orange-200 active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+        >
+          <span>Confirm Order via WhatsApp</span>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+          </svg>
+        </button>
       )}
+    </div>
+  </div>
+</div>
 
       <ToastContainer
         position="bottom-left"

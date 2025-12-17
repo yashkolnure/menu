@@ -346,11 +346,9 @@ function RestaurantMenuPageCloud() {
         
       </div>
 
-      {/* Floating Buttons */}
       {/* Show Track button ONLY if orderMode is Billing */}
-      {restaurantDetails?.orderMode === 'billing' && (
-        <button onClick={() => setShowTrackModal(true)} className="fixed bottom-5 left-5 bg-white text-gray-800 px-4 py-3 rounded-full shadow-lg font-bold border flex items-center gap-2 z-40"><span>📍</span> Track</button>
-      )}
+      
+        <button onClick={() => setShowTrackModal(true)} className="fixed bottom-5 left-24 bg-white text-gray-800 px-4 py-4 rounded-full shadow-lg font-bold border flex items-center gap-2 z-40">Track</button>
       
       <button onClick={() => setShowCart(true)} className="fixed bottom-5 right-5 bg-orange-500 text-white px-6 py-3 rounded-full shadow-lg font-bold flex items-center gap-2 z-40">
         View Cart {cart.length > 0 && `(${cart.length})`}
@@ -384,36 +382,71 @@ function RestaurantMenuPageCloud() {
         </div>
       )}
 
-      {/* 2. Cart Modal */}
-      {showCart && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 p-4 animate-in fade-in">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 max-h-[85vh] overflow-y-auto relative animate-zoomIn">
-            <button onClick={() => { setIsCartClosing(true); setTimeout(() => { setShowCart(false); setIsCartClosing(false); }, 300); }} className="absolute top-4 right-4 text-gray-400">✕</button>
-            <h2 className="text-2xl font-bold mb-4">Your Cart</h2>
-            
-            {cart.length === 0 ? <p className="text-gray-500">Cart is empty</p> : (
-              <>
-                {cart.map(item => (
-                  <div key={item._id} className="flex justify-between items-center mb-4 border-b pb-2">
-                    <div>
-                      <h4 className="font-semibold">{item.name}</h4>
-                      <p className="text-sm text-gray-500">₹{item.price}</p>
-                      <div className="flex items-center gap-3 mt-1">
-                        <button className="bg-gray-200 px-2 rounded" onClick={() => updateQty(item._id, -1)}>-</button>
-                        <span>{item.quantity}</span>
-                        <button className="bg-gray-200 px-2 rounded" onClick={() => updateQty(item._id, 1)}>+</button>
-                      </div>
-                    </div>
-                    <button className="text-red-500 text-sm" onClick={() => setCart(cart.filter(i => i._id !== item._id))}>Remove</button>
-                  </div>
-                ))}
-                <h3 className="text-lg font-bold text-right mt-4">Total: ₹{calculateTotal()}</h3>
-                <div className="flex gap-3 mt-6"><button onClick={() => setCart([])} className="flex-1 py-3 bg-gray-200 rounded-xl font-bold text-gray-700">Clear</button><button onClick={() => { setShowCart(false); setShowModal(true); }} className="flex-1 py-3 bg-green-500 text-white rounded-xl font-bold">Checkout</button></div>
-              </>
-            )}
-          </div>
+    {/* --- MODERN BOTTOM-SHEET CART --- */}
+{showCart && (
+  <div 
+    className="fixed inset-0 bg-black/60 z-[100] transition-opacity duration-300 flex items-end justify-center"
+    onClick={() => setShowCart(false)}
+  >
+    <div 
+      className="bg-white w-full max-w-md rounded-t-[2.5rem] shadow-2xl flex flex-col animate-slide-up relative overflow-hidden"
+      style={{ maxHeight: '85vh' }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Pull Handle */}
+      <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-4 mb-2" />
+
+      {/* Header */}
+      <div className="px-6 py-4 flex justify-between items-center border-b border-gray-100">
+        <div>
+          <h2 className="text-2xl font-black text-gray-800">My Basket</h2>
+          <p className="text-xs text-gray-400 font-bold uppercase">{restaurantDetails?.name}</p>
         </div>
-      )}
+        <button onClick={() => setShowCart(false)} className="text-gray-400 text-2xl">
+          ✕
+        </button>
+      </div>
+
+      {/* Items List */}
+      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
+        {cart.map(item => (
+          <div key={item._id} className="flex items-center justify-between">
+            <div className="flex-1 pr-4">
+              <h4 className="font-bold text-gray-800">{item.name}</h4>
+              <p className="text-orange-600 font-bold text-sm">₹{item.price}</p>
+            </div>
+            
+            <div className="flex items-center bg-gray-100 rounded-xl p-1 border border-gray-200">
+              <button className="w-8 h-8 flex items-center justify-center bg-white rounded-lg shadow-sm font-bold text-gray-600" onClick={() => updateQty(item._id, -1)}>-</button>
+              <span className="w-8 text-center font-bold text-gray-800">{item.quantity}</span>
+              <button className="w-8 h-8 flex items-center justify-center bg-white rounded-lg shadow-sm font-bold text-gray-600" onClick={() => updateQty(item._id, 1)}>+</button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Footer / Summary */}
+      <div className="p-6 bg-gray-50 border-t border-gray-100">
+        <div className="flex justify-between items-center mb-6">
+          <span className="text-gray-500 font-bold uppercase text-xs">Total Amount</span>
+          <span className="text-3xl font-black text-gray-900">₹{calculateTotal()}</span>
+        </div>
+
+        <div className="flex gap-3">
+          <button onClick={() => setCart([])} className="flex-1 py-4 bg-white border-2 border-gray-200 text-gray-400 rounded-2xl font-bold active:scale-95 transition-all">
+            Empty
+          </button>
+          <button 
+            onClick={() => { setShowCart(false); setShowModal(true); }}
+            className="flex-[2] py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-2xl font-black text-lg shadow-lg shadow-orange-200 active:scale-95 transition-all"
+          >
+            Checkout
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
 
       {/* 3. Checkout Modal */}
       {showModal && (
