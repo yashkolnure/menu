@@ -288,12 +288,10 @@ const HomePage = () => {
           <a href="/membership" className="px-8 py-4 bg-slate-900 text-white font-bold rounded-xl shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center gap-2">
             Start Free Trial <ArrowRight size={18} />
           </a>
-          <button 
-            onClick={() => setOpen(true)}
-            className="px-8 py-4 bg-white text-slate-700 font-bold rounded-xl border border-slate-200 hover:bg-slate-50 transition-all flex items-center gap-2"
-          >
-            <PlayCircle size={18} className="text-orange-500"/> View Demo
-          </button>
+          <a href="https://petoba.in/mymenu/68951632dce5299231f16e7d" className="px-8 py-4 bg-slate-900 text-white font-bold rounded-xl shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center gap-2">
+          <PlayCircle size={18} className="text-orange-500"/>  View Demo 
+          </a>
+         
         </div>
       </div>
 
