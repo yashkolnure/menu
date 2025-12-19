@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Helmet } from "react-helmet";
 import { useNavigate } from "react-router-dom";
 import NotificationSetup from "./NotificationSetup";
@@ -123,7 +123,23 @@ function AdminDashboard() {
   };
   
   // Data
-  const [billingData, setBillingData] = useState([]);
+  // --- 🧠 DERIVED BILLING DATA (Place this where your old state was) ---
+const billingData = useMemo(() => {
+  const grouped = orders.reduce((acc, order) => {
+    const tNum = String(order.tableNumber);
+    if (!acc[tNum]) acc[tNum] = [];
+    acc[tNum].push(order);
+    return acc;
+  }, {});
+
+  return Object.keys(grouped).map((tableNumber) => {
+    const tableOrders = grouped[tableNumber];
+    const subTotal = tableOrders.reduce((total, order) => {
+      return total + order.items.reduce((ot, item) => ot + (item.itemId?.price || 0) * item.quantity, 0);
+    }, 0);
+    return { tableNumber, subTotal, orders: tableOrders };
+  });
+}, [orders]); // Recalculates automatically when orders change
   const [restaurantDetails, setRestaurantDetails] = useState({ name: "", logo: "", address: "", contact: "", billing: "", orderMode: "" });
   const [orderHistory, setOrderHistory] = useState([]);
   const [offers, setOffers] = useState([]);
@@ -443,7 +459,7 @@ function AdminDashboard() {
   // --- 2. FETCH DATA ---
   const fetchMenu = async () => {
     try {
-        const res = await fetch(`https://petoba.in/api/admin/${restaurantId}/menu`, {
+        const res = await fetch(`/api/admin/${restaurantId}/menu`, {
             headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -458,13 +474,13 @@ function AdminDashboard() {
   const fetchOrders = async (isFirstLoad) => {
     try {
       // 1. Fetch Table Orders
-      const resTable = await fetch(`https://petoba.in/api/admin/${restaurantId}/orders`, {
+      const resTable = await fetch(`/api/admin/${restaurantId}/orders`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const tableData = await resTable.json();
       
       // 2. Fetch Delivery Orders
-      const resDelivery = await fetch(`https://petoba.in/api/admin/delivery/all/${restaurantId}`, {
+      const resDelivery = await fetch(`/api/admin/delivery/all/${restaurantId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const deliveryData = await resDelivery.json();
@@ -481,7 +497,6 @@ function AdminDashboard() {
           );
           
           setOrders(activeOrders);
-          updateBillingFromOrders(activeOrders); // Update the table view
 
           // Check for new pending orders
           const pendingOrders = activeOrders.filter(o => o.status === 'pending');
@@ -535,7 +550,7 @@ function AdminDashboard() {
 
   const fetchRestaurantDetails = async () => {
     try {
-      const res = await fetch(`https://petoba.in/api/admin/${restaurantId}/details`, {
+      const res = await fetch(`/api/admin/${restaurantId}/details`, {
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       });
       const data = await res.json();
@@ -552,7 +567,7 @@ function AdminDashboard() {
     setIsTogglingLive(true);
     
     try {
-      const res = await fetch(`https://petoba.in/api/admin/${restaurantId}/status`, {
+      const res = await fetch(`/api/admin/${restaurantId}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ isLive: newStatus })
@@ -603,7 +618,7 @@ const openAddDishModal = (tableNum) => {
       }, 0);
 
       try {
-          const res = await fetch("https://petoba.in/api/order", {
+          const res = await fetch("/api/order", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -638,7 +653,7 @@ const openAddDishModal = (tableNum) => {
     if (!newOrderPopup) return;
     setIsAccepting(true);
     try {
-      await fetch(`https://petoba.in/api/admin/${restaurantId}/orders/${newOrderPopup._id}`, {
+      await fetch(`/api/admin/${restaurantId}/orders/${newOrderPopup._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ status: "ok" }),
@@ -669,7 +684,7 @@ const openAddDishModal = (tableNum) => {
 
     setIsAccepting(true);
     try {
-        await fetch(`https://petoba.in/api/admin/${restaurantId}/orders/${newOrderPopup._id}`, {
+        await fetch(`/api/admin/${restaurantId}/orders/${newOrderPopup._id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
             body: JSON.stringify({ status: "cancelled" }), 
@@ -680,7 +695,7 @@ const openAddDishModal = (tableNum) => {
         setOrders(updatedOrders);
         
         // ✅ KEY FIX: Immediately recalculate table status so it shows as empty
-        updateBillingFromOrders(updatedOrders); 
+     
 
         setNewOrderPopup(null);
         setTimeout(() => {
@@ -701,7 +716,7 @@ const openAddDishModal = (tableNum) => {
       if(!newDeliveryPopup) return;
       setIsAccepting(true);
       try {
-          await fetch(`https://petoba.in/api/admin/delivery/status/${newDeliveryPopup._id}`, {
+          await fetch(`/api/admin/delivery/status/${newDeliveryPopup._id}`, {
               method: "PUT",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ status: "Confirmed" }),
@@ -730,7 +745,7 @@ const openAddDishModal = (tableNum) => {
 
       setIsAccepting(true);
       try {
-          await fetch(`https://petoba.in/api/admin/delivery/status/${newDeliveryPopup._id}`, {
+          await fetch(`/api/admin/delivery/status/${newDeliveryPopup._id}`, {
               method: "PUT",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ status: "Cancelled" }),
@@ -781,42 +796,56 @@ const openAddDishModal = (tableNum) => {
 
 const handleConfirmClear = async (method) => {
     if (!settleTableData) return;
-    const safeTableParam = encodeURIComponent(settleTableData.tableNumber);
+
+    // 1. Get restaurantId (Crucial: The backend needs this to find the orders)
+    const restaurantId = localStorage.getItem("restaurantId");
+    
+    // 2. Trim and encode the table number to handle spaces and special characters
+    const cleanTableNum = settleTableData.tableNumber.toString().trim();
+    const safeTableParam = encodeURIComponent(cleanTableNum);
 
     try {
-      const res = await fetch(`https://petoba.in/api/clearTable/${safeTableParam}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        body: JSON.stringify({ taxRate, discountRate, additionalCharges, paymentMethod: method })
-      });
+        const res = await fetch(`/api/clearTable/${safeTableParam}`, {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json", 
+                "Authorization": `Bearer ${token}` 
+            },
+            // 3. 🔥 THE FIX: Added restaurantId here
+            body: JSON.stringify({ 
+                taxRate, 
+                discountRate, 
+                additionalCharges, 
+                paymentMethod: method,
+                restaurantId: restaurantId 
+            })
+        });
 
-      if (res.ok) {
-        // ✅ FIX: Filter orders locally and immediately update the grid
-        const remainingOrders = orders.filter(o => String(o.tableNumber) !== String(settleTableData.tableNumber));
-        
-        setOrders(remainingOrders);
-        updateBillingFromOrders(remainingOrders); // This clears the table in the UI
-        
-        setSettleTableData(null); 
-        fetchOrderHistory(); 
-      } else {
-        if (res.status === 404) {
-            alert("Table already cleared or not found.");
-            // Force clear local state anyway just in case
-            const remainingOrders = orders.filter(o => String(o.tableNumber) !== String(settleTableData.tableNumber));
+        if (res.ok) {
+            // ✅ Local state update: remove orders for this table instantly
+            const remainingOrders = orders.filter(o => 
+                String(o.tableNumber).trim() !== cleanTableNum
+            );
+            
             setOrders(remainingOrders);
-            updateBillingFromOrders(remainingOrders);
             setSettleTableData(null); 
+            fetchOrderHistory(); // Refresh history tab with the new bill
         } else {
-            alert("Server Error: " + res.status);
+            const errorData = await res.json();
+            if (res.status === 404) {
+                alert(errorData.message || "Table already cleared or not found.");
+                // Force local sync if server says table is already gone
+                setOrders(prev => prev.filter(o => String(o.tableNumber).trim() !== cleanTableNum));
+                setSettleTableData(null); 
+            } else {
+                alert("Error: " + (errorData.message || res.statusText));
+            }
         }
-      }
     } catch (error) { 
-        console.error(error);
-        alert("Network error."); 
+        console.error("Clear Table API Error:", error);
+        alert("Network error. Please check if the server is running."); 
     }
-  };
-    
+};
 const getAggregatedTableItems = (tableOrders) => {
     // ✅ Add this safety check
     if (!tableOrders || !Array.isArray(tableOrders)) return [];
@@ -1021,35 +1050,21 @@ const getAggregatedTableItems = (tableOrders) => {
   const handleDiscountChange = (e) => { const val = parseFloat(e.target.value) || 0; setDiscountRate(val); localStorage.setItem("discountRate", val); };
   const handleChargesChange = (e) => { const val = parseFloat(e.target.value) || 0; setAdditionalCharges(val); localStorage.setItem("additionalCharges", val); };
 
-  const updateBillingFromOrders = (currentOrders) => {
-    const grouped = currentOrders.reduce((acc, order) => {
-      if (!acc[order.tableNumber]) acc[order.tableNumber] = [];
-      acc[order.tableNumber].push(order);
-      return acc;
-    }, {});
-    const billing = Object.keys(grouped).map((tableNumber) => {
-      const tableOrders = grouped[tableNumber];
-      const subTotal = tableOrders.reduce((total, order) => {
-        return total + order.items.reduce((ot, item) => ot + (item.itemId?.price || 0) * item.quantity, 0);
-      }, 0);
-      return { tableNumber, subTotal, orders: tableOrders };
-    });
-    setBillingData(billing);
-  };
+
 
   const fetchOrderHistory = async () => {
     setLoadingHistory(true);
     try {
-      const res = await fetch(`https://petoba.in/api/admin/${restaurantId}/order-history`, { headers: { Authorization: `Bearer ${token}` }});
+      const res = await fetch(`/api/admin/${restaurantId}/order-history`, { headers: { Authorization: `Bearer ${token}` }});
       const data = await res.json();
       setOrderHistory(Array.isArray(data) ? data : []);
     } catch (error) { console.error(error); } finally { setLoadingHistory(false); }
   };
 
-  const fetchOffers = async () => { try { const res = await fetch(`https://petoba.in/api/admin/${restaurantId}/offers`, { headers: { Authorization: `Bearer ${token}` } }); if(res.ok) setOffers(await res.json()); } catch (e) {} };
+  const fetchOffers = async () => { try { const res = await fetch(`/api/admin/${restaurantId}/offers`, { headers: { Authorization: `Bearer ${token}` } }); if(res.ok) setOffers(await res.json()); } catch (e) {} };
   const handleOfferImageUpload = (e) => { const file = e.target.files[0]; if(file) { const reader = new FileReader(); reader.onloadend = () => setNewOffer({image: reader.result, imagePreview: reader.result}); reader.readAsDataURL(file); }};
-  const handleAddOffer = async () => { await fetch(`https://petoba.in/api/admin/${restaurantId}/offers`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ image: newOffer.image }) }); fetchOffers(); setNewOffer({image:'', imagePreview:''}); alert("Offer Added"); };
-  const handleDeleteOffer = async (id) => { if(!window.confirm("Delete?")) return; await fetch(`https://petoba.in/api/admin/${restaurantId}/offers/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); fetchOffers(); };
+  const handleAddOffer = async () => { await fetch(`/api/admin/${restaurantId}/offers`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ image: newOffer.image }) }); fetchOffers(); setNewOffer({image:'', imagePreview:''}); alert("Offer Added"); };
+  const handleDeleteOffer = async (id) => { if(!window.confirm("Delete?")) return; await fetch(`/api/admin/${restaurantId}/offers/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); fetchOffers(); };
 
   const getGroupedHistory = () => {
     const groupedMap = {};

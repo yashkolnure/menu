@@ -23,7 +23,7 @@ const AgencyLogin = () => {
 
     try {
       const res = await axios.post(
-        "/api/admin/agency-login",
+        "https://petoba.in/api/admin/agency-login",
         { email, password }
       );
 

@@ -69,7 +69,7 @@ function RestaurantMenuPage() {
     const fetchOffers = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`${API_BASE_URL}https://petoba.in/api/admin/${id}/offers`, { 
+        const res = await fetch(`${API_BASE_URL}/api/admin/${id}/offers`, { 
             headers: token ? { Authorization: `Bearer ${token}` } : {} 
         });
         const data = await res.json();
@@ -93,7 +93,7 @@ function RestaurantMenuPage() {
     const fetchDetails = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`${API_BASE_URL}https://petoba.in/api/admin/${id}/details`, {
+        const res = await fetch(`${API_BASE_URL}/api/admin/${id}/details`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         const data = await res.json();
@@ -110,7 +110,7 @@ function RestaurantMenuPage() {
     const fetchMenu = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`${API_BASE_URL}https://petoba.in/api/admin/${id}/menu`, {
+        const res = await fetch(`${API_BASE_URL}/api/admin/${id}/menu`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         const data = await res.json();
@@ -218,7 +218,7 @@ function RestaurantMenuPage() {
     setIsLoadingOrders(true);
     try {
       // 🔧 Ensure this matches your backend route
-      const res = await fetch(`${API_BASE_URL}https://petoba.in/api/admin/orders/table/${id}/${tableNum}`);
+      const res = await fetch(`${API_BASE_URL}/api/admin/orders/table/${id}/${tableNum}`);
       
       if (res.ok) {
         const data = await res.json();
@@ -262,6 +262,21 @@ function RestaurantMenuPage() {
     ));
   };
 
+  const MenuSkeleton = () => (
+  <div className="w-full sm:w-64 bg-white rounded-2xl p-3 shadow-sm animate-pulse m-2 border border-gray-100">
+    {/* Image Placeholder */}
+    <div className="w-full h-40 bg-gray-200 rounded-xl mb-3"></div>
+    {/* Title Placeholder */}
+    <div className="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
+    {/* Description Placeholder */}
+    <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
+    {/* Footer (Price + Button) Placeholder */}
+    <div className="flex justify-between items-center mt-4">
+      <div className="h-6 bg-gray-200 rounded w-16"></div>
+      <div className="h-10 bg-gray-200 rounded-lg w-24"></div>
+    </div>
+  </div>
+);
   const handleTableNumberSubmit = async () => {
     // 🆕 1. CHECK IF RESTAURANT IS LIVE
     // We check explicitly for false, so if it's undefined (old schema) it still works
@@ -277,7 +292,7 @@ function RestaurantMenuPage() {
     }
 
     try {
-      const res = await fetch(`${API_BASE_URL}https://petoba.in/api/order`, {
+      const res = await fetch(`${API_BASE_URL}/api/order`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -411,26 +426,27 @@ function RestaurantMenuPage() {
           </div>
         </div>
 
-        <div className="flex flex-wrap justify-center">
-          {loading ? (
-            <p className="text-gray-500 text-center mb-4">Loading menu...</p>
-          ) : filteredMenu.length > 0 ? (
-            filteredMenu.map((item) => (
-              <MenuCard 
-                key={item._id} 
-                item={item} 
-                cartItem={cart.find(c => c._id === item._id)}
-                addToCart={addToCart}
-                increaseQty={(item) => updateQty(item._id, (cart.find(c => c._id === item._id)?.quantity || 0) + 1)}
-                decreaseQty={(item) => updateQty(item._id, (cart.find(c => c._id === item._id)?.quantity || 0) - 1)}
-                currency={restaurantDetails?.currency }
-                enableOrdering={restaurantDetails?.enableOrdering  }
-              />
-            ))
-          ) : (
-            <p className="text-gray-500 text-center mb-4">No items match your search.</p>
-          )}
-        </div>
+<div className="flex flex-wrap justify-center">
+  {loading ? (
+    // Show 6 skeleton cards while the API is fetching
+    [1, 2, 3, 4, 5, 6].map((i) => <MenuSkeleton key={i} />)
+  ) : filteredMenu.length > 0 ? (
+    filteredMenu.map((item) => (
+      <MenuCard 
+        key={item._id} 
+        item={item} 
+        cartItem={cart.find(c => c._id === item._id)}
+        addToCart={addToCart}
+        increaseQty={(item) => updateQty(item._id, (cart.find(c => c._id === item._id)?.quantity || 0) + 1)}
+        decreaseQty={(item) => updateQty(item._id, (cart.find(c => c._id === item._id)?.quantity || 0) - 1)}
+        currency={restaurantDetails?.currency}
+        enableOrdering={restaurantDetails?.enableOrdering}
+      />
+    ))
+  ) : (
+    <p className="text-gray-500 text-center mb-4">No items match your search.</p>
+  )}
+</div>
 
         <div>
           <CustomFieldsDisplay restaurantId={id} />

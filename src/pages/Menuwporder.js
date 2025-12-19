@@ -49,6 +49,22 @@ function RestaurantMenuPagewp() {
   );
   const currencySymbol = selectedCurrency ? selectedCurrency.symbol : "₹";
 
+  const MenuSkeleton = () => (
+  <div className="w-full sm:w-64 bg-white rounded-2xl p-3 shadow-sm animate-pulse m-2 border border-gray-100">
+    {/* Image Placeholder */}
+    <div className="w-full h-40 bg-gray-200 rounded-xl mb-3"></div>
+    {/* Title Placeholder */}
+    <div className="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
+    {/* Description Placeholder */}
+    <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
+    {/* Footer (Price + Button) Placeholder */}
+    <div className="flex justify-between items-center mt-4">
+      <div className="h-6 bg-gray-200 rounded w-16"></div>
+      <div className="h-10 bg-gray-200 rounded-lg w-24"></div>
+    </div>
+  </div>
+);
+
   // 3. NEW REDIRECTION LOGIC
   // This runs whenever restaurantDetails updates.
   useEffect(() => {
@@ -432,40 +448,26 @@ function RestaurantMenuPagewp() {
         </div>
 
         <div className="flex flex-wrap justify-center">
-          {loading ? (
-            <div className="flex justify-center items-center w-full py-10">
-              <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
-              <p className="ml-3 text-gray-500 text-sm">Loading menu...</p>
-            </div>
-          ) : filteredMenu.length > 0 ? (
-            filteredMenu.map((item) => (
-              <MenuCard
-                key={item._id}
-                item={item}
-                cartItem={cart.find((c) => c._id === item._id)}
-                addToCart={addToCart}
-                increaseQty={(item) =>
-                  updateQty(
-                    item._id,
-                    (cart.find((c) => c._id === item._id)?.quantity || 0) + 1
-                  )
-                }
-                decreaseQty={(item) =>
-                  updateQty(
-                    item._id,
-                    (cart.find((c) => c._id === item._id)?.quantity || 0) - 1
-                  )
-                }
-                currency={restaurantDetails?.currency}
-                enableOrdering={restaurantDetails?.enableOrdering}
-              />
-            ))
-          ) : (
-            <p className="text-gray-500 text-center mb-4">
-              No items match your search.
-            </p>
-          )}
-        </div>
+  {loading ? (
+    // Show 6 skeleton cards while the API is fetching
+    [1, 2, 3, 4, 5, 6].map((i) => <MenuSkeleton key={i} />)
+  ) : filteredMenu.length > 0 ? (
+    filteredMenu.map((item) => (
+      <MenuCard 
+        key={item._id} 
+        item={item} 
+        cartItem={cart.find(c => c._id === item._id)}
+        addToCart={addToCart}
+        increaseQty={(item) => updateQty(item._id, (cart.find(c => c._id === item._id)?.quantity || 0) + 1)}
+        decreaseQty={(item) => updateQty(item._id, (cart.find(c => c._id === item._id)?.quantity || 0) - 1)}
+        currency={restaurantDetails?.currency}
+        enableOrdering={restaurantDetails?.enableOrdering}
+      />
+    ))
+  ) : (
+    <p className="text-gray-500 text-center mb-4">No items match your search.</p>
+  )}
+</div>
         <div>
           <CustomFieldsDisplay restaurantId={id} />
         </div>
