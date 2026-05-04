@@ -12,7 +12,7 @@ const RegisterFreePage = () => {
   const [searchParams] = useSearchParams();
   
   // ✅ CONFIG: Support Number (Replace this with your actual number)
-  const SUPPORT_NUMBER = "919270361329"; 
+  const SUPPORT_NUMBER = "917499835687"; 
 
   // ✅ 1. Get Plan, Cycle & Coupon from URL
   const selectedPlan = (searchParams.get("plan") || "trial").toLowerCase();
@@ -46,9 +46,9 @@ const RegisterFreePage = () => {
 
   // ✅ 2. Pricing Configuration
   const pricingMap = {
-    qr: { monthly: 199, yearly: 899, name: "QR Menu Plan" },
-    billing: { monthly: 199, yearly: 899, name: "Billing App Plan" },
-    combo: { monthly: 299, yearly: 1499, name: "Power Combo Plan" },
+    qr: { monthly: 199, yearly: 999, name: "QR Menu Plan" },
+    billing: { monthly: 199, yearly: 999, name: "Billing App Plan" },
+    combo: { monthly: 299, yearly: 1699, name: "Power Combo Plan" },
     trial: { monthly: 0, yearly: 0, name: "7-Day Free Trial" }
   };
 

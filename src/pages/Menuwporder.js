@@ -296,7 +296,7 @@ function RestaurantMenuPagewp() {
             This restaurant is Disabled Connect to Petoba Team to Reactivate
             your Menu.
           </p>
-          <a href={`https://wa.me/919270361329?text=Reactivate%20Menu%20for%20Restaurant%20ID%3A%20${id}`} target="_blank" rel="noopener noreferrer" className="p-2 mt-4 border border-orange-600 rounded-xl text-orange-600 hover:underline font-semibold">
+          <a href={`https://wa.me/917499835687?text=Reactivate%20Menu%20for%20Restaurant%20ID%3A%20${id}`} target="_blank" rel="noopener noreferrer" className="p-2 mt-4 border border-orange-600 rounded-xl text-orange-600 hover:underline font-semibold">
             Contact Support
           </a>
           <p className="text-gray-400 text-sm mt-4">

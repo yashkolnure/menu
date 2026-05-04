@@ -8,7 +8,7 @@ import {
 
 // --- CONSTANTS ---
 const WEB_POS_LINK = "https://petoba.in/login"; // Example link for PC Login
-const PHONE_NUMBER = "919270361329";
+const PHONE_NUMBER = "917499835687";
 
 // Helper for WhatsApp
 const getWhatsAppLink = () => {

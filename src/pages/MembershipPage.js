@@ -286,13 +286,13 @@ const MembershipPage = () => {
               subtitle="Digital Presence"
               // ✅ REVERTED TO STANDARD PRICING
               originalPrice={billingCycle === "monthly" ? "₹499" : "₹1999"} 
-              price={billingCycle === "monthly" ? "₹199" : "₹899"}
+              price={billingCycle === "monthly" ? "₹199" : "₹999"}
               period={billingCycle === "monthly" ? "/mo" : "/yr"}
               features={qrFeatures}
               buttonText="Select QR Plan"
               buttonColor="bg-blue-600 hover:bg-blue-700"
               // ✅ REVERTED TO STANDARD OFFER TEXT
-              offerText={billingCycle === "yearly" ? "🎁 Yearly Deal: Get 1 Month Billing App FREE" : ""}
+              offerText={billingCycle === "yearly" ? "🎁 Yearly Deal: Get 15 Month Billing App FREE" : ""}
               redirect={getRegisterLink("qr")}
             />
 
@@ -305,7 +305,7 @@ const MembershipPage = () => {
                 title="Power Combo"
                 subtitle="Complete Restaurant OS"
                 originalPrice={billingCycle === "monthly" ? "₹999" : "₹4999"}
-                price={billingCycle === "monthly" ? "₹299" : "₹1499"}
+                price={billingCycle === "monthly" ? "₹299" : "₹1799"}
                 period={billingCycle === "monthly" ? "/mo" : "/yr"}
                 description="Digital Menu + Billing POS. Perfect for Cloud Kitchens and Dine-in Restaurants."
                 features={comboFeatures}
@@ -321,7 +321,7 @@ const MembershipPage = () => {
               title="Billing App"
               subtitle="POS Operations"
               originalPrice={billingCycle === "monthly" ? "₹499" : "₹1999"}
-              price={billingCycle === "monthly" ? "₹199" : "₹899"}
+              price={billingCycle === "monthly" ? "₹199" : "₹999"}
               period={billingCycle === "monthly" ? "/mo" : "/yr"}
               features={billingFeatures}
               buttonText="Select Billing Plan"

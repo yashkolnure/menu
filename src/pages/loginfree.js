@@ -34,7 +34,7 @@ function Loginfree() {
     setError(""); 
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/login", {
+      const res = await fetch("https://petoba.in/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -59,7 +59,7 @@ function Loginfree() {
     setError(""); 
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/request-otp", {
+      const res = await fetch("https://petoba.in/api/admin/request-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -82,7 +82,7 @@ function Loginfree() {
     setError(""); 
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/verify-otp", {
+      const res = await fetch("https://petoba.in/api/admin/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, otp }),
@@ -113,7 +113,7 @@ function Loginfree() {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/reset-password-final", {
+      const res = await fetch("https://petoba.in/api/admin/reset-password-final", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, tempToken, newPassword }),
@@ -341,7 +341,7 @@ function Loginfree() {
 
       {/* --- WhatsApp Help Button --- */}
       <a
-        href="https://wa.me/919270361329?text=Hello%2C%20I%20need%20help%20logging%20into%20my%20Petoba%20dashboard."
+        href="https://wa.me/917499835687?text=Hello%2C%20I%20need%20help%20logging%20into%20my%20Petoba%20dashboard."
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-6 right-6 z-50 bg-[#25D366] hover:bg-[#20ba5a] text-white px-5 py-3 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center gap-2 font-bold group animate-in fade-in zoom-in duration-300"

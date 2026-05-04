@@ -13,7 +13,7 @@ function UpgradePopup({ isOpen, onClose }) {
   const handleContact = () => {
     // Pre-filled WhatsApp message
     const message = "Hello! I am interested in upgrading my Petoba plan. Please help me with the details.";
-    const phoneNumber = "919270361329";
+    const phoneNumber = "917499835687";
     const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(url, "_blank");
   };

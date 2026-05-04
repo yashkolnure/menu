@@ -1,11 +1,11 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import RestaurantMenuPage from "./pages/RestaurantMenuPage";
 import RestaurantMenuPagewp from "./pages/Menuwporder";
 import MenuPageWithoutCart from "./pages/MenuPageWithoutCart";
 import MenuPageWithoutCartCloud from "./pages/MenuPageWithoutCartCloud";
 import AdminLoginPage from "./pages/AdminLoginPage";
-import AdminDashboard from "./pages/AdminDashboard";
+import UnifiedDashboard from "./pages/dashboard/UnifiedDashboard";
 import RestaurantRegister from "./pages/RestaurantRegister";
 import LandingPage from './pages/LandingPage';
 import RestaurantDetails from "./pages/RestaurantDetails";
@@ -32,7 +32,6 @@ import AgencyRegister from "./pages/AgencyRegister";
 import AgencyLogin from "./pages/AgencyLogin";
 import BulkUploadInfo from "./pages/bulkuploadinfo";
 import AgencyDashboard from "./pages/AgencyDashboard";
-import Dashboard from "./pages/Dashboard";
 import Dashboard1 from "./pages/Dashboard1";
 import Dashboard2 from "./pages/Dashboard2";
 import FeaturesPage from "./pages/FeaturesPage";
@@ -93,7 +92,7 @@ function AppWrapper() {
         <Route path="/membership" element={<MembershipPage />} />
         <Route path="/agentlogin" element={<Agentlogin />} />
         <Route path="/admin" element={<AdminLoginPage />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/dashboard" element={<Navigate to="/dashboard" replace />} />
         <Route path="/register-restaurant" element={<RestaurantRegister />} />
         <Route path="/restaurant-details" element={<RestaurantDetails />} />
         <Route path="/" element={<LandingPage />} />
@@ -112,7 +111,7 @@ function AppWrapper() {
         <Route path="/agency-register" element={<AgencyRegister />} />
         <Route path="/agency-login" element={<AgencyLogin />} />
         <Route path="/agency-dashboard" element={<AgencyDashboard />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard" element={<UnifiedDashboard />} />
         <Route path="/dashboard1" element={<Dashboard1 />} />
         <Route path="/dashboard2" element={<Dashboard2 />} />
         <Route path="/bulk-upload" element={<BulkUploadInfo />} />
