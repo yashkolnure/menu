@@ -1,6 +1,15 @@
 import React, { useState, useRef, useEffect } from "react";
 
-function MenuCard({ item, addToCart }) {
+const getCurrencySymbol = (code) => {
+  const map = {
+    INR: "₹", USD: "$", EUR: "€", GBP: "£",
+    JPY: "¥", CNY: "¥", AUD: "A$", CAD: "C$",
+    AED: "د.إ", SGD: "S$",
+  };
+  return map[code] || "₹";
+};
+
+function MenuCard({ item, addToCart, currency }) {
   const [expanded, setExpanded] = useState(false);
   const descRef = useRef(null);
   const [imageError, setImageError] = useState(false);
@@ -12,6 +21,8 @@ function MenuCard({ item, addToCart }) {
       setDescHeight(expanded ? fullHeight : "3rem");
     }
   }, [expanded]);
+
+  const currencySymbol = getCurrencySymbol(currency);
 
   return (
     <div className="relative bg-white/80 backdrop-blur-lg border border-gray-200 rounded-2xl shadow-md p-4 m-1 w-full max-w-md flex items-center hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full">

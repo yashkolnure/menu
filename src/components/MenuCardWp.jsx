@@ -4,22 +4,17 @@ import { FaPlus, FaTimes, FaMinus } from "react-icons/fa";
 // Currency symbol helper
 const getCurrencySymbol = (code) => {
   switch (code) {
-    case "INR":
-      return "₹";
-    case "USD":
-      return "$";
-    case "EUR":
-      return "€";
-    case "GBP":
-      return "£";
-    case "JPY":
-      return "¥";
-    case "AUD":
-      return "A$";
-    case "CAD":
-      return "C$";
-    default:
-      return "₹";
+    case "INR": return "₹";
+    case "USD": return "$";
+    case "EUR": return "€";
+    case "GBP": return "£";
+    case "JPY": return "¥";
+    case "CNY": return "¥";
+    case "AUD": return "A$";
+    case "CAD": return "C$";
+    case "AED": return "د.إ";
+    case "SGD": return "S$";
+    default: return "₹";
   }
 };
 

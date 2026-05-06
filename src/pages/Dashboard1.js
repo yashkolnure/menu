@@ -32,6 +32,7 @@ function Dashboard() {
   const imagePasteRef = useRef(null);
   const [customEditCategories, setCustomEditCategories] = useState({});
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [fetchProgress, setFetchProgress] = useState(null); // { current, total, name }
 
 
   useEffect(() => {
@@ -328,160 +329,186 @@ const addItemToList = async () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   
- // Memory cache for media items
-let mediaCache = null;
+  // Memory cache for media items
+  let mediaCache = null;
 
-// Clean and normalize dish/media names
-function cleanName(name) {
-  return name
-    .toLowerCase()
-    .replace(/\(.*?\)/g, '')       // Remove (anything)
-    .replace(/[^a-z\s-]/g, '')     // Remove digits/special characters
-    .replace(/-/g, ' ')            // Dashes to space
-    .replace(/\s+/g, ' ')          // Collapse spaces
-    .trim();
-}
+  // Clean and normalize dish/media names
+  function cleanName(name) {
+    return name
+      .toLowerCase()
+      .replace(/\(.*?\)/g, '')
+      .replace(/[^a-z\s-]/g, '')
+      .replace(/-/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
 
-// Levenshtein similarity
-function levenshteinSimilarity(a, b) {
-  a = a.toLowerCase();
-  b = b.toLowerCase();
-  const matrix = Array.from({ length: b.length + 1 }, (_, i) =>
-    Array(a.length + 1).fill(0)
-  );
-
-  for (let i = 0; i <= b.length; i++) matrix[i][0] = i;
-  for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
-
-  for (let i = 1; i <= b.length; i++) {
-    for (let j = 1; j <= a.length; j++) {
-      const cost = a[j - 1] === b[i - 1] ? 0 : 1;
-      matrix[i][j] = Math.min(
-        matrix[i - 1][j] + 1,
-        matrix[i][j - 1] + 1,
-        matrix[i - 1][j - 1] + cost
-      );
+  // Levenshtein similarity
+  function levenshteinSimilarity(a, b) {
+    a = a.toLowerCase();
+    b = b.toLowerCase();
+    const matrix = Array.from({ length: b.length + 1 }, (_, i) =>
+      Array(a.length + 1).fill(0)
+    );
+    for (let i = 0; i <= b.length; i++) matrix[i][0] = i;
+    for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+    for (let i = 1; i <= b.length; i++) {
+      for (let j = 1; j <= a.length; j++) {
+        const cost = a[j - 1] === b[i - 1] ? 0 : 1;
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j - 1] + cost
+        );
+      }
     }
+    const distance = matrix[b.length][a.length];
+    const maxLen = Math.max(a.length, b.length);
+    return 1 - distance / maxLen;
   }
 
-  const distance = matrix[b.length][a.length];
-  const maxLen = Math.max(a.length, b.length);
-  return 1 - distance / maxLen;
-}
-
-// Fetch all media items once (bulk first, fallback to pagination)
-async function fetchAllMediaItems() {
-  const allItems = [];
-
-  try {
-    const bulkRes = await fetch(`https://website.avenirya.com/wp-json/wp/v2/media?per_page=10000`);
-    if (!bulkRes.ok) throw new Error("Bulk fetch failed");
-    return await bulkRes.json();
-  } catch (e) {
-    console.warn("Bulk fetch failed, falling back to pagination...");
-  }
-
-  let page = 1;
-  const perPage = 100;
-  const maxPages = 100;
-
-  while (page <= maxPages) {
-    const res = await fetch(`https://website.avenirya.com/wp-json/wp/v2/media?per_page=${perPage}&page=${page}`);
-    if (!res.ok) break;
-
-    const data = await res.json();
-    allItems.push(...data);
-
-    if (data.length < perPage) break;
-    page++;
-  }
-
-  return allItems;
-}
-
-// Fetch and attach best match image using cached media
-async function fetchImageForItemCached(index) {
-  const item = editedItems[index];
-  const rawName = item?.name;
-
-  if (!rawName) {
-    setError("Dish name required to fetch image.");
-    return;
-  }
-
-  const cleanedDishName = cleanName(rawName);
-  setSavingItems((prev) => ({ ...prev, [item._id]: "fetching" }));
-
-  try {
-    if (!mediaCache || mediaCache.length === 0) {
-      setError("Media cache is empty.");
-      return;
+  // Fetch all media items once (bulk first, fallback to pagination)
+  async function fetchAllMediaItems() {
+    try {
+      const bulkRes = await fetch(`https://website.avenirya.com/wp-json/wp/v2/media?per_page=10000`);
+      if (!bulkRes.ok) throw new Error("Bulk fetch failed");
+      return await bulkRes.json();
+    } catch (e) {
+      console.warn("Bulk fetch failed, falling back to pagination...");
     }
+    const allItems = [];
+    let page = 1;
+    const perPage = 100;
+    while (page <= 100) {
+      const res = await fetch(`https://website.avenirya.com/wp-json/wp/v2/media?per_page=${perPage}&page=${page}`);
+      if (!res.ok) break;
+      const data = await res.json();
+      allItems.push(...data);
+      if (data.length < perPage) break;
+      page++;
+    }
+    return allItems;
+  }
 
+  // Find best matching image from WordPress media cache, return base64 data URL or null
+  async function findBestImageForItem(item) {
+    if (!item?.name || !mediaCache || mediaCache.length === 0) return null;
+    const cleanedDishName = cleanName(item.name);
     let bestMatch = null;
     let bestScore = 0;
-
     for (const media of mediaCache) {
       if (!media.title?.rendered) continue;
-
       const mediaTitle = cleanName(media.title.rendered);
       const sim = levenshteinSimilarity(cleanedDishName, mediaTitle);
-
       if (sim > bestScore) {
         bestScore = sim;
         bestMatch = media;
       }
     }
-
-    if (bestMatch && bestScore >= 0.3) {
-      const imageUrl = bestMatch.source_url;
-      const imgBlob = await fetch(imageUrl).then((r) => r.blob());
-
+    if (!bestMatch || bestScore < 0.3) return null;
+    const imgBlob = await fetch(bestMatch.source_url).then((r) => r.blob());
+    return await new Promise((resolve) => {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        updateEditedItem(index, "image", reader.result);
-        setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
-      };
+      reader.onloadend = () => resolve(reader.result);
       reader.readAsDataURL(imgBlob);
-    } else {
-      setError(`No image matched for "${rawName}"`);
-      setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
+    });
+  }
+
+  // Main: fetch images one-by-one, attach & save each before moving to next
+  // Skips items that already have a URL image. Retries up to 2 times on failure.
+  async function fetchAllImages() {
+    setIsFetching(true);
+    setError("");
+    setMessage("");
+
+    // Load WordPress media cache once
+    if (!mediaCache) {
+      try {
+        mediaCache = await fetchAllMediaItems();
+      } catch (e) {
+        setError("Failed to load WordPress media library.");
+        setIsFetching(false);
+        return;
+      }
     }
-  } catch (err) {
-    setError("Failed to fetch image: " + err.message);
-    setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
-  }
-}
 
-// Helper: run async tasks in batches
-async function runInBatches(tasks, batchSize = 5) {
-  const results = [];
-  for (let i = 0; i < tasks.length; i += batchSize) {
-    const batch = tasks.slice(i, i + batchSize);
-    const res = await Promise.allSettled(batch.map(fn => fn()));
-    results.push(...res);
-  }
-  return results;
-}
+    // Only process items that don't already have a saved URL image
+    const toProcess = editedItems
+      .map((item, index) => ({ item, index }))
+      .filter(({ item }) => {
+        const img = item.image;
+        return !img || img.trim() === "" || img.startsWith("data:");
+      });
 
-// Main: fetch images for all dishes using memory cache
-async function fetchAllImages() {
-  setIsFetching(true); // start loading
-  if (!mediaCache) {
-    mediaCache = await fetchAllMediaItems();
-  }
-
-  const tasks = editedItems.map((item, index) => {
-    const img = item.image;
-    if (!img || img.startsWith("data:")) {
-      return () => fetchImageForItemCached(index);
+    if (toProcess.length === 0) {
+      setMessage("All items already have images. Nothing to fetch.");
+      setIsFetching(false);
+      return;
     }
-    return null;
-  }).filter(Boolean);
 
-  await runInBatches(tasks, 5); // adjust concurrency limit if needed
-  setIsFetching(false); // stop loading
-}
+    setFetchProgress({ current: 0, total: toProcess.length, name: "" });
+    let successCount = 0;
+    let skipCount = 0;
+
+    for (let i = 0; i < toProcess.length; i++) {
+      const { item, index } = toProcess[i];
+      setFetchProgress({ current: i + 1, total: toProcess.length, name: item.name });
+      setSavingItems((prev) => ({ ...prev, [item._id]: "fetching" }));
+
+      let succeeded = false;
+
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          // Step 1: Find best matching image from WordPress
+          const imageDataUrl = await findBestImageForItem(item);
+          if (!imageDataUrl) {
+            // No match found — skip this item (no point retrying)
+            setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
+            skipCount++;
+            break;
+          }
+
+          // Step 2: Preview the image in the UI immediately
+          updateEditedItem(index, "image", imageDataUrl);
+          setSavingItems((prev) => ({ ...prev, [item._id]: "saving" }));
+
+          // Step 3: Upload image to WordPress media library
+          const wpImageUrl = await uploadImageToWordPress(
+            imageDataUrl,
+            `${item.name.replace(/\s+/g, "-")}_${(item.category || "item").replace(/\s+/g, "-")}.jpg`
+          );
+
+          // Step 4: Save item to backend API
+          await axios.put(
+            `https://yash.avenirya.com/api/admin/${restaurantId}/menu/${item._id}`,
+            { ...item, image: wpImageUrl },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+
+          // Step 5: Update local state with final saved URL
+          updateEditedItem(index, "image", wpImageUrl);
+          setSavingItems((prev) => ({ ...prev, [item._id]: "saved" }));
+          setTimeout(() => setSavingItems((prev) => ({ ...prev, [item._id]: undefined })), 1500);
+
+          successCount++;
+          succeeded = true;
+          break;
+        } catch (err) {
+          console.warn(`Attempt ${attempt + 1}/2 failed for "${item.name}":`, err.message);
+          if (attempt === 1) {
+            // Both retries exhausted — skip to next item
+            setSavingItems((prev) => ({ ...prev, [item._id]: undefined }));
+            setError(`Skipped "${item.name}" after 2 failed attempts`);
+            skipCount++;
+          }
+        }
+      }
+    }
+
+    setFetchProgress(null);
+    setIsFetching(false);
+    setMessage(`Done! ${successCount} image(s) saved${skipCount > 0 ? `, ${skipCount} skipped` : ""}.`);
+  }
 
 const handleUpdate = async () => {
   try {
@@ -943,6 +970,25 @@ return (
                 </span>
               </button>
             </div>
+
+            {/* Progress bar for sequential image fetch */}
+            {fetchProgress && (
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-xl">
+                <div className="flex justify-between text-sm text-blue-700 font-medium mb-1">
+                  <span>Fetching images… ({fetchProgress.current}/{fetchProgress.total})</span>
+                  <span>{Math.round((fetchProgress.current / fetchProgress.total) * 100)}%</span>
+                </div>
+                <div className="w-full bg-blue-100 rounded-full h-2 mb-1">
+                  <div
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${(fetchProgress.current / fetchProgress.total) * 100}%` }}
+                  />
+                </div>
+                {fetchProgress.name && (
+                  <p className="text-xs text-blue-500 truncate">Processing: {fetchProgress.name}</p>
+                )}
+              </div>
+            )}
 
             {/* Editable List */}
             <div className="space-y-3 w-full">
