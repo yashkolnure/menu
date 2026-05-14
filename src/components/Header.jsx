@@ -72,7 +72,7 @@ const Header = () => {
           <div className="flex items-center gap-2">
             <a href="/">
               <img
-                src="https://petoba.avenirya.com/wp-content/uploads/2022/07/Untitled-design-6.png"
+                src="https://i.ibb.co/hJMsXw5D/image-removebg-preview.png"
                 alt="Logo"
                 className="h-20 w-auto"
               />
